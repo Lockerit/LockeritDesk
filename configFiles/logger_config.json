@@ -1,0 +1,9 @@
+{
+    "logDirectory": "logs",
+    "logFilePattern": "lockerit-%DATE%.log",
+    "datePattern": "YYYY-MM-DD",
+    "zippedArchive": false,
+    "maxSize": "10m",
+    "maxFiles": "14d",
+    "logLevel": "info"
+}

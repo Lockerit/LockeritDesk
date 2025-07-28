@@ -1,0 +1,18 @@
+{
+    "watch": [
+        "main.js",
+        "preload.js",
+        "src/features/utils/",
+        "src/hooks/"
+    ],
+    "ignore": [
+        "setup_config.json",
+        "**/setup_config.json"
+    ],
+    "reloadIgnore": [
+        "setup_config.json",
+        "**/setup_config.json"
+    ],
+    "ext": "js,json",
+    "exec": "electron ."
+}

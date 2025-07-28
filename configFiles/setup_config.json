@@ -1,0 +1,25 @@
+{
+    "client": "Tulocker",
+    "locationDevice": "CC Prueba",
+    "totalLockers": 60,
+    "login": {
+        "user": "admin",
+        "pass": "5555",
+        "avatarPath": "./assets/TuLockerIcono.jpg",
+        "logoPath": "./assets/TuLockerHorizontal.png"
+    },
+    "params": {
+        "lenMaxInputPass": 4,
+        "lenMinInputPass": 4,
+        "currency": {
+            "amountService": "1500",
+            "currency": "COP",
+            "decinmal": 0
+        },
+        "modalTimeouts": {
+            "timeoutKeypad": 300,
+            "timeoutInsertMoney": 70,
+            "timeoutShowMessage": 15
+        }
+    }
+}

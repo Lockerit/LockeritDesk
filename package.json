@@ -1,0 +1,83 @@
+{
+  "name": "lockerit",
+  "private": true,
+  "type": "commonjs",
+  "version": "1.0.0",
+  "description": "Sistema de Asignación de Casilleros",
+  "author": {
+    "name": "Lockerit - Camilo Diaz",
+    "email": "lockerit0625@gmail.com",
+    "url": "https://www.tu-sitio-web.com"
+  },
+  "main": "main.js",
+  "homepage": ".",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electronmon .\"",
+    "clean": "rimraf dist release",
+    "build:web": "vite build",
+    "build:electron": "electron-builder",
+    "build": "npm run clean && npm run build:web && npm run build:electron",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/nunito": "^5.2.6",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
+    "@mui/styled-engine-sc": "^7.2.0",
+    "axios": "^1.10.0",
+    "dotenv": "^17.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3",
+    "styled-components": "^6.1.19",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react-swc": "^3.10.2",
+    "concurrently": "^9.2.0",
+    "cross-env": "^7.0.3",
+    "electron": "^37.2.2",
+    "electron-builder": "^26.0.12",
+    "electronmon": "^2.0.3",
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.2.0",
+    "rimraf": "^6.0.1",
+    "vite": "^7.0.0",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.lockerit.desk",
+    "productName": "Lockerit",
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "src/assets/**",
+      "electron/**",
+      "configFiles/**"
+    ],
+    "extraResources": [
+      "configFiles/.env",
+      "configFiles/setup_config.json",
+      "configFiles/auth_key.json",
+      "configFiles/logger_config.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "./src/assets/icon.ico"
+    }
+  }
+}
