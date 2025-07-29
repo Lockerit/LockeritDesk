@@ -30,7 +30,6 @@ export default function DenseAppBar() {
     const [showAdmin, setShowAdmin] = useState(true);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
-    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
     const config = useElectronConfig();
     const avatarBoxRef = useRef(null);
@@ -182,19 +181,6 @@ export default function DenseAppBar() {
                     Salir
                 </MenuItem>
             </Menu>
-
-            {/* Diálogo de confirmación si decides usarlo más adelante */}
-            {/* 
-            <ConfirmDialog
-                open={confirmDialogOpen}
-                onConfirm={acceptConfirmation}
-                onCancel={cancelConfirmation}
-                tittle={'Confirmar'}
-                mesg={'¿Deseas salir?'}
-                phone={''}
-                isPhone={false}
-            />
-            */}
         </AppBar>
     );
 }

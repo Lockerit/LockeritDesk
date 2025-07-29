@@ -158,13 +158,13 @@ export default function Ppal() {
 
     return (
         <>
-            <Box sx={{ mb: 2 }}>
+            {/* <Box sx={{ mb: 5 }}>
                 <DenseAppBar />
-            </Box>
+            </Box> */}
 
             <Box
                 sx={{
-                    height: 'calc(90vh - 64px)', // Ajusta según la altura del AppBar
+                    height: '80vh', // Ajusta según la altura del AppBar
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',

@@ -49,14 +49,22 @@ let theme = createTheme({
           // Focus (cuando está seleccionado)
           '&:after': {
             borderBottomColor: '#0c315e', // color al enfocar (verde)
+            borderBottomWidth: '5px', // grosor de la línea cuando está enfocado
           },
         },
+        // root: {
+        //   '&.Mui-focused': {
+        //     color: '#0c315e',
+        //     background: '#e2e3e8',
+        //     opacity: 0.3,
+        //   },
+        // },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
         root: {
-          '&.Mui-focused': {
-            color: '#0c315e',
-            background: '#e2e3e8',
-            opacity: 0.3,
-          },
+          paddingTop: '15px'
         },
       },
     },
@@ -79,7 +87,10 @@ let theme = createTheme({
     },
     MuiTextField: {
       defaultProps: {
-        autoComplete: 'off',
+        autoComplete: 'off'
+      },
+      root: {
+        margin: "normal"
       },
     },
     MuiFormHelperText: {
@@ -90,6 +101,15 @@ let theme = createTheme({
           lineHeight: 1   // opcional, más compacto aún
         }
       }
+    },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          margin: '0 auto 24px',
+          maxWidth: '800%',
+          gap: '8px', // espacio entre label y select
+        },
+      },
     },
     MuiPaper: {
       styleOverrides: {
@@ -126,7 +146,7 @@ let theme = createTheme({
           color: '#0c315e', // color de texto blanco
           borderRadius: '0 0 0 0', // bordes redondeados abajo
           boxShadow: 'none', // sin sombra
-          backdropFilter: 'blur(5px)', // efecto glassmorphism opcional
+          // backdropFilter: 'blur(5px)', // efecto glassmorphism opcional
         },
       },
     },

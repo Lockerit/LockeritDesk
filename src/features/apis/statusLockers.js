@@ -17,7 +17,7 @@ const GetStatusLockers = async () => {
     log('info', `Timeout efectivo en ejecución: ${effectiveTimeout}`);
 
     try {
-        const response = await axios.get(API_ROUTES.GET_LOCKERS_STATUS, {
+        const response = await axios.get(API_ROUTES.STATUS_LOCKERS, {
             timeout: effectiveTimeout,
         });
 
