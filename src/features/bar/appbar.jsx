@@ -14,14 +14,20 @@ import Clock from './clock.jsx';
 import { useUser } from '../context/userContext.jsx';
 import ConfirmDialog from '../dialogs/confirmDialog.jsx';
 import { useElectronConfig } from '../hooks/useConfig.js';
+import {
+    Logout,
+    SupervisorAccount,
+    CancelPresentation
+} from '@mui/icons-material';
 
+const USER_STORAGE_KEY = 'userInit';
 const fileName = 'appbar';
 
 export default function DenseAppBar() {
-
     const { userInit, setUserInit } = useUser();
     const [closeSession, setCloseSession] = useState(false);
     const [showData, setShowData] = useState(false);
+    const [showAdmin, setShowAdmin] = useState(true);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -30,35 +36,38 @@ export default function DenseAppBar() {
     const avatarBoxRef = useRef(null);
     const navigate = useNavigate();
 
-
-
     useEffect(() => {
         if (!userInit || !config) return;
 
-        const { authenticated, closeSession, closeWindow } = userInit;
+        const { authenticated, closeSession, adminWindowInto } = userInit;
 
-        if (authenticated) {
+        if (authenticated || adminWindowInto) {
             setShowData(true);
             const avatarPath = config?.login?.avatarPath ?? '';
-            const validAvatar = getValidAvatar(avatarPath);
-            setAvatarSelect(validAvatar);
+            setAvatarSelect(getValidAvatar(avatarPath));
+            setShowAdmin(false);
         } else {
+            setShowAdmin(true);
             setShowData(false);
             setAvatarSelect(avatarImg);
             if (closeSession) setCloseSession(false);
         }
     }, [config, userInit]);
 
-
     function getValidAvatar(avatar) {
         if (
             typeof avatar === 'string' &&
             avatar.trim() !== '' &&
-            (avatar.startsWith('http') || avatar.startsWith('data:') || avatar.endsWith('.jpg') || avatar.endsWith('.png'))
+            (/^https?:/.test(avatar) || /^data:/.test(avatar) || /\.(jpg|jpeg|png)$/i.test(avatar))
         ) {
             return avatar;
         }
         return avatarImg;
+    }
+
+    function persistUser(updatedUser) {
+        setUserInit(updatedUser);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
     }
 
     const handleMenuOpen = (event) => {
@@ -66,13 +75,10 @@ export default function DenseAppBar() {
     };
 
     const handleMenuClose = () => {
-
         const updatedUser = { ...userInit, closeWindow: false };
-        setUserInit(updatedUser);
-        localStorage.setItem('userInit', JSON.stringify(updatedUser));
+        persistUser(updatedUser);
         setAnchorEl(null);
 
-        // Espera un poco para asegurar que el menú se cierre antes de aplicar foco
         setTimeout(() => {
             avatarBoxRef.current?.focus?.();
         }, 100);
@@ -83,14 +89,13 @@ export default function DenseAppBar() {
         handleMenuClose();
 
         const updatedUser = { ...userInit, closeSession: true };
-        setUserInit(updatedUser);
-        localStorage.setItem('userInit', JSON.stringify(updatedUser));
+        persistUser(updatedUser);
         navigate('/', { replace: true });
     };
 
-    const accpetConfirmation = () => {
+    const acceptConfirmation = () => {
         setConfirmDialogOpen(false);
-        closeWindows();
+        // Aquí iría la lógica para cerrar la ventana si es necesario
     };
 
     const cancelConfirmation = () => {
@@ -98,10 +103,15 @@ export default function DenseAppBar() {
     };
 
     const openConfirmClose = () => {
-        // setConfirmDialogOpen(true);
         const updatedUser = { ...userInit, closeWindow: true };
-        setUserInit(updatedUser);
-        localStorage.setItem('userInit', JSON.stringify(updatedUser));
+        persistUser(updatedUser);
+        setAnchorEl(null);
+        navigate('/', { replace: true });
+    };
+
+    const openAdmin = () => {
+        const updatedUser = { ...userInit, adminWindow: true };
+        persistUser(updatedUser);
         setAnchorEl(null);
         navigate('/', { replace: true });
     };
@@ -110,16 +120,12 @@ export default function DenseAppBar() {
         <AppBar position="fixed" elevation={0}>
             <Toolbar>
 
-                {/* Nombre del usuario a la izquierda */}
+                {/* Usuario (izquierda) */}
                 <Box sx={{ flex: 1 }}>
                     <Box
                         ref={avatarBoxRef}
                         tabIndex={-1}
-                        sx={{
-                            display: 'flex',
-                            gap: 1,
-                            cursor: 'pointer',
-                        }}
+                        sx={{ display: 'flex', gap: 1, cursor: 'pointer' }}
                         onClick={handleMenuOpen}
                     >
                         <Avatar alt="Avatar" src={avatarSelect} />
@@ -131,30 +137,22 @@ export default function DenseAppBar() {
                     </Box>
                 </Box>
 
-                {/* Reloj al centro */}
+                {/* Reloj (centro) */}
                 <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                     <Clock />
                 </Box>
 
-                {/* Ubicación o texto adicional a la derecha */}
-                <Box
-                    sx={{
-                        flex: 1,
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        gap: 1,
-                    }}
-                >
+                {/* Ubicación (derecha) */}
+                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
                     {showData && (
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                            SAC -
-                        </Typography>
-                    )}
-                    {showData && (
-                        <Typography variant="h6">
-                            {(config?.locationDevice || '')}
-                        </Typography>
+                        <>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                SAC -
+                            </Typography>
+                            <Typography variant="h6">
+                                {(config?.locationDevice || '')}
+                            </Typography>
+                        </>
                     )}
                 </Box>
             </Toolbar>
@@ -164,27 +162,39 @@ export default function DenseAppBar() {
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 disableAutoFocusItem
             >
                 {showData && (
-                    <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+                    <MenuItem onClick={handleLogout}>
+                        <Logout />
+                        Cerrar sesión
+                    </MenuItem>
                 )}
-                {<MenuItem onClick={openConfirmClose}>Salir</MenuItem>}
+
+                {showAdmin && (<MenuItem onClick={openAdmin}>
+                    <SupervisorAccount />
+                    Administración
+                </MenuItem>)}
+
+                <MenuItem onClick={openConfirmClose}>
+                    <CancelPresentation />
+                    Salir
+                </MenuItem>
             </Menu>
 
-            {/* <ConfirmDialog
+            {/* Diálogo de confirmación si decides usarlo más adelante */}
+            {/* 
+            <ConfirmDialog
                 open={confirmDialogOpen}
-                onConfirm={accpetConfirmation}
+                onConfirm={acceptConfirmation}
                 onCancel={cancelConfirmation}
                 tittle={'Confirmar'}
                 mesg={'¿Deseas salir?'}
                 phone={''}
                 isPhone={false}
-            /> */}
+            />
+            */}
         </AppBar>
     );
 }

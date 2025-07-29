@@ -2,14 +2,14 @@ import axios from './axiosConfig.js';
 import API_ROUTES from '../router/pathService.js';
 import { getEnv, subscribeEnv } from '../hooks/envStore.js';
 
-const fileName = 'availableLockers'; // Nombre del archivo para los logs
+const fileName = 'statusLockers'; // Nombre del archivo para los logs
 
 const log = (level, message) => {
     window.electronAPI?.log(level, `[${fileName}] ${message}`);
 };
 
 const GetStatusLockers = async () => {
-    log('info', 'Iniciando petición para obtener lockers disponibles');
+    log('info', 'Iniciando petición para obtener casilleros disponibles');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
     const effectiveTimeout = Number((env?.apiBaseTimeout * 1000) ?? 30000);

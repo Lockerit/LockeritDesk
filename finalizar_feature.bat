@@ -2,61 +2,79 @@
 setlocal enabledelayedexpansion
 
 :: Solicitar nombre de la rama feature
-set /p featureName=Ingresa el nombre de la rama feature que quieres finalizar (ej: ajusteServicios): 
-set featureBranch=feature/%featureName%
+set /p featureBranch=Ingresa el nombre de la rama feature (ej: ajusteServicios): 
+set fullBranch=feature/%featureBranch%
 
-echo.
-echo ================================
-echo Cambiando a la rama %featureBranch%...
-echo ================================
-git checkout %featureBranch%
-IF ERRORLEVEL 1 goto error
+:: Validar si estás en la rama correcta
+for /f "delims=" %%i in ('git branch --show-current') do set currentBranch=%%i
 
-echo.
-echo ================================
-echo Actualizando rama develop...
-echo ================================
-git fetch origin
-git checkout develop
-git pull origin develop
-git checkout %featureBranch%
-git merge develop
-
-echo.
-echo ================================
-echo Verifica que tu código funcione antes de continuar.
-pause
-
-echo.
-echo ================================
-echo Subiendo rama actualizada al remoto...
-echo ================================
-git push origin %featureBranch%
-
-echo.
-echo ================================
-echo Abre un Pull Request desde GitHub:
-echo     %featureBranch% -> develop
-echo ================================
-
-echo.
-set /p delete=¿Deseas eliminar la rama local y remota después del merge? (s/n): 
-if /i "%delete%"=="s" (
-    git checkout develop
-    git branch -d %featureBranch%
-    git push origin --delete %featureBranch%
-    echo Rama eliminada.
-) else (
-    echo No se eliminó la rama.
+if not "!currentBranch!"=="%fullBranch%" (
+    echo No estás en la rama %fullBranch%. Estás en: !currentBranch!
+    echo Por favor cambia manualmente con: git checkout %fullBranch%
+    goto :EOF
 )
 
-goto end
+:: Mostrar cambios sin guardar
+echo Verificando si hay cambios sin guardar...
+git status
+git diff --quiet && git diff --cached --quiet
+if errorlevel 1 (
+    set /p continuar=Se detectaron cambios sin guardar. ¿Deseas agregarlos y hacer commit? (s/n): 
+    if /i "!continuar!"=="s" (
+        set /p commitMsg=Ingresa el mensaje de commit: 
+        if "!commitMsg!"=="" (
+            echo Debes ingresar un mensaje válido. Cancelando.
+            goto :EOF
+        )
+        git add .
+        git commit -m "!commitMsg!"
+    ) else (
+        echo Cancelado por el usuario.
+        goto :EOF
+    )
+)
 
-:error
-echo Ocurrió un error. Verifica si la rama existe correctamente.
-goto end
+:: Subir rama feature al remoto
+echo Subiendo %fullBranch% al remoto...
+git push origin %fullBranch%
+if errorlevel 1 (
+    echo Error al subir la rama. Verifica tu conexión o permisos.
+    goto :EOF
+)
 
-:end
-echo.
-echo Proceso finalizado.
+:: Cambiar a develop
+echo ↩️ Cambiando a develop...
+git checkout develop
+if errorlevel 1 (
+    echo No se pudo cambiar a develop.
+    goto :EOF
+)
+
+:: Traer últimos cambios
+echo Haciendo pull de develop...
+git pull origin develop
+
+:: Hacer merge
+echo Haciendo merge con %fullBranch%...
+git merge %fullBranch%
+if errorlevel 1 (
+    echo Conflicto durante el merge. Resuélvelo manualmente.
+    goto :EOF
+)
+
+:: Subir develop actualizado
+echo Subiendo develop actualizado...
+git push origin develop
+
+:: Eliminar rama local
+echo Eliminando rama local: %fullBranch%...
+git branch -d %fullBranch%
+
+:: Eliminar rama remota
+echo Eliminando rama remota: %fullBranch%...
+git push origin --delete %fullBranch%
+
+echo Rama %fullBranch% finalizada correctamente.
+
+endlocal
 pause

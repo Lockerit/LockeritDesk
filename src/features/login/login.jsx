@@ -24,6 +24,7 @@ import {
     Undo
 } from '@mui/icons-material';
 
+const USER_STORAGE_KEY = 'userInit';
 const fileName = 'login';
 
 // Logging centralizado
@@ -68,8 +69,14 @@ export default function Login() {
         nameButton();
 
         if (userInit?.authenticated && !userInit?.closeSession && !userInit?.closeWindow) {
-            log('info', 'Usuario ya autenticado, redirigiendo a /ppal');
-            navigate('/ppal', { replace: true });
+
+            if (userInit?.adminWindowInto) {
+                log('info', 'Usuario autenticado en sesión administrativa, redirigiendo a /adminlockers');
+                navigate('/adminlockers', { replace: true });
+            } else {
+                log('info', 'Usuario autenticado en sesión principal, redirigiendo a /ppal');
+                navigate('/ppal', { replace: true });
+            }
         }
     }, [close, config, userInit, navigate]);
 
@@ -103,7 +110,7 @@ export default function Login() {
 
         let newSession = null;
 
-        if (!userInit?.authenticated) {
+        if (!userInit?.authenticated && !userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow && !userInit?.adminWindowInto) {
             // Login
             newSession = {
                 authenticated: true,
@@ -112,13 +119,14 @@ export default function Login() {
                 locationDevice: config.locationDevice,
                 avatar: config.login.avatarPath,
                 closeSession: false,
-                closeWindow: false
+                closeWindow: false,
+                adminWindow: false
             };
             setUserInit(newSession);
-            localStorage.setItem('userInit', JSON.stringify(newSession));
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newSession));
             log('info', `Inicio de sesión exitoso para usuario: ${newSession.user}`);
             navigate('/ppal', { replace: true });
-        } else if (userInit?.authenticated && userInit?.closeSession) {
+        } else if ((userInit?.authenticated || userInit?.adminWindowInto) && userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow) {
             const userAux = remember ? userName.toLowerCase() : '';
 
             // Logout
@@ -129,26 +137,33 @@ export default function Login() {
                 locationDevice: '',
                 avatar: '',
                 closeSession: false,
-                closeWindow: false
+                closeWindow: false,
+                adminWindow: false,
+                adminWindowInto: false
             };
             setUserInit(newSession);
-            localStorage.setItem('userInit', JSON.stringify(newSession));
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newSession));
             setUserName(userAux);
             setPass('');
             showAlert('Sesión cerrada exitosamente.', 'success');
             log('info', `Cierre de sesión para usuario: ${userAux}`);
-        } else if (userInit?.authenticated && userInit?.closeWindow) {
+        } else if (!userInit?.closeSession && !userInit?.closeWindow && userInit?.adminWindow && !userInit?.adminWindowInto) {
+            const userAux = remember ? userName.toLowerCase() : '';
+            log('info', `Ir a la ventana de administración: ${userAux}`);
+            const updatedUser = { ...userInit, adminWindow: false, adminWindowInto: true };
+            setUserInit(updatedUser);
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+            navigate('/adminlockers', { replace: true });
+        } else if (userInit?.closeWindow) {
             const userAux = remember ? userName.toLowerCase() : '';
             log('info', `Cierre de la aplicación para usuario: ${userAux}`);
             const updatedUser = { ...userInit, closeWindow: false };
             setUserInit(updatedUser);
-            localStorage.setItem('userInit', JSON.stringify(updatedUser));
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
             navigate('/ppal', { replace: true });
             setTimeout(() => {
                 closeWindows();
             }, 500);
-
-
         }
     };
 
@@ -187,11 +202,17 @@ export default function Login() {
     };
 
     const backPage = () => {
-        const updatedUser = { ...userInit, closeSession: false, closeWindow: false };
+        const updatedUser = { ...userInit, closeSession: false, closeWindow: false, adminWindow: false };
         setUserInit(updatedUser);
-        localStorage.setItem('userInit', JSON.stringify(updatedUser));
-        navigate('/ppal', { replace: true });
-        log('info', 'Redirigiendo a /ppal desde Login');
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+
+        if (userInit?.adminWindowInto) {
+            navigate('/adminlockers', { replace: true });
+            log('info', 'Redirigiendo a /adminlokers desde Login');
+        } else {
+            navigate('/ppal', { replace: true });
+            log('info', 'Redirigiendo a /ppal desde Login');
+        }
     };
 
     const showAlert = (msg, severity = 'error') => {
@@ -202,19 +223,14 @@ export default function Login() {
 
     const nameButton = () => {
 
-        if (!userInit?.authenticated) {
-
-            if (userInit?.closeWindow) {
-                setButtonName('Salir');
-            } else {
-                setButtonName('Iniciar Sesión');
-            }
-        } else if (userInit?.authenticated) {
-            if (userInit?.closeSession) {
-                setButtonName('Cerrar Sesión');
-            } else if (userInit?.closeWindow) {
-                setButtonName('Salir');
-            }
+        if (!userInit?.authenticated && !userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow && !userInit?.adminWindowInto) {
+            setButtonName('Iniciar Sesión');
+        } else if ((userInit?.authenticated || userInit?.adminWindowInto) && userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow) {
+            setButtonName('Cerrar Sesión');
+        } else if (!userInit?.closeSession && !userInit?.closeWindow && userInit?.adminWindow && !userInit?.adminWindowInto) {
+            setButtonName('Iniciar Sesión');
+        } else if (userInit?.closeWindow) {
+            setButtonName('Salir');
         }
     }
 
@@ -313,7 +329,7 @@ export default function Login() {
                         <Send sx={{ fontSize: 40, ml: 3 }} />
                     </Button>
 
-                    {(userInit?.closeSession || userInit?.closeWindow) && (
+                    {(userInit?.closeSession || userInit?.closeWindow || userInit?.adminWindow) && (
                         <Button variant="contained" color="secondary" type='button' onClick={backPage} fullWidth sx={{ my: 1 }}>
                             Atrás
                             <Undo sx={{ fontSize: 40, ml: 3 }} />

@@ -130,6 +130,55 @@ let theme = createTheme({
         },
       },
     },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 12,
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+          minWidth: 200,
+          padding: '4px 0',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          padding: '8px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          '&:hover': {
+            backgroundColor: '#0c315e',
+            color: '#fff',
+            '& .MuiSvgIcon-root': {
+              color: '#fff',
+            },
+          },
+          '&.Mui-selected': {
+            backgroundColor: '#0c315e',
+            color: '#fff',
+            '& .MuiSvgIcon-root': {
+              color: '#fff',
+            },
+            '&:hover': {
+              backgroundColor: '#0c315e', // un tono más oscuro al pasar el mouse sobre el seleccionado
+            },
+          },
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          minWidth: 'unset',
+          color: '#555',
+          '& .MuiSvgIcon-root': {
+            fontSize: 20,
+            transition: 'color 0.2s ease',
+          },
+        },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         body: {

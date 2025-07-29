@@ -6,6 +6,8 @@ import Copyright from '../bar/copyright.jsx';
 import AppRoutes from '../router/router.jsx';
 import { useUser } from '../context/userContext.jsx';
 
+const USER_STORAGE_KEY = 'userInit';
+
 export default function App() {
     const fileName = 'app';
     const [version, setVersion] = useState('');
@@ -15,10 +17,10 @@ export default function App() {
 
         if (!userInit) return;
 
-        const lsUserInit = localStorage.getItem('userInit');
+        const lsUserInit = localStorage.getItem(USER_STORAGE_KEY);
             
         if (!lsUserInit)
-            localStorage.setItem('userInit', JSON.stringify(userInit))
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit))
 
         const log = window?.electronAPI?.log;
 
