@@ -8,8 +8,8 @@ const log = (level, message) => {
     window.electronAPI?.log(level, `[${fileName}] ${message}`);
 };
 
-const OpenLocker = async (payload) => {
-    log('info', 'Iniciando petición para abrir casillero');
+const RemoveLocker = async (payload) => {
+    log('info', 'Iniciando petición para abrir casillero y retirar');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
     const effectiveTimeout = Number(env?.apiBaseTimeout ?? 30000);
@@ -18,7 +18,7 @@ const OpenLocker = async (payload) => {
 
     try {
         log('info', `Request: ${JSON.stringify(payload)}`);
-        const response = await axios.post(API_ROUTES.OPEN_LOCKER, payload, { timeout: effectiveTimeout });
+        const response = await axios.post(API_ROUTES.REMOVE_LOCKER, payload, { timeout: effectiveTimeout });
         log('info', `Response. Status: ${response.status}`);
         log('info', `Response. Data: ${JSON.stringify(response.data)}`);
 
@@ -40,4 +40,4 @@ const OpenLocker = async (payload) => {
     }
 };
 
-export default OpenLocker;
+export default RemoveLocker;
