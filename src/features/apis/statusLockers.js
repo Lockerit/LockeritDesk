@@ -12,7 +12,7 @@ const GetStatusLockers = async () => {
     log('info', 'Iniciando petición para obtener lockers disponibles');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
-    const effectiveTimeout = Number(env?.apiBaseTimeout ?? 30000);
+    const effectiveTimeout = Number((env?.apiBaseTimeout * 1000) ?? 30000);
 
     log('info', `Timeout efectivo en ejecución: ${effectiveTimeout}`);
 

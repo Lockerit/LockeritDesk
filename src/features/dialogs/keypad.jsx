@@ -309,7 +309,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setLocker(result.data.lockerCode); // ejemplo
           setAssignLockerOpen(true);
         } else {
-          setMessageErrorAPI(result?.error.message || '[keypad] Error en el servidor HTTP');
+          setMessageErrorAPI(result?.data?.message || '[keypad] Error en el servidor HTTP');
           setShowErrorAPIOpen(true);
         }
 
@@ -373,7 +373,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         setLocker(result.http.data.lockerCode); // ejemplo
         setAssignLockerOpen(true);
       } else {
-        setMessageErrorAPI(result?.error.message || '[keypad] Error en el servidor HTTP');
+        setMessageErrorAPI(result?.error || '[keypad] Error en el servidor HTTP');
         setShowErrorAPIOpen(true);
       }
 

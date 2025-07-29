@@ -27,6 +27,8 @@ let currentEnv = {
   apiBaseUrl: process.env.REACT_APP_API_BASE_URL || 'http://localhost',
   apiBasePort: process.env.REACT_APP_API_BASE_PORT || '3000',
   apiBaseTimeout: process.env.REACT_APP_API_BASE_TIMEOUT || '30000',
+  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_MAXRETRIES || 5,
+  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_DELAYRETRIES || 1,
   wsBaseUrl: process.env.REACT_APP_WS_URL || 'ws://localhost',
   wsBasePort: process.env.REACT_APP_WS_PORT || '3000'
 };
@@ -172,12 +174,14 @@ ipcMain.on('logger-updated', (event, updatedLogger) => {
 });
 
 ipcMain.handle('get-env', async () => {
-  const { REACT_APP_API_BASE_URL, REACT_APP_API_BASE_PORT, REACT_APP_API_BASE_TIMEOUT, REACT_APP_WS_URL, REACT_APP_WS_PORT, REACT_APP_WS_PATH } = process.env;
-  logger.debug(`[${fileName}] Datos .env: ${REACT_APP_API_BASE_URL}, ${REACT_APP_API_BASE_PORT}, ${REACT_APP_API_BASE_TIMEOUT}, ${REACT_APP_WS_URL}, ${REACT_APP_WS_PORT}, ${REACT_APP_WS_PATH}`);
+  const { REACT_APP_API_BASE_URL, REACT_APP_API_BASE_PORT, REACT_APP_API_BASE_TIMEOUT, REACT_APP_API_BASE_MAXRETRIES, REACT_APP_API_BASE_DELAYRETRIES, REACT_APP_WS_URL, REACT_APP_WS_PORT, REACT_APP_WS_PATH } = process.env;
+  logger.debug(`[${fileName}] Datos .env: ${REACT_APP_API_BASE_URL}, ${REACT_APP_API_BASE_PORT}, ${REACT_APP_API_BASE_TIMEOUT}, ${REACT_APP_API_BASE_MAXRETRIES}, ${REACT_APP_API_BASE_DELAYRETRIES},${REACT_APP_WS_URL}, ${REACT_APP_WS_PORT}, ${REACT_APP_WS_PATH}`);
   return {
     apiBaseUrl: REACT_APP_API_BASE_URL,
     apiBasePort: REACT_APP_API_BASE_PORT,
     apiBaseTimeout: REACT_APP_API_BASE_TIMEOUT,
+    apiBaseMaxRetries: REACT_APP_API_BASE_MAXRETRIES,
+    apiBaseDelayRetries: REACT_APP_API_BASE_DELAYRETRIES,
     wsBaseUrl: REACT_APP_WS_URL,
     wsBasePort: REACT_APP_WS_PORT,
     wsBasePath: REACT_APP_WS_PATH
