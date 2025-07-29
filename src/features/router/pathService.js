@@ -2,7 +2,7 @@
 
 const API_ROUTES = {
     ASSIGN_LOCKER: '/api/lockers/assign',
-    GET_LOCKERS_AVAILABLE: '/api/lockers/available',
+    GET_LOCKERS_STATUS: '/api/lockers/status',
     REMOVE_LOCKER: '/api/lockers/remove',
     // Agrega más rutas aquí
 };

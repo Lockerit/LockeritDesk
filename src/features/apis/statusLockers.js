@@ -8,7 +8,7 @@ const log = (level, message) => {
     window.electronAPI?.log(level, `[${fileName}] ${message}`);
 };
 
-const GetAvailableLockers = async () => {
+const GetStatusLockers = async () => {
     log('info', 'Iniciando petición para obtener lockers disponibles');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
@@ -17,7 +17,7 @@ const GetAvailableLockers = async () => {
     log('info', `Timeout efectivo en ejecución: ${effectiveTimeout}`);
 
     try {
-        const response = await axios.get(API_ROUTES.GET_LOCKERS_AVAILABLE, {
+        const response = await axios.get(API_ROUTES.GET_LOCKERS_STATUS, {
             timeout: effectiveTimeout,
         });
 
@@ -44,4 +44,4 @@ const GetAvailableLockers = async () => {
     }
 };
 
-export default GetAvailableLockers;
+export default GetStatusLockers;

@@ -4,7 +4,7 @@ import KeyPadModal from '../dialogs/keypad.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useElectronConfig } from '../hooks/useConfig.js';
-import GetAvailableLockers from '../apis/availableLockes.js';
+import GetStatusLockers from '../apis/statusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
 import {
@@ -42,7 +42,7 @@ export default function Ppal() {
 
         if (!config) return;
 
-        fetchDataAvailableLocker();
+        fetchDataStatusLocker();
         calculateLockerAvailables();
     }, [config, available]);
 
@@ -99,13 +99,16 @@ export default function Ppal() {
         setShowErrorAPIOpen(false);
     };
 
-    const fetchDataAvailableLocker = async () => {
+    const fetchDataStatusLocker = async () => {
         setLoading(true);
         try {
-            const result = await GetAvailableLockers();
+            const result = await GetStatusLockers();
 
             if (result.success) {
-                setAvailable(result?.data.length || 0);
+                if (Array.isArray(result?.data?.general)) {
+                    const libre = result?.data?.general.find(item => item.status.toLowerCase() === "libre");
+                    setAvailable(libre?.total || 0);
+                }
                 setShowErrorAPIOpen(false);
             } else {
                 const msg = typeof result?.data === 'string'
@@ -126,7 +129,6 @@ export default function Ppal() {
     };
 
     const saveLocker = () => {
-        // fetchDataAvailableLocker();
         setOperation('Guardar');
         setModalOpen(true);
     }
@@ -138,7 +140,7 @@ export default function Ppal() {
 
     const closeKeypad = () => {
         setModalOpen(false);
-        fetchDataAvailableLocker();
+        fetchDataStatusLocker();
     }
 
     const calculateLockerAvailables = () => {
