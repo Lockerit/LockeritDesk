@@ -4,6 +4,8 @@ import GetStatusLockers from '../apis/statusLockers.js';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import OpenLocker from '../apis/openLocker.js';
+import SetStatusLocker from '../apis/setStatusLocker.js';
+import SnackBarAlert from '../bar/snackAlert.jsx';
 import {
     Box,
     Typography,
@@ -19,6 +21,8 @@ import {
 } from '@mui/material';
 import { Sync } from '@mui/icons-material';
 
+const fileName = 'adminLockers';
+
 const AdminLockers = () => {
     const [data, setData] = useState(null);
     const [selectedModule, setSelectedModule] = useState('');
@@ -30,6 +34,9 @@ const AdminLockers = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const menuOpen = Boolean(anchorEl);
     const [messageLoading, setMessageLoading] = useState();
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('info');
 
     const config = useElectronConfig();
 
@@ -53,7 +60,6 @@ const AdminLockers = () => {
             const result = await GetStatusLockers(); // Reemplaza por tu axios.get()
             if (result?.success) {
                 setData(result?.default || result?.data);
-                setShowErrorAPIOpen(false);
             } else {
                 const msg = typeof result?.data === 'string'
                     ? result.data
@@ -76,54 +82,117 @@ const AdminLockers = () => {
         setSelectedLockers([]); // Reinicia selección
     };
 
-    const handleLockerClick = (lockerCode) => {
-        setSelectedLockers((prev) =>
-            prev.includes(lockerCode)
-                ? prev.filter((code) => code !== lockerCode)
-                : [...prev, lockerCode]
+    const handleLockerClick = (locker) => {
+        const exists = selectedLockers.some(
+            (item) => item.lockerCode === locker.lockerCode
         );
+
+        if (exists) {
+            setSelectedLockers((prev) =>
+                prev.filter((item) => item.lockerCode !== locker.lockerCode)
+            );
+        } else {
+            setSelectedLockers((prev) => [...prev, { lockerCode: locker.lockerCode, status: locker.status }]);
+        }
     };
 
+
     const handleAction = async (action) => {
+        if (action === 'abrir') {
+            setMessageLoading('Abriendo...');
+            setLoading(true);
+            const successfulLockers = [];
+            const failedLockers = [];
 
+            for (const { lockerCode } of selectedLockers) {
+                try {
+                    const resultOpen = await OpenLocker({ lockerCode }); // importante pasar lockerCode si el backend lo espera
 
-        setMessageLoading('Buscando Casilllero...');
-        setSecondsLeft(timeout);
-        const payload = { phone, password }
+                    if (resultOpen?.success) {
+                        successfulLockers.push(lockerCode);
+                    } else {
+                        failedLockers.push(lockerCode);
+                    }
+                } catch (err) {
+                    failedLockers.push(lockerCode);
+                }
+            }
+            setLoading(false);
 
-        try {
+            if (failedLockers.length > 0) {
+                setMessageErrorAPI(`Fallaron los casilleros: ${failedLockers.join(', ')}`);
+                setShowErrorAPIOpen(true);
+            }
+
+            if (successfulLockers.length > 0) {
+                setTimeout(() => {
+                    showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
+                }, 2000); // Espera 1s después del modal
+            }
+
+            await fetchData();
+            setSelectedLockers([]); // Deseleccionar todos
+        } else if (action === 'liberar') {
+            setMessageLoading('Liberando...');
             setLoading(true);
 
-            const result = await OpenLocker(payload);
+            const successfulLockers = [];
+            const failedLockers = [];
 
-            if (result?.success) {
-                console.log();
-                setLocker(result.data.lockerCode); // ejemplo
-                setAssignLockerOpen(true);
-            } else {
-                setMessageErrorAPI(result?.data?.message || '[keypad] Error en el servidor HTTP');
-                setShowErrorAPIOpen(true);
+            for (const { lockerCode } of selectedLockers) {
+                try {
+                    const resultStatus = await SetStatusLocker({ lockerCode, status: 'libre' });
+
+                    if (resultStatus?.success) {
+                        try {
+                            const resultOpen = await OpenLocker({ lockerCode });
+
+                            if (resultOpen?.success) {
+                                successfulLockers.push(lockerCode);
+                            } else {
+                                failedLockers.push(lockerCode);
+                            }
+                        } catch (err) {
+                            failedLockers.push(lockerCode);
+                        }
+                    } else {
+                        failedLockers.push(lockerCode);
+                    }
+                } catch (err) {
+                    failedLockers.push(lockerCode);
+                }
             }
 
             setLoading(false);
 
-        } catch (error) {
-            setMessageErrorAPI(error);
-            setShowErrorAPIOpen(true);
-            setLoading(false);
-        } finally {
-            setLoading(false);
+            if (failedLockers.length > 0) {
+                setMessageErrorAPI(`Fallaron los casilleros: ${failedLockers.join(', ')}`);
+                setShowErrorAPIOpen(true);
+            }
+
+            if (successfulLockers.length > 0) {
+                setTimeout(() => {
+                    showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se liberaron exitosamente`, 'info');
+                }, 2000); // Espera 1s después del modal
+            }
+
+            await fetchData();
+            setSelectedLockers([]); // Deseleccionar todos
         }
 
-        console.log(`Acción: ${action}`, selectedLockers);
-        alert(`Acción "${action}" realizada sobre: ${selectedLockers.join(', ')}`);
     };
 
-    if (loading) return <LoadingScreen />;
+    const showAlert = (msg, severity = 'error') => {
+        setSnackbarMessage(msg);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
+
+    // if (loading) return <LoadingScreen />;
 
     const totalLockers = data?.general?.reduce((sum, item) => sum + item.total, 0);
 
-    const currentModule = data?.modules.find((mod) => mod.module === selectedModule);
+    const currentModule = data?.modules?.find((mod) => mod.module === selectedModule);
 
     const confirmShowErrorAPI = () => {
         setShowErrorAPIOpen(false);
@@ -137,8 +206,47 @@ const AdminLockers = () => {
         setAnchorEl(null);
     };
 
-    const handleStatusChange = (status) => {
-        console.log(`Cambiar estado a: ${status} sobre ${selectedLockers.join(', ')}`);
+    const handleCantidadClick = () => {
+        fetchData();
+    }
+
+    const handleStatusChange = async (status) => {
+
+        setMessageLoading('Cambiando estado...');
+        setLoading(true);
+
+        const successfulLockers = [];
+        const failedLockers = [];
+
+        for (const { lockerCode } of selectedLockers) {
+            try {
+                const resultStatus = await SetStatusLocker({ lockerCode, status });
+
+                if (resultStatus?.success) {
+                    successfulLockers.push(lockerCode);
+                } else {
+                    failedLockers.push(lockerCode);
+                }
+            } catch (err) {
+                failedLockers.push(lockerCode);
+            }
+        }
+
+        setLoading(false);
+
+        if (failedLockers.length > 0) {
+            setMessageErrorAPI(`Fallaron los casilleros: ${failedLockers.join(', ')}`);
+            setShowErrorAPIOpen(true);
+        }
+
+        if (successfulLockers.length > 0) {
+            setTimeout(() => {
+                showAlert(`Los casilleros: (${successfulLockers.join(', ')}) cambiarpn de estado exitosamente`, 'info');
+            }, 2000); // Espera 1s después del modal
+        }
+
+        await fetchData();
+        setSelectedLockers([]); // Deseleccionar todos
         handleMenuClose();
     };
 
@@ -170,23 +278,36 @@ const AdminLockers = () => {
                     width: '100%',
                     alignItems: 'center'
                 }}>
-                <Box textAlign="center" sx={{ mt: 5, display: 'flex', flexDirection: 'column', height: '10%', width: '100%' }}>
-                    {/* Título centrado */}
-                    <Typography variant="h4"
+                <Box textAlign="center" sx={{ mt: 5, display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%'}}>
+                    <Typography variant="h3"
                         sx={{ fontWeight: 'bold', mb: 2 }}
                     >
                         Estado de Casilleros
                     </Typography>
-                    <Typography variant="h5" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                    <Typography
+                        variant="h4"
+                        component="span"
+                        onClick={handleCantidadClick}
+                        sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            '&:hover': {
+                                textDecoration: 'underline',
+                            }
+                        }}
+                    >
                         {'Cantidad: '} {totalLockers}
+                        <Sync sx={{ fontSize: 40, ml: 1 }} />
                     </Typography>
                 </Box>
                 {/* Datos generales */}
 
 
                 {/* Indicadores */}
-                <Box textAlign="center" sx={{ my: 5, display: 'flex', justifyContent: 'space-between', height: '5%', width: '100%' }}>
-                    {data.general.map((item, idx) => (
+                <Box textAlign="center" sx={{ mt: 5, mb: 2, display: 'flex', justifyContent: 'space-between', height: '5%', width: '100%' }}>
+                    {data?.general?.map((item, idx) => (
                         <Box key={item.status}>
                             <Typography variant="h4" component="span"
                                 sx={{
@@ -215,7 +336,7 @@ const AdminLockers = () => {
                         label="Selecciona un módulo"
                         onChange={handleModuleChange}
                     >
-                        {data.modules.map((mod) => (
+                        {data?.modules?.map((mod) => (
                             <MenuItem key={mod.module} value={mod.module}>
                                 Módulo {mod.module}
                             </MenuItem>
@@ -237,12 +358,14 @@ const AdminLockers = () => {
                     }} >
                         <Grid container spacing={1} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
                             {currentModule.lockers.map((locker) => {
-                                const selected = selectedLockers.includes(locker.lockerCode);
+                                const selected = selectedLockers.some(
+                                    (item) => item.lockerCode === locker.lockerCode
+                                );
                                 return (
                                     <Grid size={3} key={locker.lockerCode} sx={{ maxHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
                                         <Button
                                             variant="contained"
-                                            onClick={() => handleLockerClick(locker.lockerCode)}
+                                            onClick={() => handleLockerClick(locker)}
                                             sx={{
                                                 backgroundColor: getColorByStatus(locker.status),
                                                 border: selected ? '5px solid black' : 'none',
@@ -272,7 +395,7 @@ const AdminLockers = () => {
                         {selectedLockers.length > 0 && (
                             <Stack spacing={2} alignItems="center" sx={{ mt: 2, height: '40%', width: '100%' }}>
                                 <Typography variant='h5'>
-                                    <strong>Seleccionados:</strong> {selectedLockers.join(', ')}
+                                    <strong>Seleccionados:</strong> {selectedLockers.map((l) => l.lockerCode).join(', ')}
                                 </Typography>
                                 <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
                                     <Button variant="outlined" color="primary" fullWidth onClick={() => handleAction('abrir')}>
@@ -296,7 +419,7 @@ const AdminLockers = () => {
                                                 sx={{
                                                     color: getColorByStatus(item.status),
                                                     fontWeight: 'bold',
-                                                    fontSize: '16px'
+                                                    fontSize: '24px'
                                                 }}
                                             >
                                                 {item.status}
@@ -321,6 +444,13 @@ const AdminLockers = () => {
                 disableEnforceFocus
                 disableAutoFocus
                 disableRestoreFocus
+            />
+
+            <SnackBarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
             />
         </>
     );

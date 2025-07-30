@@ -2,14 +2,14 @@ import axios from './axiosConfig.js';
 import API_ROUTES from '../router/pathService.js';
 import { getEnv, subscribeEnv } from '../hooks/envStore.js';
 
-const fileName = 'removeLocker'; // Nombre del archivo para los logs
+const fileName = 'setStatusLocker'; // Nombre del archivo para los logs
 
 const log = (level, message) => {
     window.electronAPI?.log(level, `[${fileName}] ${message}`);
 };
 
-const RemoveLocker = async (payload) => {
-    log('info', 'Iniciando petición para abrir casillero y retirar');
+const SetStatusLocker = async (payload) => {
+    log('info', 'Iniciando petición para abrir casillero');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
     const maxRetries = env?.apiBaseMaxRetries || 5;
@@ -23,7 +23,7 @@ const RemoveLocker = async (payload) => {
         try {
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
-            const response = await axios.post(API_ROUTES.REMOVE_LOCKER, payload, { timeout: effectiveTimeout });
+            const response = await axios.post(API_ROUTES.SETSTATUS_LOCKER, payload, { timeout: effectiveTimeout });
 
             log('info', `Response. Status: ${response.status}`);
             log('info', `Response. Data: ${JSON.stringify(response.data)}`);
@@ -54,4 +54,4 @@ const RemoveLocker = async (payload) => {
     }
 };
 
-export default RemoveLocker;
+export default SetStatusLocker;

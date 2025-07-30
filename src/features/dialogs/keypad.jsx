@@ -304,12 +304,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
         const result = await RemoveLocker(payload);
 
-        if (result?.success) {
-          console.log();
+        if (result?.success) {;
           setLocker(result.data.lockerCode); // ejemplo
           setAssignLockerOpen(true);
         } else {
-          setMessageErrorAPI(result?.data?.message || '[keypad] Error en el servidor HTTP');
+          setMessageErrorAPI(result?.data?.message || `[${fileName}] Error en el servidor HTTP`);
           setShowErrorAPIOpen(true);
         }
 
@@ -373,7 +372,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         setLocker(result.http.data.lockerCode); // ejemplo
         setAssignLockerOpen(true);
       } else {
-        setMessageErrorAPI(result?.error || '[keypad] Error en el servidor HTTP');
+        setMessageErrorAPI(result?.error || `[${fileName}] Error en el servidor HTTP`);
         setShowErrorAPIOpen(true);
       }
 
