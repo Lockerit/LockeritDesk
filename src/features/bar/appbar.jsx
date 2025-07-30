@@ -17,7 +17,8 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import {
     Logout,
     SupervisorAccount,
-    CancelPresentation
+    CancelPresentation,
+    Keyboard
 } from '@mui/icons-material';
 
 const USER_STORAGE_KEY = 'userInit';
@@ -108,6 +109,11 @@ export default function DenseAppBar() {
         navigate('/', { replace: true });
     };
 
+    const openKeyBoard = () => {
+        setAnchorEl(null);
+        window.electronAPI?.openKeyboard();
+    };
+
     const openAdmin = () => {
         const updatedUser = { ...userInit, adminWindow: true };
         persistUser(updatedUser);
@@ -170,12 +176,14 @@ export default function DenseAppBar() {
                         Cerrar sesión
                     </MenuItem>
                 )}
-
                 {showAdmin && (<MenuItem onClick={openAdmin}>
                     <SupervisorAccount />
                     Administración
                 </MenuItem>)}
-
+                <MenuItem onClick={openKeyBoard}>
+                    <Keyboard />
+                    Teclado
+                </MenuItem>
                 <MenuItem onClick={openConfirmClose}>
                     <CancelPresentation />
                     Salir

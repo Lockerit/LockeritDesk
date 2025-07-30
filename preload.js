@@ -53,6 +53,7 @@ try {
   // Exponer API al renderer
   contextBridge.exposeInMainWorld('electronAPI', {
     exitApp: () => ipcRenderer?.send?.('app:exit'),
+    openKeyboard: () => ipcRenderer.invoke('open-os-keyboard'),
     getEnv: () => ipcRenderer?.invoke?.('get-env'),
     onEnvUpdate: (callback) => ipcRenderer.on('env-updated', (_, data) => callback(data)),
     getConfig: () => ipcRenderer.invoke('get-config'),

@@ -3,6 +3,7 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const dotenv = require('dotenv');
 const { logger } = require('./electron/logger/logger');
+const { exec } = require('child_process');
 
 const fileName = path.parse(__filename).name;
 
@@ -94,6 +95,24 @@ function createWindow() {
 }
 
 // ------------------- IPC HANDLERS -------------------
+
+ipcMain.handle('open-os-keyboard', () => {
+  const oskPath = process.env.windir + '\\System32\\osk.exe';
+
+  // En Electron 32-bit sobre Windows 64-bit, redirección a Sysnative
+  const fallbackPath = process.env.windir + '\\Sysnative\\osk.exe';
+
+  exec(`"${oskPath}"`, (err) => {
+    if (err) {
+      // Prueba ruta alternativa
+      exec(`"${fallbackPath}"`, (err2) => {
+        if (err2) {
+          console.error('No se pudo abrir el teclado en pantalla:', err2);
+        }
+      });
+    }
+  });
+});
 
 ipcMain.handle('get-config', async () => {
   try {
