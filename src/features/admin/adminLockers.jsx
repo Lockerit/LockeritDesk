@@ -127,7 +127,7 @@ const AdminLockers = () => {
             if (successfulLockers.length > 0) {
                 setTimeout(() => {
                     showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
-                }, 2000); // Espera 1s después del modal
+                }, 1000); // Espera 1s después del modal
             }
 
             await fetchData();
@@ -173,7 +173,7 @@ const AdminLockers = () => {
             if (successfulLockers.length > 0) {
                 setTimeout(() => {
                     showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se liberaron exitosamente`, 'info');
-                }, 2000); // Espera 1s después del modal
+                }, 1000); // Espera 1s después del modal
             }
 
             await fetchData();
@@ -241,8 +241,8 @@ const AdminLockers = () => {
 
         if (successfulLockers.length > 0) {
             setTimeout(() => {
-                showAlert(`Los casilleros: (${successfulLockers.join(', ')}) cambiarpn de estado exitosamente`, 'info');
-            }, 2000); // Espera 1s después del modal
+                showAlert(`Los casilleros: (${successfulLockers.join(', ')}) cambiaron de estado exitosamente`, 'info');
+            }, 1000); // Espera 1s después del modal
         }
 
         await fetchData();

@@ -215,24 +215,24 @@ export default function Ppal() {
                 {/* Indicadores */}
                 <Box textAlign="center" sx={{ mt: 8, display: 'flex', justifyContent: 'space-between', gap: 5 }}>
                     <Box>
-                        <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                             Casilleros disponibles:{' '}
                         </Typography>
-                        <Typography variant="h3" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
                             {availableLockers}
                         </Typography>
                     </Box>
-                    <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                    {/* <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                         |
-                    </Typography>
-                    <Box>
+                    </Typography> */}
+                    {/* <Box>
                         <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                             Casilleros ocupados:{' '}
                         </Typography>
                         <Typography variant="h3" component="span" color="error" sx={{ fontWeight: 'bold' }}>
                             {unavailableLockers}
                         </Typography>
-                    </Box>
+                    </Box> */}
                 </Box>
 
                 <ShowErrorAPI

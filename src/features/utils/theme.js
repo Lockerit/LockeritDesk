@@ -30,41 +30,34 @@ let theme = createTheme({
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          color: '#0c315e', // (azul)
-          fontSize: '24px', // Texto del campo
+          color: '#0c315e',
+          fontSize: '20px',
+          transform: 'translate(0, 20px) scale(1)',
+          transition: 'all 0.2s ease-out',
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(0, -6px) scale(0.75)',
+          },
         },
       },
     },
     MuiInput: {
       styleOverrides: {
-        underline: {
-          // Línea base
-          '&:before': {
-            borderBottomColor: '0c315e', // color inicial (azul)
-          },
-          // Hover
-          '&:hover:not(.Mui-disabled):before': {
-            borderBottomColor: '#009640', // color al pasar el mouse (verde)
-          },
-          // Focus (cuando está seleccionado)
-          '&:after': {
-            borderBottomColor: '#0c315e', // color al enfocar (verde)
-            borderBottomWidth: '5px', // grosor de la línea cuando está enfocado
-          },
-        },
-        // root: {
-        //   '&.Mui-focused': {
-        //     color: '#0c315e',
-        //     background: '#e2e3e8',
-        //     opacity: 0.3,
-        //   },
-        // },
-      },
-    },
-    MuiSelect: {
-      styleOverrides: {
         root: {
-          paddingTop: '15px'
+          fontSize: '18px',
+          paddingTop: '6px', // menos espacio arriba
+          paddingBottom: '0', // pegado a la línea
+        },
+        underline: {
+          '&:before': {
+            borderBottomColor: '#0c315e',
+          },
+          '&:hover:not(.Mui-disabled):before': {
+            borderBottomColor: '#009640',
+          },
+          '&:after': {
+            borderBottomColor: '#0c315e',
+            borderBottomWidth: '5px',
+          },
         },
       },
     },
@@ -87,10 +80,7 @@ let theme = createTheme({
     },
     MuiTextField: {
       defaultProps: {
-        autoComplete: 'off'
-      },
-      root: {
-        margin: "normal"
+        autoComplete: 'off',
       },
     },
     MuiFormHelperText: {
@@ -101,15 +91,6 @@ let theme = createTheme({
           lineHeight: 1   // opcional, más compacto aún
         }
       }
-    },
-    MuiFormControl: {
-      styleOverrides: {
-        root: {
-          margin: '0 auto 24px',
-          maxWidth: '800%',
-          gap: '8px', // espacio entre label y select
-        },
-      },
     },
     MuiPaper: {
       styleOverrides: {
