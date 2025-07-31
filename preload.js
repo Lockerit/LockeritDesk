@@ -11,9 +11,6 @@ const { watchLoggerConfig } = require('./electron/watchers/loggerWatcher');
 const packageJson = require('./package.json');
 const fileName = path.parse(__filename).name;
 
-console.log(`[preload] Arquitectura del proceso: ${process.arch}`);
-console.log(`[preload] Platfom del proceso: ${process.platform}`);
-
 try {
   logger.info(`[${fileName}] Inicializando preload.js`);
 

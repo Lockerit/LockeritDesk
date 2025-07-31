@@ -8,7 +8,6 @@ const { exec } = require('child_process');
 const fileName = path.parse(__filename).name;
 
 let win;
-let keyboardProcess = null;
 
 logger.info(`[${fileName}] Iniciando aplicación Electron`);
 
@@ -98,41 +97,45 @@ function createWindow() {
 // ------------------- IPC HANDLERS -------------------
 
 ipcMain.handle('open-os-keyboard', async () => {
-  if (keyboardProcess) {
-    // Ya está abierto
-    return;
-  }
-
-  const oskPath = process.env.windir + '\\System32\\osk.exe';
-  const fallbackPath = process.env.windir + '\\Sysnative\\osk.exe';
-
   return new Promise((resolve, reject) => {
-    keyboardProcess = exec(`"${oskPath}"`, (err) => {
-      if (err) {
-        // Intenta fallback
-        keyboardProcess = exec(`"${fallbackPath}"`, (err2) => {
-          if (err2) {
-            console.error('No se pudo abrir el teclado en pantalla:', err2);
-            keyboardProcess = null;
-            reject(err2);
-          } else {
-            resolve();
-          }
-        });
-      } else {
-        resolve();
+    exec('start osk', { shell: true }, (error, stdout, stderr) => {
+      if (error) {
+        logger.error(`[${fileName}] Error al abrir osk: ${error.message}`);
+        return reject(error);
       }
-    });
-
-    // Manejo si el proceso se cierra
-    keyboardProcess.on('exit', () => {
-      keyboardProcess = null;
+      logger.info(`[${fileName}] Teclado en pantalla abierto.`);
+      resolve();
     });
   });
 });
 
 
 ipcMain.handle('close-os-keyboard', async () => {
+  return new Promise((resolve) => {
+    const powershellCommand = `
+      $osk = Get-Process osk -ErrorAction SilentlyContinue;
+      if ($osk) {
+        Stop-Process -Name "osk" -Force
+      }
+    `;
+
+    exec(`powershell -Command "${powershellCommand}"`, (err) => {
+      if (err) {
+        logger.warn(`[${fileName}] (No fatal) Error cerrando osk.exe: ${err.message}`);
+      } else {
+        logger.info(`[${fileName}] Teclado en pantalla cerrado correctamente`);
+      }
+
+      // Siempre limpiamos el puntero, incluso si ya estaba cerrado
+      keyboardProcess = null;
+      resolve(); // Nunca rechazamos
+    });
+  });
+});
+
+
+// Fuera del ipcMain.handle, una sola vez:
+const closeOSK = () => {
   return new Promise((resolve, reject) => {
     const powershellCommand = `
       $osk = Get-Process osk -ErrorAction SilentlyContinue;
@@ -141,17 +144,20 @@ ipcMain.handle('close-os-keyboard', async () => {
       }
     `;
 
-    exec(`powershell -Command "${powershellCommand}"`, (err, stdout, stderr) => {
+    exec(`powershell -Command "${powershellCommand}"`, (err) => {
       if (err) {
-        logger.warn(`[${fileName}] No se pudo cerrar osk.exe con PowerShell: ${err.message}`);
-        return reject(err);
+        logger.warn(`[${fileName}] (No fatal) Error cerrando osk.exe: ${err.message}`);
+      } else {
+        logger.info(`[${fileName}] Teclado en pantalla cerrado correctamente`);
       }
-      logger.info(`[${fileName}] Teclado en pantalla cerrado correctamente`);
+
+      // Siempre limpiamos el puntero, incluso si ya estaba cerrado
       keyboardProcess = null;
-      resolve();
+      resolve(); // Nunca rechazamos
     });
   });
-});
+};
+
 
 ipcMain.handle('get-config', async () => {
   try {
@@ -272,27 +278,8 @@ ipcMain.on('log-message', (event, { level, message }) => {
 });
 
 
-// main.js
-ipcMain.handle('app:exit-safe', async () => {
-  try {
-    await ipcMain.handle('close-os-keyboard')();
-  } catch (err) {
-    logger.warn(`[${fileName}] Error al cerrar teclado antes de salir: ${err.message}`);
-  }
-
-  setTimeout(() => {
-    app.quit();
-  }, 300);
-});
-
-
-ipcMain.on('app:exit', () => {
+ipcMain.on('app:exit', async () => {
   logger.info(`[${fileName}] Cerrando aplicación...`);
-  // Cierra el teclado primero
-  if (keyboardProcess) {
-    keyboardProcess.kill();
-    keyboardProcess = null;
-  }
   setTimeout(() => {
     app.quit();
   }, 300);
@@ -305,14 +292,7 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-app.on('window-all-closed', () => {
-
-  // Cierra el teclado primero
-  if (keyboardProcess) {
-    keyboardProcess.kill();
-    keyboardProcess = null;
-  }
-
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
     logger.info(`[${fileName}] Cerrando aplicación (todas las ventanas cerradas)`);
     setTimeout(() => {

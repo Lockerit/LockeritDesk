@@ -83,21 +83,18 @@ export default function Login() {
 
     const closeWindows = async () => {
         try {
-            if (window?.electronAPI?.closeKeyboard) {
-                await window.electronAPI.closeKeyboard();
+            if (window?.electronAPI?.exitApp) {
+                window.electronAPI.exitApp();
+            } else {
+                const msg = 'Canal IPC "exitApp" no disponible';
+                log('warn', `${msg}`);
+                console.warn(msg);
             }
-            if (window?.electronAPI?.log) {
-                window.electronAPI.log('info', 'Cerrando aplicación...');
-            }
-
-            // Esperar antes de salir
-            await new Promise(resolve => setTimeout(resolve, 300));
-            await window.electronAPI.exitApp(); // usa 'exitAppSafe' si actualizas el canal
         } catch (err) {
             log('error', `Error al cerrar la app: ${err.message}`);
+            console.error('Error al intentar cerrar la app:', err);
         }
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -163,7 +160,7 @@ export default function Login() {
             navigate('/ppal', { replace: true });
             setTimeout(() => {
                 closeWindows();
-            }, 2000);
+            }, 500);
         }
     };
 
