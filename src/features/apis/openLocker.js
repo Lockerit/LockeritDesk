@@ -5,7 +5,9 @@ import { getEnv, subscribeEnv } from '../hooks/envStore.js';
 const fileName = 'openLocker'; // Nombre del archivo para los logs
 
 const log = (level, message) => {
-    window.electronAPI?.log(level, `[${fileName}] ${message}`);
+  if (typeof window !== 'undefined' && window.electronAPI?.log) {
+    window.electronAPI.log(level, `[${fileName}] ${message}`);
+  }
 };
 
 const OpenLocker = async (payload) => {

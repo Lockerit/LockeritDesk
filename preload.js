@@ -11,6 +11,9 @@ const { watchLoggerConfig } = require('./electron/watchers/loggerWatcher');
 const packageJson = require('./package.json');
 const fileName = path.parse(__filename).name;
 
+console.log(`[preload] Arquitectura del proceso: ${process.arch}`);
+console.log(`[preload] Platfom del proceso: ${process.platform}`);
+
 try {
   logger.info(`[${fileName}] Inicializando preload.js`);
 
@@ -54,6 +57,8 @@ try {
   contextBridge.exposeInMainWorld('electronAPI', {
     exitApp: () => ipcRenderer?.send?.('app:exit'),
     openKeyboard: () => ipcRenderer.invoke('open-os-keyboard'),
+    closeKeyboard: () => ipcRenderer.invoke('close-os-keyboard'),
+    requestExit: () => ipcRenderer.send('app:request-exit'),
     getEnv: () => ipcRenderer?.invoke?.('get-env'),
     onEnvUpdate: (callback) => ipcRenderer.on('env-updated', (_, data) => callback(data)),
     getConfig: () => ipcRenderer.invoke('get-config'),

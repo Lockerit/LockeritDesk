@@ -8,6 +8,12 @@ import { useUser } from '../context/userContext.jsx';
 
 const USER_STORAGE_KEY = 'userInit';
 
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
 export default function App() {
     const fileName = 'app';
     const [version, setVersion] = useState('');
@@ -18,7 +24,7 @@ export default function App() {
         if (!userInit) return;
 
         const lsUserInit = localStorage.getItem(USER_STORAGE_KEY);
-            
+
         if (!lsUserInit)
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit))
 

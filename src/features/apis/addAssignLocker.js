@@ -11,7 +11,9 @@ import {
 const fileName = 'addAssignLocker';
 
 const log = (level, message) => {
-    window.electronAPI?.log(level, `[${fileName}] ${message}`);
+  if (typeof window !== 'undefined' && window.electronAPI?.log) {
+    window.electronAPI.log(level, `[${fileName}] ${message}`);
+  }
 };
 
 const AddAssignLocker = async (payload, timeoutMs) => {

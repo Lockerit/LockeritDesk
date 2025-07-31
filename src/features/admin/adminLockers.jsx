@@ -106,7 +106,7 @@ const AdminLockers = () => {
 
             for (const { lockerCode } of selectedLockers) {
                 try {
-                    const resultOpen = await OpenLocker({ lockerCode }); // importante pasar lockerCode si el backend lo espera
+                    const resultOpen = await OpenLocker({ lockerCode, setFree }); // importante pasar lockerCode si el backend lo espera
 
                     if (resultOpen?.success) {
                         successfulLockers.push(lockerCode);

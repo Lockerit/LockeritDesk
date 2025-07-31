@@ -28,14 +28,11 @@ const USER_STORAGE_KEY = 'userInit';
 const fileName = 'login';
 
 // Logging centralizado
-function log(level, message) {
-    const msg = `[${fileName}] ${message}`;
-    if (window?.electronAPI?.sendLog) {
-        window.electronAPI.sendLog(level, msg);
-    } else {
-        console[level] ? console[level](msg) : console.log(msg);
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
     }
-}
+};
 
 export default function Login() {
     const { userInit, setUserInit } = useUser();
@@ -84,20 +81,23 @@ export default function Login() {
         setShowPassword((prev) => !prev);
     };
 
-    const closeWindows = () => {
+    const closeWindows = async () => {
         try {
-            if (window?.electronAPI?.exitApp) {
-                window.electronAPI.exitApp();
-            } else {
-                const msg = 'Canal IPC "exitApp" no disponible';
-                window?.electronAPI?.log?.('warn', `[${fileName}] ${msg}`);
-                console.warn(msg);
+            if (window?.electronAPI?.closeKeyboard) {
+                await window.electronAPI.closeKeyboard();
             }
+            if (window?.electronAPI?.log) {
+                window.electronAPI.log('info', 'Cerrando aplicación...');
+            }
+
+            // Esperar antes de salir
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await window.electronAPI.exitApp(); // usa 'exitAppSafe' si actualizas el canal
         } catch (err) {
-            window?.electronAPI?.log?.('error', `[${filename}] Error al cerrar la app: ${err.message}`);
-            console.error('Error al intentar cerrar la app:', err);
+            log('error', `Error al cerrar la app: ${err.message}`);
         }
-    }
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -163,7 +163,7 @@ export default function Login() {
             navigate('/ppal', { replace: true });
             setTimeout(() => {
                 closeWindows();
-            }, 500);
+            }, 2000);
         }
     };
 
@@ -277,6 +277,7 @@ export default function Login() {
                             label="Usuario"
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
+                            onFocus={() => window.electronAPI?.openKeyboard()}
                             margin="normal"
                             error={errorsEmpty.username}
                             helperText={errorsEmpty.username ? msgUser : ''}
@@ -289,6 +290,7 @@ export default function Login() {
                             fullWidth
                             label="Contraseña"
                             type={showPassword ? 'text' : 'password'}
+                            onFocus={() => window.electronAPI?.openKeyboard()}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
