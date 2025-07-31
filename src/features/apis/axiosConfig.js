@@ -5,7 +5,9 @@ import { getAuth, subscribeAuth } from '../hooks/authStore.js';
 const fileName = 'axiosConfig';
 
 const log = (level, message) => {
-    window.electronAPI?.log(level, `[${fileName}] ${message}`);
+  if (typeof window !== 'undefined' && window.electronAPI?.log) {
+    window.electronAPI.log(level, `[${fileName}] ${message}`);
+  }
 };
 
 const env = getEnv();

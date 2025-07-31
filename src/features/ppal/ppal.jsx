@@ -4,7 +4,7 @@ import KeyPadModal from '../dialogs/keypad.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useElectronConfig } from '../hooks/useConfig.js';
-import GetAvailableLockers from '../apis/availableLockes.js';
+import GetStatusLockers from '../apis/statusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
 import {
@@ -42,7 +42,7 @@ export default function Ppal() {
 
         if (!config) return;
 
-        fetchDataAvailableLocker();
+        fetchDataStatusLocker();
         calculateLockerAvailables();
     }, [config, available]);
 
@@ -99,25 +99,28 @@ export default function Ppal() {
         setShowErrorAPIOpen(false);
     };
 
-    const fetchDataAvailableLocker = async () => {
+    const fetchDataStatusLocker = async () => {
         setLoading(true);
         try {
-            const result = await GetAvailableLockers();
+            const result = await GetStatusLockers();
 
             if (result.success) {
-                setAvailable(result?.data.length || 0);
+                if (Array.isArray(result?.data?.general)) {
+                    const libre = result?.data?.general.find(item => item.status.toLowerCase() === "libre");
+                    setAvailable(libre?.total || 0);
+                }
                 setShowErrorAPIOpen(false);
             } else {
                 const msg = typeof result?.data === 'string'
                     ? result.data
-                    : result?.data?.message || `[${fileName}] Error al obtener casilleros`;
+                    : result?.data?.message || 'Error al obtener casilleros';
 
                 setMessageErrorAPI(msg);
                 setShowErrorAPIOpen(true);
             }
 
         } catch (err) {
-            setMessageErrorAPI(err.message || `[${fileName}] Error inesperado al obtener casilleros`);
+            setMessageErrorAPI(err.message || 'Error al obtener casilleros');
             setShowErrorAPIOpen(true);
         } finally {
             setLoading(false);
@@ -126,7 +129,6 @@ export default function Ppal() {
     };
 
     const saveLocker = () => {
-        // fetchDataAvailableLocker();
         setOperation('Guardar');
         setModalOpen(true);
     }
@@ -138,7 +140,7 @@ export default function Ppal() {
 
     const closeKeypad = () => {
         setModalOpen(false);
-        fetchDataAvailableLocker();
+        fetchDataStatusLocker();
     }
 
     const calculateLockerAvailables = () => {
@@ -156,13 +158,13 @@ export default function Ppal() {
 
     return (
         <>
-            <Box sx={{ mb: 2 }}>
+            {/* <Box sx={{ mb: 5 }}>
                 <DenseAppBar />
-            </Box>
+            </Box> */}
 
             <Box
                 sx={{
-                    height: 'calc(90vh - 64px)', // Ajusta según la altura del AppBar
+                    height: '80vh', // Ajusta según la altura del AppBar
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
@@ -213,24 +215,24 @@ export default function Ppal() {
                 {/* Indicadores */}
                 <Box textAlign="center" sx={{ mt: 8, display: 'flex', justifyContent: 'space-between', gap: 5 }}>
                     <Box>
-                        <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                             Casilleros disponibles:{' '}
                         </Typography>
-                        <Typography variant="h3" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
                             {availableLockers}
                         </Typography>
                     </Box>
-                    <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                    {/* <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                         |
-                    </Typography>
-                    <Box>
+                    </Typography> */}
+                    {/* <Box>
                         <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                             Casilleros ocupados:{' '}
                         </Typography>
                         <Typography variant="h3" component="span" color="error" sx={{ fontWeight: 'bold' }}>
                             {unavailableLockers}
                         </Typography>
-                    </Box>
+                    </Box> */}
                 </Box>
 
                 <ShowErrorAPI

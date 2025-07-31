@@ -6,6 +6,15 @@ import Copyright from '../bar/copyright.jsx';
 import AppRoutes from '../router/router.jsx';
 import { useUser } from '../context/userContext.jsx';
 
+const USER_STORAGE_KEY = 'userInit';
+const fileName = 'app';
+
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
 export default function App() {
     const fileName = 'app';
     const [version, setVersion] = useState('');
@@ -15,27 +24,25 @@ export default function App() {
 
         if (!userInit) return;
 
-        const lsUserInit = localStorage.getItem('userInit');
-            
-        if (!lsUserInit)
-            localStorage.setItem('userInit', JSON.stringify(userInit))
+        const lsUserInit = localStorage.getItem(USER_STORAGE_KEY);
 
-        const log = window?.electronAPI?.log;
+        if (!lsUserInit)
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit))
 
         if (log) {
-            log('info', `[${fileName}] Componente App montado`);
+            log('info', 'Componente App montado');
         }
 
         try {
             const versionResult = window.electronAPI?.getAppVersion?.();
             if (versionResult) {
                 setVersion(versionResult);
-                log?.('info', `[${fileName}] Versión cargada: ${versionResult}`);
+                log?.('info', `Versión cargada: ${versionResult}`);
             } else {
-                log?.('warn', `[${fileName}] No se pudo obtener la versión de la aplicación`);
+                log?.('warn', 'No se pudo obtener la versión de la aplicación');
             }
         } catch (err) {
-            log?.('error', `[${fileName}] Error al obtener la versión: ${err.message}`);
+            log?.('error', `Error al obtener la versión: ${err.message}`);
         }
     }, []);
 

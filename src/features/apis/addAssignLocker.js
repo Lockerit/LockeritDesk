@@ -11,47 +11,64 @@ import {
 const fileName = 'addAssignLocker';
 
 const log = (level, message) => {
-    window.electronAPI?.log(level, `[${fileName}] ${message}`);
+  if (typeof window !== 'undefined' && window.electronAPI?.log) {
+    window.electronAPI.log(level, `[${fileName}] ${message}`);
+  }
 };
 
 const AddAssignLocker = async (payload, timeoutMs) => {
 
-    log('info', `${fileName}] Iniciando petición para asignar casillero`);
+    const env = getEnv(); // 🔁 Actualiza si `.env` cambió
 
-    try {
-        log('info', `Request: ${JSON.stringify(payload)}`);
-        const response = await axios.post(API_ROUTES.ASSIGN_LOCKER, payload, { timeout: timeoutMs });
-        log('info', `Response. Status: ${response.status}`);
-        log('info', `Response. Data: ${JSON.stringify(response.data)}`);
+    const maxRetries = env?.apiBaseMaxRetries || 5;
+    const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
 
-        return {
-            success: true,
-            data: response.data,
-            status: response.status,
-        };
+    log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
 
-    } catch (error) {
-        const msg = `Error HTTP: ${error?.response?.status || 'Sin código'} - ${error?.response?.data?.message || error.message}`;
-        log('error', msg);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            log('info', `Request intento ${attempt}: ${JSON.stringify(payload)}`);
 
-        return {
-            success: false,
-            data: error.response?.data || { message: msg },
-            status: error.response?.status || 500,
-        };
+            const response = await axios.post(API_ROUTES.ASSIGN_LOCKER, payload, { timeout: timeoutMs });
+
+            log('info', `Response. Status: ${response.status}`);
+            log('info', `Response. Data: ${JSON.stringify(response.data)}`);
+
+            return {
+                success: true,
+                data: response.data,
+                status: response.status,
+            };
+
+        } catch (error) {
+            const status = error?.response?.status || 500;
+            const msg = `Error HTTP: ${status} - ${error?.response?.data?.message || error.message}`;
+            log('error', `[intento ${attempt}] ${msg}`);
+
+            // Reintentar solo si el error es 500 y quedan intentos
+            if (status === 500 && attempt < maxRetries) {
+                log('warn', `Reintentando en ${retryDelay}ms...`);
+                await new Promise(res => setTimeout(res, retryDelay));
+            } else {
+                return {
+                    success: false,
+                    data: error.response?.data || { message: msg },
+                    status,
+                };
+            }
+        }
     }
 };
 
 export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoading) => {
-
     if (onLoading && typeof onLoading === 'function') {
-        onLoading(false); // Enciende loading cuando WS indique que ya terminó
+        onLoading(false); // Apaga loading hasta que WS indique que terminó
     }
 
     log('info', `Timeout por parámetro: ${timeoutMs}`);
 
-    const env = getEnv(); // 🔁 Esto se actualiza si `.env` cambió
-    const effectiveTimeout = timeoutMs ?? Number(env?.apiBaseTimeout ?? 30000);
+    const env = getEnv(); // 🔁 Actualiza si `.env` cambió
+    const effectiveTimeout = timeoutMs ?? Number((env?.apiBaseTimeout * 1000) ?? 30000);
 
     log('info', `Timeout efectivo en ejecución: ${effectiveTimeout}`);
 
@@ -145,6 +162,6 @@ subscribeEnv((env) => {
     if (env?.apiBaseTimeout) {
         const newTimeout = Number(env.apiBaseTimeout);
         log('info', `API BaseTimeout actualizada dinámicamente: ${newTimeout}`);
-        instance.defaults.timeout = newTimeout;
+        axios.defaults.timeout = newTimeout;
     }
 });

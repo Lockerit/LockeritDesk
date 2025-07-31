@@ -28,6 +28,8 @@ function watchEnvFile(envPath, ipcRenderer) {
                 apiBaseUrl: parsedEnv.REACT_APP_API_BASE_URL,
                 apiBasePort: parsedEnv.REACT_APP_API_BASE_PORT,
                 apiBaseTimeout: parsedEnv.REACT_APP_API_BASE_TIMEOUT,
+                apiBaseMaxRetries: parsedEnv.REACT_APP_API_BASE_MAXRETRIES,
+                apiBaseDelayRetries: parsedEnv.REACT_APP_API_BASE_DELAYRETRIES,
                 wsBaseUrl: parsedEnv.REACT_APP_WS_URL,
                 wsBasePort: parsedEnv.REACT_APP_WS_PORT,
                 wsBasePath: parsedEnv.REACT_APP_WS_PATH,

@@ -15,7 +15,9 @@ const reconnectDelay = 3000;
 const fileName = 'websocket';
 
 const log = (level, message) => {
-    window.electronAPI?.log(level, `[${fileName}] ${message}`);
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
 };
 
 const connectWebSocket = () => {

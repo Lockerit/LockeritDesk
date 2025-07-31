@@ -3,6 +3,7 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const dotenv = require('dotenv');
 const { logger } = require('./electron/logger/logger');
+const { exec } = require('child_process');
 
 const fileName = path.parse(__filename).name;
 
@@ -27,6 +28,8 @@ let currentEnv = {
   apiBaseUrl: process.env.REACT_APP_API_BASE_URL || 'http://localhost',
   apiBasePort: process.env.REACT_APP_API_BASE_PORT || '3000',
   apiBaseTimeout: process.env.REACT_APP_API_BASE_TIMEOUT || '30000',
+  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_MAXRETRIES || 5,
+  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_DELAYRETRIES || 1,
   wsBaseUrl: process.env.REACT_APP_WS_URL || 'ws://localhost',
   wsBasePort: process.env.REACT_APP_WS_PORT || '3000'
 };
@@ -92,6 +95,69 @@ function createWindow() {
 }
 
 // ------------------- IPC HANDLERS -------------------
+
+ipcMain.handle('open-os-keyboard', async () => {
+  return new Promise((resolve, reject) => {
+    exec('start osk', { shell: true }, (error, stdout, stderr) => {
+      if (error) {
+        logger.error(`[${fileName}] Error al abrir osk: ${error.message}`);
+        return reject(error);
+      }
+      logger.info(`[${fileName}] Teclado en pantalla abierto.`);
+      resolve();
+    });
+  });
+});
+
+
+ipcMain.handle('close-os-keyboard', async () => {
+  return new Promise((resolve) => {
+    const powershellCommand = `
+      $osk = Get-Process osk -ErrorAction SilentlyContinue;
+      if ($osk) {
+        Stop-Process -Name "osk" -Force
+      }
+    `;
+
+    exec(`powershell -Command "${powershellCommand}"`, (err) => {
+      if (err) {
+        logger.warn(`[${fileName}] (No fatal) Error cerrando osk.exe: ${err.message}`);
+      } else {
+        logger.info(`[${fileName}] Teclado en pantalla cerrado correctamente`);
+      }
+
+      // Siempre limpiamos el puntero, incluso si ya estaba cerrado
+      keyboardProcess = null;
+      resolve(); // Nunca rechazamos
+    });
+  });
+});
+
+
+// Fuera del ipcMain.handle, una sola vez:
+const closeOSK = () => {
+  return new Promise((resolve, reject) => {
+    const powershellCommand = `
+      $osk = Get-Process osk -ErrorAction SilentlyContinue;
+      if ($osk) {
+        Stop-Process -Name "osk" -Force
+      }
+    `;
+
+    exec(`powershell -Command "${powershellCommand}"`, (err) => {
+      if (err) {
+        logger.warn(`[${fileName}] (No fatal) Error cerrando osk.exe: ${err.message}`);
+      } else {
+        logger.info(`[${fileName}] Teclado en pantalla cerrado correctamente`);
+      }
+
+      // Siempre limpiamos el puntero, incluso si ya estaba cerrado
+      keyboardProcess = null;
+      resolve(); // Nunca rechazamos
+    });
+  });
+};
+
 
 ipcMain.handle('get-config', async () => {
   try {
@@ -172,12 +238,14 @@ ipcMain.on('logger-updated', (event, updatedLogger) => {
 });
 
 ipcMain.handle('get-env', async () => {
-  const { REACT_APP_API_BASE_URL, REACT_APP_API_BASE_PORT, REACT_APP_API_BASE_TIMEOUT, REACT_APP_WS_URL, REACT_APP_WS_PORT, REACT_APP_WS_PATH } = process.env;
-  logger.debug(`[${fileName}] Datos .env: ${REACT_APP_API_BASE_URL}, ${REACT_APP_API_BASE_PORT}, ${REACT_APP_API_BASE_TIMEOUT}, ${REACT_APP_WS_URL}, ${REACT_APP_WS_PORT}, ${REACT_APP_WS_PATH}`);
+  const { REACT_APP_API_BASE_URL, REACT_APP_API_BASE_PORT, REACT_APP_API_BASE_TIMEOUT, REACT_APP_API_BASE_MAXRETRIES, REACT_APP_API_BASE_DELAYRETRIES, REACT_APP_WS_URL, REACT_APP_WS_PORT, REACT_APP_WS_PATH } = process.env;
+  logger.debug(`[${fileName}] Datos .env: ${REACT_APP_API_BASE_URL}, ${REACT_APP_API_BASE_PORT}, ${REACT_APP_API_BASE_TIMEOUT}, ${REACT_APP_API_BASE_MAXRETRIES}, ${REACT_APP_API_BASE_DELAYRETRIES},${REACT_APP_WS_URL}, ${REACT_APP_WS_PORT}, ${REACT_APP_WS_PATH}`);
   return {
     apiBaseUrl: REACT_APP_API_BASE_URL,
     apiBasePort: REACT_APP_API_BASE_PORT,
     apiBaseTimeout: REACT_APP_API_BASE_TIMEOUT,
+    apiBaseMaxRetries: REACT_APP_API_BASE_MAXRETRIES,
+    apiBaseDelayRetries: REACT_APP_API_BASE_DELAYRETRIES,
     wsBaseUrl: REACT_APP_WS_URL,
     wsBasePort: REACT_APP_WS_PORT,
     wsBasePath: REACT_APP_WS_PATH
@@ -209,9 +277,12 @@ ipcMain.on('log-message', (event, { level, message }) => {
   }
 });
 
-ipcMain.on('app:exit', () => {
+
+ipcMain.on('app:exit', async () => {
   logger.info(`[${fileName}] Cerrando aplicación...`);
-  app.quit();
+  setTimeout(() => {
+    app.quit();
+  }, 300);
 });
 
 // ------------------- EVENTOS APP -------------------
@@ -221,9 +292,11 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
     logger.info(`[${fileName}] Cerrando aplicación (todas las ventanas cerradas)`);
-    app.quit();
+    setTimeout(() => {
+      app.quit();
+    }, 300);
   }
 });

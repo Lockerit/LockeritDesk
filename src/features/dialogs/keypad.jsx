@@ -26,7 +26,7 @@ import AssignLocker from './assignLocker.jsx';
 import ShowErrorAPI from './showErrorAPI.jsx';
 import { paymentService } from '../apis/addAssignLocker.js';
 import LoadingScreen from '../dialogs/loading.jsx';
-import OpenLocker from '../apis/openLocke.js';
+import RemoveLocker from '../apis/removeLocker.js';
 import {
   formatTime,
   phoneRegex,
@@ -302,14 +302,13 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       try {
         setLoading(true);
 
-        const result = await OpenLocker(payload);
+        const result = await RemoveLocker(payload);
 
-        if (result?.success) {
-          console.log();
+        if (result?.success) {;
           setLocker(result.data.lockerCode); // ejemplo
           setAssignLockerOpen(true);
         } else {
-          setMessageErrorAPI(result?.error.message || '[keypad] Error en el servidor HTTP');
+          setMessageErrorAPI(result?.data?.message || 'Error en el proceso de retiro');
           setShowErrorAPIOpen(true);
         }
 
@@ -373,7 +372,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         setLocker(result.http.data.lockerCode); // ejemplo
         setAssignLockerOpen(true);
       } else {
-        setMessageErrorAPI(result?.error.message || '[keypad] Error en el servidor HTTP');
+        setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
         setShowErrorAPIOpen(true);
       }
 
