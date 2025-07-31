@@ -7,6 +7,7 @@ import AppRoutes from '../router/router.jsx';
 import { useUser } from '../context/userContext.jsx';
 
 const USER_STORAGE_KEY = 'userInit';
+const fileName = 'app';
 
 const log = (level, message) => {
     if (typeof window !== 'undefined' && window.electronAPI?.log) {
