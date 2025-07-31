@@ -374,7 +374,7 @@ const AdminLockers = () => {
                                 <Checkbox
                                     sx={{
                                         '& .MuiSvgIcon-root': {
-                                            fontSize: '44px' // Aquí sí afecta el tamaño del ícono
+                                            fontSize: '45px' // Aquí sí afecta el tamaño del ícono
                                         }
                                     }}
                                     checked={
