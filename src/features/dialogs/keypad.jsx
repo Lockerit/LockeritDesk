@@ -308,7 +308,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setLocker(result.data.lockerCode); // ejemplo
           setAssignLockerOpen(true);
         } else {
-          setMessageErrorAPI(result?.data?.message || `[${fileName}] Error en el servidor HTTP`);
+          setMessageErrorAPI(result?.data?.message || 'Error en el proceso de retiro');
           setShowErrorAPIOpen(true);
         }
 
@@ -372,7 +372,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         setLocker(result.http.data.lockerCode); // ejemplo
         setAssignLockerOpen(true);
       } else {
-        setMessageErrorAPI(result?.error || `[${fileName}] Error en el servidor HTTP`);
+        setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
         setShowErrorAPIOpen(true);
       }
 

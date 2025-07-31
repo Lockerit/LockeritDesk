@@ -267,6 +267,14 @@ export default function Login() {
                         <img src={logo} alt="Título" style={{ maxHeight: 150 }} />
                     </Box>
 
+                    <Box textAlign="center" sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
+                        <Typography variant="h4"
+                            sx={{ fontWeight: 'bold', mb: 2 }}
+                        >
+                            {(userInit?.adminWindowInto || userInit?.adminWindow ) ? 'Administración': 'Aplicación'}
+                        </Typography>
+                    </Box>
+
                     <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                         <Person sx={{ color: 'action.active', mr: 2, my: 1, fontSize: 40 }} />
                         <TextField variant='standard'

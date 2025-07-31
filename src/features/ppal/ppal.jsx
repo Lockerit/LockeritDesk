@@ -113,14 +113,14 @@ export default function Ppal() {
             } else {
                 const msg = typeof result?.data === 'string'
                     ? result.data
-                    : result?.data?.message || `[${fileName}] Error al obtener casilleros`;
+                    : result?.data?.message || 'Error al obtener casilleros';
 
                 setMessageErrorAPI(msg);
                 setShowErrorAPIOpen(true);
             }
 
         } catch (err) {
-            setMessageErrorAPI(err.message || `[${fileName}] Error inesperado al obtener casilleros`);
+            setMessageErrorAPI(err.message || 'Error al obtener casilleros');
             setShowErrorAPIOpen(true);
         } finally {
             setLoading(false);
