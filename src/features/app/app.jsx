@@ -28,22 +28,20 @@ export default function App() {
         if (!lsUserInit)
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit))
 
-        const log = window?.electronAPI?.log;
-
         if (log) {
-            log('info', `[${fileName}] Componente App montado`);
+            log('info', 'Componente App montado');
         }
 
         try {
             const versionResult = window.electronAPI?.getAppVersion?.();
             if (versionResult) {
                 setVersion(versionResult);
-                log?.('info', `[${fileName}] Versión cargada: ${versionResult}`);
+                log?.('info', `Versión cargada: ${versionResult}`);
             } else {
-                log?.('warn', `[${fileName}] No se pudo obtener la versión de la aplicación`);
+                log?.('warn', 'No se pudo obtener la versión de la aplicación');
             }
         } catch (err) {
-            log?.('error', `[${fileName}] Error al obtener la versión: ${err.message}`);
+            log?.('error', `Error al obtener la versión: ${err.message}`);
         }
     }, []);
 
