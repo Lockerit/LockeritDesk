@@ -5,6 +5,7 @@ import DenseAppBar from '../bar/appbar.jsx';
 import Copyright from '../bar/copyright.jsx';
 import AppRoutes from '../router/router.jsx';
 import { useUser } from '../context/userContext.jsx';
+import { setVoiceOptions } from '../utils/speak.js'
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'app';
@@ -21,6 +22,13 @@ export default function App() {
     const { userInit, setUserInit } = useUser();
 
     useEffect(() => {
+
+        setVoiceOptions({
+            voiceName: 'Microsoft Helena - Spanish (Spain)', // o 'Microsoft Sabina Desktop'
+            rate: 1.5,
+            pitch: 2,
+            volume: 1
+        });
 
         if (!userInit) return;
 

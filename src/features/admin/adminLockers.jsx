@@ -409,7 +409,7 @@ const AdminLockers = () => {
                                     (item) => item.lockerCode === locker.lockerCode
                                 );
                                 return (
-                                    <Grid size={3} key={locker.lockerCode} sx={{ maxHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
+                                    <Grid size={2.4} key={locker.lockerCode} sx={{ maxHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
                                         <Button
                                             variant="contained"
                                             onClick={() => handleLockerClick(locker)}
