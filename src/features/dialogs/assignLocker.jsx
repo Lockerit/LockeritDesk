@@ -17,6 +17,7 @@ import {
 import {
     formatTime
 } from '../utils/utils.js';
+import { speak } from '../utils/speak.js'
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -29,6 +30,7 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 6
     const [secondsLeft, setSecondsLeft] = useState(timeout);
 
     useEffect(() => {
+
         if (open) {
             setSecondsLeft(timeout); // reinicia cada vez que abre
         }
