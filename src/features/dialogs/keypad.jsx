@@ -38,6 +38,7 @@ import {
   closeWebSocket
 } from '../apis/websocket.js'
 import { useElectronConfig } from '../hooks/useConfig.js';
+import { speak } from '../utils/speak.js'
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -290,7 +291,10 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   };
 
   const accept = async () => {
-
+    setAssignLockerOpen(false);
+    setConfirmDialogOpen(false);
+    setInsertMoneyOpen(false);
+    setLoading(false);
     if (!operationRet) {
       setMessageLoading('Asignando Casilllero...');
       setConfirmDialogOpen(true); // Mostrar confirmación
@@ -304,8 +308,9 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
         const result = await RemoveLocker(payload);
 
-        if (result?.success) {;
-          setLocker(result.data.lockerCode); // ejemplo
+        if (result?.success) {
+          speak(`Tu casillero es el: ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
+          setLocker(result?.data?.lockerCode); // ejemplo
           setAssignLockerOpen(true);
         } else {
           setMessageErrorAPI(result?.data?.message || 'Error en el proceso de retiro');
@@ -323,6 +328,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       }
     }
 
+    setLoading(false);
     // clearInputs();
     // onClose(); // o pasa los datos al padre
   };
@@ -365,11 +371,13 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setInsertMoneyOpen(true);
 
     try {
+      setLoading(true);
       // se recibe el timeout y se multiplica po 1000 (milisegundos) y después por la cantidad máxima de monedas que pueden ingresar
       const result = await paymentService(payload, (timeoutInsert * 1000 * 10), handleTotalUpdate, handleLoadingChange);
 
       if (result?.http?.success) {
-        setLocker(result.http.data.lockerCode); // ejemplo
+        speak(`Tu casillero es el: ${result.http.data.lockerCode}, guarda tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
+        setLocker(result?.http?.data?.lockerCode);
         setAssignLockerOpen(true);
       } else {
         setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
@@ -388,6 +396,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       cancelConfirmation(false);
       setLoading(false);
     }
+    setLoading(false);
   };
 
   const focusCloseModal = () => {

@@ -18,6 +18,7 @@ import LoadingBar from '../bar/progressbar.jsx'
 import {
     formatTime
 } from '../utils/utils.js';
+import { speak } from '../utils/speak.js'
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -28,6 +29,15 @@ const fileName = 'InsertMoney';
 export default function InsertMoney({ open, onCancel, amountService, amountPay, timeout = 600 }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
+
+    useEffect(() => {
+
+        const numericAmount = Number(amountPay.replace(/[^0-9.-]+/g, ''));
+
+        if (numericAmount === 0) return;
+
+        speak(`${numericAmount} Pesos`);
+    }, [amountPay]);
 
     useEffect(() => {
         if (open) {

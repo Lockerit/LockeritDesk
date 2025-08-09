@@ -11,7 +11,7 @@ const log = (level, message) => {
 };
 
 const env = getEnv();
-const defaultURL = 'http://localhost:3000';
+const defaultURL = 'http://localhost:8080';
 
 const baseURL =
     env?.apiBaseUrl && env?.apiBasePort
@@ -19,7 +19,7 @@ const baseURL =
         : defaultURL;
 
 const timeout =
-    env?.apiBaseTimeout ? env?.apiBaseTimeout : '30000';
+    env?.apiBaseTimeout ? env?.apiBaseTimeout : '300';
 
 log('info', `API BaseURL Inicial: ${baseURL}`);
 log('info', `API BaseTimeout Inicial: ${timeout}`);

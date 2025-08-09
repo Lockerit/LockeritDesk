@@ -6,7 +6,8 @@
         "user": "admin",
         "pass": "5555",
         "avatarPath": "./assets/TuLockerIcono.jpg",
-        "logoPath": "./assets/TuLockerHorizontal.png"
+        "logoPath": "./assets/TuLockerHorizontal.png",
+        "QRPath": "./assets/CodigoQR.png"
     },
     "params": {
         "lenMaxInputPass": 4,

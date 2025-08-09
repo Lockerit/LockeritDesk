@@ -5,9 +5,9 @@ import { getEnv, subscribeEnv } from '../hooks/envStore.js';
 const fileName = 'statusLockers'; // Nombre del archivo para los logs
 
 const log = (level, message) => {
-  if (typeof window !== 'undefined' && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
-  }
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
 };
 const GetStatusLockers = async () => {
     log('info', 'Iniciando petición para obtener casilleros disponibles');
@@ -21,6 +21,9 @@ const GetStatusLockers = async () => {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+
+            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.STATUS_LOCKERS}`);
+
             const response = await axios.get(API_ROUTES.STATUS_LOCKERS, {
                 timeout: effectiveTimeout,
             });

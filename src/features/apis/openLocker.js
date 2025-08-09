@@ -23,6 +23,7 @@ const OpenLocker = async (payload) => {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.OPEN_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
             const response = await axios.post(API_ROUTES.OPEN_LOCKER, payload, { timeout: effectiveTimeout });

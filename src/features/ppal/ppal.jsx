@@ -176,7 +176,7 @@ export default function Ppal() {
             >
                 <Box>
                     {config?.login?.logoPath && (<img
-                        src={config.login.logoPath}
+                        src={config?.login?.logoPath}
                         alt="Título"
                         style={{ height: 200 }}
                     />
@@ -203,17 +203,20 @@ export default function Ppal() {
                         />
                     </Grid>
 
-                    <KeyPadModal
-                        open={modalOpen}
-                        onClose={closeKeypad}
-                        operation={operation}
-                        timeout={timeoutKeypad}
-                    />
-
                 </Grid>
 
                 {/* Indicadores */}
-                <Box textAlign="center" sx={{ mt: 8, display: 'flex', justifyContent: 'space-between', gap: 5 }}>
+                <Box
+                    sx={{
+                        mt: 8,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        width: '100%',
+                        maxHeight: '100%'
+                    }}
+                >
+                    {/* Contenido de texto (a la izquierda) */}
                     <Box>
                         <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                             Casilleros disponibles:{' '}
@@ -222,18 +225,28 @@ export default function Ppal() {
                             {availableLockers}
                         </Typography>
                     </Box>
-                    {/* <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
-                        |
-                    </Typography> */}
-                    {/* <Box>
-                        <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
-                            Casilleros ocupados:{' '}
-                        </Typography>
-                        <Typography variant="h3" component="span" color="error" sx={{ fontWeight: 'bold' }}>
-                            {unavailableLockers}
-                        </Typography>
-                    </Box> */}
+
+                    {/* Imagen (alineada completamente a la derecha) */}
+                    {config?.login?.QRPath && (
+                        <Box sx={{ ml: 'auto' }}>
+                            <img
+                                src={config.login.QRPath}
+                                alt="QR"
+                                style={{
+                                    height: 150,
+                                    objectFit: 'contain',
+                                }}
+                            />
+                        </Box>
+                    )}
                 </Box>
+
+                <KeyPadModal
+                    open={modalOpen}
+                    onClose={closeKeypad}
+                    operation={operation}
+                    timeout={timeoutKeypad}
+                />
 
                 <ShowErrorAPI
                     open={showErrorAPIOpen}
