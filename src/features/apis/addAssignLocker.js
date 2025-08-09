@@ -27,6 +27,7 @@ const AddAssignLocker = async (payload, timeoutMs) => {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+            log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
             log('info', `Intento ${attempt}: URL -> ${API_ROUTES.ASSIGN_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 

@@ -23,6 +23,7 @@ const RemoveLocker = async (payload) => {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+            log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
             log('info', `Intento ${attempt}: URL -> ${API_ROUTES.REMOVE_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 

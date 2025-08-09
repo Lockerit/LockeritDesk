@@ -27,7 +27,7 @@ if (fs.existsSync(envPath)) {
 let currentEnv = {
   apiBaseUrl: process.env.REACT_APP_API_BASE_URL || 'http://localhost',
   apiBasePort: process.env.REACT_APP_API_BASE_PORT || '8080',
-  apiBaseTimeout: process.env.REACT_APP_API_BASE_TIMEOUT || '300',
+  apiBaseTimeout: process.env.REACT_APP_API_BASE_TIMEOUT || '30',
   apiBaseMaxRetries: process.env.REACT_APP_API_BASE_MAXRETRIES || 10,
   apiBaseMaxRetries: process.env.REACT_APP_API_BASE_DELAYRETRIES || 2,
   wsBaseUrl: process.env.REACT_APP_WS_URL || 'ws://localhost',

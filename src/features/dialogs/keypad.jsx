@@ -91,20 +91,28 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     if (open) {
       setSecondsLeft(timeout); // reinicia cada vez que abre
     }
-  }, [open]);
+  }, [open, timeout]);
 
+  // Manejar conteo
   useEffect(() => {
+    if (!open || secondsLeft <= 0) return;
 
-    if (open && secondsLeft > 0) {
-      const interval = setInterval(() => {
-        setSecondsLeft(prev => prev - 1);
-      }, 1000);
+    const interval = setInterval(() => {
+      setSecondsLeft(prev => prev - 1);
+    }, 1000);
 
-      return () => clearInterval(interval);
-    } else if (open && secondsLeft === 0) {
-      onClose(); // cerrar automáticamente
-    }
+    return () => clearInterval(interval);
   }, [open, secondsLeft]);
+
+  // Cerrar automáticamente cuando llegue a 0
+  useEffect(() => {
+    if (open && secondsLeft === 0) {
+      setSecondsLeft(timeout);
+      setTimeout(() => {
+        onClose();
+      }, 0);
+    }
+  }, [open, secondsLeft, onClose]);
 
   useEffect(() => {
     if (!isConfigReady) return;
@@ -291,9 +299,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   };
 
   const accept = async () => {
-    setAssignLockerOpen(false);
-    setConfirmDialogOpen(false);
-    setInsertMoneyOpen(false);
+    // setAssignLockerOpen(false);
     setLoading(false);
     if (!operationRet) {
       setMessageLoading('Asignando Casilllero...');
@@ -310,8 +316,14 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
         if (result?.success) {
           speak(`Tu casillero es el: ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
-          setLocker(result?.data?.lockerCode); // ejemplo
-          setAssignLockerOpen(true);
+          const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
+          if (lockerCode) {
+            setLocker(lockerCode);
+            setAssignLockerOpen(true);
+          } else {
+            setMessageErrorAPI('No se recibió código de casillero');
+            setShowErrorAPIOpen(true);
+          }
         } else {
           setMessageErrorAPI(result?.data?.message || 'Error en el proceso de retiro');
           setShowErrorAPIOpen(true);
@@ -337,7 +349,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setPhone('');
     setPassword('');
     setConfirmPassword('');
-    setLocker('');
+    // setLocker('');
     setActiveInput('phone');
     setErrorsEmpty({ phone: false, password: false, confirmPassword: false });
     cancelConfirmation();
@@ -363,7 +375,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   };
 
   const confirmSendData = async () => {
-
+    // setAssignLockerOpen(false);
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
@@ -372,13 +384,15 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
     try {
       setLoading(true);
-      // se recibe el timeout y se multiplica po 1000 (milisegundos) y después por la cantidad máxima de monedas que pueden ingresar
       const result = await paymentService(payload, (timeoutInsert * 1000 * 10), handleTotalUpdate, handleLoadingChange);
 
       if (result?.http?.success) {
         speak(`Tu casillero es el: ${result.http.data.lockerCode}, guarda tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
-        setLocker(result?.http?.data?.lockerCode);
-        setAssignLockerOpen(true);
+        const lockerCode = result?.http?.data?.lockerCode;
+        if (lockerCode) {
+          setLocker(lockerCode);
+          setAssignLockerOpen(true);
+        }
       } else {
         setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
         setShowErrorAPIOpen(true);
@@ -399,23 +413,8 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setLoading(false);
   };
 
-  const focusCloseModal = () => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const el = document.querySelector('#confirmar-keypad');
-        if (el && typeof el.focus === 'function') {
-          el.focus();
-        }
-      });
-    });
-  }
-
   const cancelConfirmation = () => {
     setConfirmDialogOpen(false);
-    // Da tiempo a que Material UI limpie aria-hidden
-    setTimeout(() => {
-      focusCloseModal();   // hace focus al botón del modal padre
-    }, 100); // 100ms suele ser suficiente para animaciones y limpieza
   };
 
 
@@ -424,32 +423,26 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setAmountPay(0);
     setInsertMoneyOpen(false);
     closeWebSocket();
-    // Da tiempo a que Material UI limpie aria-hidden
-    setTimeout(() => {
-      focusCloseModal();   // hace focus al botón del modal padre
-    }, 100); // 100ms suele ser suficiente para animaciones y limpieza
   };
 
   const confirmAssignLocker = () => {
     setAssignLockerOpen(false);
     clearInputs();
     closeWebSocket();
-    onClose();
-    // Da tiempo a que Material UI limpie aria-hidden
-    setTimeout(() => {
-      focusCloseModal();   // hace focus al botón del modal padre
-    }, 100); // 100ms suele ser suficiente para animaciones y limpieza
+    // Cierra el modal padre
+    if (typeof onClose === 'function') {
+      onClose();
+    }
   };
 
   const confirmShowErrorAPI = () => {
     setShowErrorAPIOpen(false);
     clearInputs();
     closeWebSocket();
-    onClose();
-    // Da tiempo a que Material UI limpie aria-hidden
-    setTimeout(() => {
-      focusCloseModal();   // hace focus al botón del modal padre
-    }, 100); // 100ms suele ser suficiente para animaciones y limpieza
+    // Cierra el modal padre
+    if (typeof onClose === 'function') {
+      onClose();
+    }
   };
 
   const renderButton = (value) => {
@@ -510,7 +503,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         open={open}
         onClose={(event, reason) => {
           if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-            cancel(); // tu función personalizada para cerrar
+            setTimeout(() => onCancel(), 0); // diferir para evitar el warning
           }
         }}
         PaperProps={{
@@ -634,11 +627,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         open={confirmDialogOpen}
         onConfirm={confirmSendData}
         onCancel={cancelConfirmation}
-        TransitionProps={{
-          onExited: () => {
-            focusCloseModal(); // garantizado que ya terminó la transición
-          }
-        }}
         tittle={'Confirmar'}
         mesg={'¡Vas a ' + operation + '!\n¿El número celular es correcto?'}
         phone={formatNumberPhone(phone)}
@@ -652,11 +640,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       <InsertMoney
         open={insertMoneyOpen}
         onCancel={cancelInsertMoney}
-        TransitionProps={{
-          onExited: () => {
-            focusCloseModal(); // garantizado que ya terminó la transición
-          }
-        }}
         amountService={amountService}
         amountPay={formatCurrency(amountPay)}
         timeout={timeoutInsert}
@@ -668,11 +651,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       <AssignLocker
         open={assignLockerOpen}
         onConfirm={confirmAssignLocker}
-        TransitionProps={{
-          onExited: () => {
-            focusCloseModal(); // garantizado que ya terminó la transición
-          }
-        }}
         locker={locker}
         msg={(operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio'}
         timeout={timeoutShowMessage}
@@ -684,11 +662,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       <ShowErrorAPI
         open={showErrorAPIOpen}
         onConfirm={confirmShowErrorAPI}
-        TransitionProps={{
-          onExited: () => {
-            focusCloseModal(); // garantizado que ya terminó la transición
-          }
-        }}
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
         disableEnforceFocus
