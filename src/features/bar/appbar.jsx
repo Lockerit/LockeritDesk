@@ -137,10 +137,10 @@ export default function DenseAppBar() {
                         {showData && (
                             <>
                                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                    {(userInit?.client || '')}{' | '}
+                                    {(config?.client || '')}{' | '}
                                 </Typography>
                                 <Typography variant="h6">
-                                    {(userInit?.user || '')}
+                                    {(config?.login?.user || '')}
                                 </Typography>
                             </>
                         )}
