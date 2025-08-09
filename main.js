@@ -26,12 +26,12 @@ if (fs.existsSync(envPath)) {
 
 let currentEnv = {
   apiBaseUrl: process.env.REACT_APP_API_BASE_URL || 'http://localhost',
-  apiBasePort: process.env.REACT_APP_API_BASE_PORT || '3000',
-  apiBaseTimeout: process.env.REACT_APP_API_BASE_TIMEOUT || '30000',
-  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_MAXRETRIES || 5,
-  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_DELAYRETRIES || 1,
+  apiBasePort: process.env.REACT_APP_API_BASE_PORT || '8080',
+  apiBaseTimeout: process.env.REACT_APP_API_BASE_TIMEOUT || '300',
+  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_MAXRETRIES || 10,
+  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_DELAYRETRIES || 2,
   wsBaseUrl: process.env.REACT_APP_WS_URL || 'ws://localhost',
-  wsBasePort: process.env.REACT_APP_WS_PORT || '3000'
+  wsBasePort: process.env.REACT_APP_WS_PORT || '8080'
 };
 
 function buildCSP(currentEnv) {

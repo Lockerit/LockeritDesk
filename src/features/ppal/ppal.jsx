@@ -213,6 +213,7 @@ export default function Ppal() {
                         alignItems: 'center',
                         gap: 5,
                         width: '100%',
+                        maxHeight: '100%'
                     }}
                 >
                     {/* Contenido de texto (a la izquierda) */}
@@ -232,7 +233,7 @@ export default function Ppal() {
                                 src={config.login.QRPath}
                                 alt="QR"
                                 style={{
-                                    height: 250,
+                                    height: 150,
                                     objectFit: 'contain',
                                 }}
                             />

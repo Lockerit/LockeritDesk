@@ -291,7 +291,10 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   };
 
   const accept = async () => {
-
+    setAssignLockerOpen(false);
+    setConfirmDialogOpen(false);
+    setInsertMoneyOpen(false);
+    setLoading(false);
     if (!operationRet) {
       setMessageLoading('Asignando Casilllero...');
       setConfirmDialogOpen(true); // Mostrar confirmación
@@ -325,6 +328,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       }
     }
 
+    setLoading(false);
     // clearInputs();
     // onClose(); // o pasa los datos al padre
   };
@@ -367,6 +371,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setInsertMoneyOpen(true);
 
     try {
+      setLoading(true);
       // se recibe el timeout y se multiplica po 1000 (milisegundos) y después por la cantidad máxima de monedas que pueden ingresar
       const result = await paymentService(payload, (timeoutInsert * 1000 * 10), handleTotalUpdate, handleLoadingChange);
 
@@ -391,6 +396,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       cancelConfirmation(false);
       setLoading(false);
     }
+    setLoading(false);
   };
 
   const focusCloseModal = () => {

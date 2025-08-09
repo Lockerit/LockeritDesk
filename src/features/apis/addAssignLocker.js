@@ -27,7 +27,8 @@ const AddAssignLocker = async (payload, timeoutMs) => {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            log('info', `Request intento ${attempt}: ${JSON.stringify(payload)}`);
+            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.ASSIGN_LOCKER}`);
+            log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
             const response = await axios.post(API_ROUTES.ASSIGN_LOCKER, payload, { timeout: timeoutMs });
 

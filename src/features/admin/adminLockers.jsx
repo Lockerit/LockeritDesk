@@ -394,7 +394,7 @@ const AdminLockers = () => {
                 {/* Botones de lockers */}
                 {currentModule && (
                     <Box sx={{
-                        height: '75%',
+                        height: '70%',
                         width: '100%',
                         overflowY: 'auto',
                         scrollBehavior: 'smooth',
@@ -436,15 +436,15 @@ const AdminLockers = () => {
                 )}
                 {currentModule && (
                     <Box sx={{
-                        height: '10%', width: '100%'
+                        height: '15%', width: '100%'
                     }} >
                         {/* Acciones */}
                         {selectedLockers.length > 0 && (
-                            <Stack spacing={2} alignItems="center" sx={{ mt: 2, height: '40%', width: '100%' }}>
+                            <Stack spacing={2} alignItems="center" sx={{ mt: 2, height: '100%', width: '100%' }}>
                                 <Box
                                     sx={{
-                                        maxHeight: 120,
-                                        minHeight: 60,
+                                        maxHeight: 80,
+                                        minHeight: 40,
                                         overflowY: 'auto',
                                         width: '100%',
                                         px: 2,
@@ -459,7 +459,7 @@ const AdminLockers = () => {
                                         <Chip key={l.lockerCode} label={l.lockerCode} />
                                     ))}
                                 </Box>
-                                <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
+                                <Stack direction="row" spacing={1} sx={{ width: '100%', maxHeight: '100%' }}>
                                     <Button variant="outlined" color="primary" fullWidth onClick={() => handleAction('abrir')}>
                                         Abrir
                                     </Button>
