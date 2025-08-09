@@ -111,9 +111,11 @@ export default function Login() {
             // Login
             newSession = {
                 authenticated: true,
+                client: config.client,
                 user: remember ? userName.toLowerCase() : '',
                 remember,
                 locationDevice: config.locationDevice,
+                pointDevice: config.pointDevice,
                 avatar: config.login.avatarPath,
                 closeSession: false,
                 closeWindow: false,
@@ -129,9 +131,11 @@ export default function Login() {
             // Logout
             newSession = {
                 authenticated: false,
+                client: '',
                 user: userAux,
                 remember,
                 locationDevice: '',
+                pointDevice: '',
                 avatar: '',
                 closeSession: false,
                 closeWindow: false,
