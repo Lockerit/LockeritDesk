@@ -25,7 +25,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const fileName = 'assignLocker';
 
-export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 15 }) {
+export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 15, backColor }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
 
@@ -124,7 +124,7 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                             with: '30%',
                             mx: 'auto',
                             my: 2,
-                            backgroundColor: 'error.main',
+                            backgroundColor: backColor || 'primary.main',
                             color: 'error.contrastText',
                             // border: '5px solid', // (azul)
                             // color: 'error.main',
@@ -141,6 +141,11 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                 <Typography variant="h4" sx={{ textAlign: 'center', mt: 5, mb: 3, fontWeight: 'bold' }}>
                     ¡No olvides cerrar el casillero!
                 </Typography>
+                {msg.substring(0, 6) === 'Retira' && (
+                    <Typography variant="h4" sx={{ textAlign: 'center', mt: 5, mb: 3, fontWeight: 'bold' }}>
+                        Disponible para una nueva asignación.
+                    </Typography>
+                )}
             </DialogContent>
 
             <DialogActions

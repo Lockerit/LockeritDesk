@@ -315,7 +315,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         const result = await RemoveLocker(payload);
 
         if (result?.success) {
-          speak(`Tu casillero es el: ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
+          speak(`Tu casillero es el: ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio, ¡No olvides cerrar el casillero!, disponible para una nueva asignación`);
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
           if (lockerCode) {
             setLocker(lockerCode);
@@ -652,8 +652,9 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         open={assignLockerOpen}
         onConfirm={confirmAssignLocker}
         locker={locker}
-        msg={(operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio'}
+        msg={(operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio.'}
         timeout={timeoutShowMessage}
+        backColor={operationRet ? 'primary.main' : 'error.main'}
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
