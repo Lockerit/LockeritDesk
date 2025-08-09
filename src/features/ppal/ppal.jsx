@@ -218,12 +218,23 @@ export default function Ppal() {
                 >
                     {/* Contenido de texto (a la izquierda) */}
                     <Box>
-                        <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
-                            Casilleros disponibles:{' '}
-                        </Typography>
-                        <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                            {availableLockers}
-                        </Typography>
+                        {!disabledButton && (
+                            <>
+                                <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                                    Casilleros disponibles:{' '}
+                                </Typography>
+                                <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                                    {availableLockers}
+                                </Typography>
+                            </>
+                        )}
+                        {disabledButton && (
+                            <>
+                                <Typography variant="h2" component="span" color="error" sx={{ fontWeight: 'bold' }}>
+                                    No hay casilleros disponibles
+                                </Typography>
+                            </>
+                        )}
                     </Box>
 
                     {/* Imagen (alineada completamente a la derecha) */}
