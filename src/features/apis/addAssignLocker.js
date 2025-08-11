@@ -16,6 +16,8 @@ const log = (level, message) => {
   }
 };
 
+let closeWS = false;
+
 const AddAssignLocker = async (payload, timeoutMs) => {
 
     const env = getEnv(); // 🔁 Actualiza si `.env` cambió
@@ -26,6 +28,12 @@ const AddAssignLocker = async (payload, timeoutMs) => {
     log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+
+        if (closeWS) {
+            log('info', `Conexión WebSocket cerrada, abortando intento ${attempt}`);
+            break;
+        }
+
         try {
             log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
             log('info', `Intento ${attempt}: URL -> ${API_ROUTES.ASSIGN_LOCKER}`);
@@ -103,6 +111,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                         onLoading(true); // Enciende loading cuando WS indique que ya terminó
                     }
 
+                    closeWS = true;
                     closeWebSocket();
                     resolve('WebSocket complete');
                 }
@@ -116,6 +125,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                 if (!res.success) {
                     const err = res.data?.message || 'Error HTTP en servidor (002)';
                     log('error', err);
+                    closeWS = true;
                     closeWebSocket();
                     throw new Error(err);
                 }
@@ -124,6 +134,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
             })
             .catch((err) => {
                 log('error', `Error en HTTP: ${err.message}`);
+                closeWS = true;
                 closeWebSocket();
                 throw err;
             });
@@ -150,6 +161,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
 
     } catch (error) {
         log('error', `Error general: ${error.message}`);
+        closeWS = true;
         closeWebSocket();
         return {
             websocket: false,
