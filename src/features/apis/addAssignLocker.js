@@ -21,13 +21,17 @@ let closeWS = false;
 const AddAssignLocker = async (payload, timeoutMs) => {
 
     const env = getEnv(); // 🔁 Actualiza si `.env` cambió
-
+    closeWS = false;
     const maxRetries = env?.apiBaseMaxRetries || 5;
     const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
+
+    console.log('peticion assign 0', closeWS);
 
     log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+
+        console.log('peticion assign ' + attempt + ' - ' + closeWS);
 
         if (closeWS) {
             log('info', `Conexión WebSocket cerrada, abortando intento ${attempt}`);

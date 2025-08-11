@@ -10,7 +10,7 @@ const log = (level, message) => {
   }
 };
 const SetStatusLocker = async (payload) => {
-    log('info', 'Iniciando petición para abrir casillero');
+    log('info', 'Iniciando petición para cambiar estado casillero');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
     const maxRetries = env?.apiBaseMaxRetries || 5;

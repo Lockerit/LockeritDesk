@@ -110,7 +110,12 @@ const AdminLockers = () => {
 
             for (const { lockerCode } of selectedLockers) {
                 try {
-                    const resultOpen = await OpenLocker({ lockerCode, setFree }); // importante pasar lockerCode si el backend lo espera
+                    const payloadOpen = {
+                        lockerCode,
+                        setFree
+                    };
+
+                    const resultOpen = await OpenLocker(payloadOpen);
 
                     if (resultOpen?.success) {
                         successfulLockers.push(lockerCode);
@@ -143,14 +148,28 @@ const AdminLockers = () => {
             const successfulLockers = [];
             const failedLockers = [];
             const setFree = true;
+            const newStatus = 'libre';
 
             for (const { lockerCode } of selectedLockers) {
                 try {
-                    const resultStatus = await SetStatusLocker({ lockerCode: locker.lockerCode, newStatus: 'libre' });
+                    console.log(`Liberando casillero: ${lockerCode}, ${newStatus}`);
+
+                    const payloadSetStatus = {
+                        lockerCode,
+                        newStatus
+                    };
+
+                    const resultStatus = await SetStatusLocker(payloadSetStatus);
 
                     if (resultStatus?.success) {
                         try {
-                            const resultOpen = await OpenLocker({ lockerCode, setFree });
+
+                            const payloadOpen = {
+                                lockerCode,
+                                setFree
+                            };
+
+                            const resultOpen = await OpenLocker(payloadOpen);
 
                             if (resultOpen?.success) {
                                 successfulLockers.push(lockerCode);
@@ -227,7 +246,12 @@ const AdminLockers = () => {
 
             if (locker.status.toLowerCase() !== 'ocupado') {
                 try {
-                    const resultStatus = await SetStatusLocker({ lockerCode: locker.lockerCode, newStatus: status });
+                    const payloadSetStatus = {
+                        lockerCode: locker.lockerCode,
+                        newStatus: status
+                    };
+
+                    const resultStatus = await SetStatusLocker(payloadSetStatus);
 
                     if (resultStatus?.success) {
                         successfulLockers.push(locker.lockerCode);
