@@ -134,14 +134,14 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                         </Typography>
                     </Paper>
                 </Box>
-                <Typography variant="h4" sx={{ textAlign: 'center', mt: 5, mb: 3 }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', my: 2 }}>
                     {msg}
                 </Typography>
-                <Typography variant="h4" sx={{ textAlign: 'center', mt: 5, mb: 3, fontWeight: 'bold' }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', my: 2, fontWeight: 'bold' }}>
                     ¡No olvides cerrar el casillero!
                 </Typography>
                 {msg.substring(0, 6) === 'Retira' && (
-                    <Typography variant="h4" sx={{ textAlign: 'center', mt: 5, mb: 3, fontWeight: 'bold' }}>
+                    <Typography variant="h5" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
                         Disponible para una nueva asignación.
                     </Typography>
                 )}

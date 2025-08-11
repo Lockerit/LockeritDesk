@@ -146,7 +146,7 @@ const AdminLockers = () => {
 
             for (const { lockerCode } of selectedLockers) {
                 try {
-                    const resultStatus = await SetStatusLocker({ lockerCode });
+                    const resultStatus = await SetStatusLocker({ lockerCode: locker.lockerCode, newStatus: 'libre' });
 
                     if (resultStatus?.success) {
                         try {
@@ -227,7 +227,7 @@ const AdminLockers = () => {
 
             if (locker.status.toLowerCase() !== 'ocupado') {
                 try {
-                    const resultStatus = await SetStatusLocker({ lockerCode: locker.lockerCode, status });
+                    const resultStatus = await SetStatusLocker({ lockerCode: locker.lockerCode, newStatus: status });
 
                     if (resultStatus?.success) {
                         successfulLockers.push(locker.lockerCode);
