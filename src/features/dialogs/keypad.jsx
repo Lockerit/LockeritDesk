@@ -394,6 +394,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setAssignLockerOpen(true);
         }
       } else {
+        if (!result.websocket) return;
         setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
         setShowErrorAPIOpen(true);
       }

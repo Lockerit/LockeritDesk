@@ -11,30 +11,33 @@ import {
 const fileName = 'addAssignLocker';
 
 const log = (level, message) => {
-  if (typeof window !== 'undefined' && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
-  }
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
 };
 
-let closeWS = false;
 
 const AddAssignLocker = async (payload, timeoutMs) => {
 
     const env = getEnv(); // 🔁 Actualiza si `.env` cambió
-    closeWS = false;
     const maxRetries = env?.apiBaseMaxRetries || 5;
     const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
 
-    console.log('peticion assign 0', closeWS);
+    log('debug', 'peticion assign 0', isWebSocketConnected());
 
     log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
 
-        console.log('peticion assign ' + attempt + ' - ' + closeWS);
+        log('debug', 'peticion assign ' + attempt + ' - ' + isWebSocketConnected());
 
-        if (closeWS) {
+        if (!isWebSocketConnected()) {
             log('info', `Conexión WebSocket cerrada, abortando intento ${attempt}`);
+            return {
+                success: false,
+                data: '',
+                status: 499,
+            };
             break;
         }
 
@@ -114,8 +117,6 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                     if (onLoading && typeof onLoading === 'function') {
                         onLoading(true); // Enciende loading cuando WS indique que ya terminó
                     }
-
-                    closeWS = true;
                     closeWebSocket();
                     resolve('WebSocket complete');
                 }
@@ -129,7 +130,6 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                 if (!res.success) {
                     const err = res.data?.message || 'Error HTTP en servidor (002)';
                     log('error', err);
-                    closeWS = true;
                     closeWebSocket();
                     throw new Error(err);
                 }
@@ -138,7 +138,6 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
             })
             .catch((err) => {
                 log('error', `Error en HTTP: ${err.message}`);
-                closeWS = true;
                 closeWebSocket();
                 throw err;
             });
@@ -165,7 +164,6 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
 
     } catch (error) {
         log('error', `Error general: ${error.message}`);
-        closeWS = true;
         closeWebSocket();
         return {
             websocket: false,
