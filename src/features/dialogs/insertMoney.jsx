@@ -36,7 +36,7 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
 
         if (numericAmount === 0) return;
 
-        speak(`${numericAmount} Pesos`);
+        // speak(`${numericAmount} Pesos`);
     }, [amountPay]);
 
     useEffect(() => {
