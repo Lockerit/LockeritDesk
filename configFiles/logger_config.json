@@ -5,5 +5,5 @@
     "zippedArchive": false,
     "maxSize": "10m",
     "maxFiles": "14d",
-    "logLevel": "info"
+    "logLevel": "debug"
 }

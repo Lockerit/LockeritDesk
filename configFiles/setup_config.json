@@ -1,6 +1,7 @@
 {
     "client": "Tulocker",
     "locationDevice": "CC Prueba",
+    "pointDevice": "Zotano 1",
     "totalLockers": 60,
     "login": {
         "user": "admin",
@@ -19,7 +20,7 @@
         },
         "modalTimeouts": {
             "timeoutKeypad": 300,
-            "timeoutInsertMoney": 70,
+            "timeoutInsertMoney": 10,
             "timeoutShowMessage": 15
         }
     }

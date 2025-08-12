@@ -36,31 +36,40 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
 
         if (numericAmount === 0) return;
 
-        speak(`${numericAmount} Pesos`);
+        // speak(`${numericAmount} Pesos`);
     }, [amountPay]);
 
     useEffect(() => {
         if (open) {
             setSecondsLeft(timeout); // reinicia cada vez que abre
         }
-    }, [open, amountPay]);
+    }, [open, amountPay, timeout]);
 
+    // Manejar conteo
     useEffect(() => {
-        if (open && secondsLeft > 0) {
-            const interval = setInterval(() => {
-                setSecondsLeft(prev => prev - 1);
-            }, 1000);
+        if (!open || secondsLeft <= 0) return;
 
-            return () => clearInterval(interval);
-        } else if (open && secondsLeft === 0) {
-            onCancel(); // cerrar automáticamente
-        }
+        const interval = setInterval(() => {
+            setSecondsLeft(prev => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
     }, [open, secondsLeft]);
+
+    // Cerrar automáticamente cuando llegue a 0
+    useEffect(() => {
+        if (open && secondsLeft === 0) {
+            setSecondsLeft(timeout);
+            setTimeout(() => {
+                onCancel();
+            }, 0);
+        }
+    }, [open, secondsLeft, onCancel]);
 
     return (
         <Dialog open={open} onClose={(event, reason) => {
             if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                onCancel(); // tu función personalizada para cerrar
+                setTimeout(() => onCancel(), 0); // diferir para evitar el warning
             }
 
         }}

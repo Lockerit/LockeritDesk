@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import LoadingScreen from '../dialogs/loading.jsx';
-import GetStatusLockers from '../apis/statusLockers.js';
+import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
+import OpenByCodeLocker from '../apis/openByCodeLocker.js';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import OpenLocker from '../apis/openLocker.js';
 import SetStatusLocker from '../apis/setStatusLocker.js';
 import SnackBarAlert from '../bar/snackAlert.jsx';
 import {
@@ -60,7 +60,7 @@ const AdminLockers = () => {
         setMessageLoading('Cargando...');
         setLoading(true);
         try {
-            const result = await GetStatusLockers(); // Reemplaza por tu axios.get()
+            const result = await GetAllStatusLockers();
             if (result?.success) {
                 setData(result?.default || result?.data);
             } else {
@@ -107,10 +107,17 @@ const AdminLockers = () => {
             const successfulLockers = [];
             const failedLockers = [];
             const setFree = false;
+            const openBy = 'local';
 
             for (const { lockerCode } of selectedLockers) {
                 try {
-                    const resultOpen = await OpenLocker({ lockerCode, setFree }); // importante pasar lockerCode si el backend lo espera
+                    const payloadOpen = {
+                        lockerCode,
+                        setFree,
+                        openBy
+                    };
+
+                    const resultOpen = await OpenByCodeLocker(payloadOpen);
 
                     if (resultOpen?.success) {
                         successfulLockers.push(lockerCode);
@@ -143,14 +150,29 @@ const AdminLockers = () => {
             const successfulLockers = [];
             const failedLockers = [];
             const setFree = true;
+            const newStatus = 'libre';
+            const openBy = 'local';
 
             for (const { lockerCode } of selectedLockers) {
                 try {
-                    const resultStatus = await SetStatusLocker({ lockerCode });
+
+                    const payloadSetStatus = {
+                        lockerCode,
+                        newStatus
+                    };
+
+                    const resultStatus = await SetStatusLocker(payloadSetStatus);
 
                     if (resultStatus?.success) {
                         try {
-                            const resultOpen = await OpenLocker({ lockerCode, setFree });
+
+                            const payloadOpen = {
+                                lockerCode,
+                                setFree,
+                                openBy
+                            };
+
+                            const resultOpen = await OpenByCodeLocker(payloadOpen);
 
                             if (resultOpen?.success) {
                                 successfulLockers.push(lockerCode);
@@ -227,7 +249,12 @@ const AdminLockers = () => {
 
             if (locker.status.toLowerCase() !== 'ocupado') {
                 try {
-                    const resultStatus = await SetStatusLocker({ lockerCode: locker.lockerCode, status });
+                    const payloadSetStatus = {
+                        lockerCode: locker.lockerCode,
+                        newStatus: status
+                    };
+
+                    const resultStatus = await SetStatusLocker(payloadSetStatus);
 
                     if (resultStatus?.success) {
                         successfulLockers.push(locker.lockerCode);

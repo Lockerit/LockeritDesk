@@ -66,16 +66,14 @@ export default function Login() {
         nameButton();
 
         if (userInit?.authenticated && !userInit?.closeSession && !userInit?.closeWindow) {
-
-            if (userInit?.adminWindowInto) {
-                log('info', 'Usuario autenticado en sesión administrativa, redirigiendo a /adminlockers');
-                navigate('/adminlockers', { replace: true });
-            } else {
-                log('info', 'Usuario autenticado en sesión principal, redirigiendo a /ppal');
-                navigate('/ppal', { replace: true });
-            }
+            log('info', 'Usuario autenticado en sesión principal, redirigiendo a /ppal');
+            navigate('/ppal', { replace: true });
+        } else if (userInit?.adminWindowInto && !userInit?.closeSession && !userInit?.closeWindow) {
+            log('info', 'Usuario autenticado en sesión administrativa, redirigiendo a /adminlockers');
+            navigate('/adminlockers', { replace: true });
         }
-    }, [close, config, userInit, navigate]);
+
+    }, [config, userInit, navigate]);
 
     const handleTogglePassword = () => {
         setShowPassword((prev) => !prev);
@@ -111,9 +109,11 @@ export default function Login() {
             // Login
             newSession = {
                 authenticated: true,
+                client: config.client,
                 user: remember ? userName.toLowerCase() : '',
                 remember,
                 locationDevice: config.locationDevice,
+                pointDevice: config.pointDevice,
                 avatar: config.login.avatarPath,
                 closeSession: false,
                 closeWindow: false,
@@ -129,9 +129,11 @@ export default function Login() {
             // Logout
             newSession = {
                 authenticated: false,
+                client: '',
                 user: userAux,
                 remember,
                 locationDevice: '',
+                pointDevice: '',
                 avatar: '',
                 closeSession: false,
                 closeWindow: false,
@@ -157,7 +159,11 @@ export default function Login() {
             const updatedUser = { ...userInit, closeWindow: false };
             setUserInit(updatedUser);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-            navigate('/ppal', { replace: true });
+            if (userInit?.authenticated) {
+                navigate('/ppal', { replace: true });
+            } else if (userInit?.adminWindowInto) {
+                navigate('/adminlockers', { replace: true });
+            }
             setTimeout(() => {
                 closeWindows();
             }, 500);
@@ -271,7 +277,7 @@ export default function Login() {
                         <Typography variant="h4"
                             sx={{ fontWeight: 'bold', mb: 2 }}
                         >
-                            {(userInit?.adminWindowInto || userInit?.adminWindow ) ? 'Administración': 'Aplicación'}
+                            {(userInit?.adminWindowInto || userInit?.adminWindow) ? 'Administración' : 'Aplicación'}
                         </Typography>
                     </Box>
 

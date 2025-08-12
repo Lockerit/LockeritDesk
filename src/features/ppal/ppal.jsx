@@ -4,7 +4,7 @@ import KeyPadModal from '../dialogs/keypad.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useElectronConfig } from '../hooks/useConfig.js';
-import GetStatusLockers from '../apis/statusLockers.js';
+import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
 import {
@@ -102,7 +102,7 @@ export default function Ppal() {
     const fetchDataStatusLocker = async () => {
         setLoading(true);
         try {
-            const result = await GetStatusLockers();
+            const result = await GetAllStatusLockers();
 
             if (result.success) {
                 if (Array.isArray(result?.data?.general)) {
@@ -218,12 +218,23 @@ export default function Ppal() {
                 >
                     {/* Contenido de texto (a la izquierda) */}
                     <Box>
-                        <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
-                            Casilleros disponibles:{' '}
-                        </Typography>
-                        <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                            {availableLockers}
-                        </Typography>
+                        {!disabledButton && (
+                            <>
+                                <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                                    Casilleros disponibles:{' '}
+                                </Typography>
+                                <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                                    {availableLockers}
+                                </Typography>
+                            </>
+                        )}
+                        {disabledButton && (
+                            <>
+                                <Typography variant="h2" component="span" color="error" sx={{ fontWeight: 'bold' }}>
+                                    No hay casilleros disponibles
+                                </Typography>
+                            </>
+                        )}
                     </Box>
 
                     {/* Imagen (alineada completamente a la derecha) */}
