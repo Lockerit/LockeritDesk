@@ -307,10 +307,12 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     } else {
       setMessageLoading('Buscando Casilllero...');
       setSecondsLeft(timeout);
+      const openBy = 'user';
 
       const payload = {
         phone: phone,
-        pin: password
+        pin: password,
+        openBy: openBy
       }
 
       try {
@@ -393,7 +395,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     try {
       setLoading(true);
 
-      const result = await paymentService(payload, (timeoutInsert * 1000), handleTotalUpdate, handleLoadingChange);
+      const result = await paymentService(payload, (timeoutInsert * 1000 * 3), handleTotalUpdate, handleLoadingChange);
 
       if (result?.http?.success) {
         speak(`Tu casillero es el: ${result.http.data.lockerCode}, guarda tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);

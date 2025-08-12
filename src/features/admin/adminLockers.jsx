@@ -107,12 +107,14 @@ const AdminLockers = () => {
             const successfulLockers = [];
             const failedLockers = [];
             const setFree = false;
+            const openBy = 'local';
 
             for (const { lockerCode } of selectedLockers) {
                 try {
                     const payloadOpen = {
                         lockerCode,
-                        setFree
+                        setFree,
+                        openBy
                     };
 
                     const resultOpen = await OpenByCodeLocker(payloadOpen);
@@ -149,6 +151,7 @@ const AdminLockers = () => {
             const failedLockers = [];
             const setFree = true;
             const newStatus = 'libre';
+            const openBy = 'local';
 
             for (const { lockerCode } of selectedLockers) {
                 try {
@@ -165,7 +168,8 @@ const AdminLockers = () => {
 
                             const payloadOpen = {
                                 lockerCode,
-                                setFree
+                                setFree,
+                                openBy
                             };
 
                             const resultOpen = await OpenByCodeLocker(payloadOpen);
