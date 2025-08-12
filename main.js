@@ -7,7 +7,7 @@ const { exec } = require('child_process');
 
 const fileName = path.parse(__filename).name;
 
-let win;
+let win = null;
 
 logger.info(`[${fileName}] Iniciando aplicación Electron`);
 
@@ -34,6 +34,8 @@ let currentEnv = {
   wsBasePort: process.env.REACT_APP_WS_PORT || '8080'
 };
 
+let lastCSP = buildCSP(currentEnv);
+
 function buildCSP(currentEnv) {
   const apiBaseUrl = `${currentEnv.apiBaseUrl}:${currentEnv.apiBasePort}`;
   const websocketUrl = `${currentEnv.wsBaseUrl}:${currentEnv.wsBasePort}`;
@@ -49,6 +51,18 @@ function buildCSP(currentEnv) {
 
   logger.debug(`[${fileName}] CSP generada: ${csp}`);
   return csp;
+}
+
+function recreateWindow() {
+  if (win) {
+    win.once('closed', () => {
+      win = null;
+      createWindow();
+    });
+    win.close(); // Usa close() para disparar el evento 'closed'
+  } else {
+    createWindow();
+  }
 }
 
 function createWindow() {
@@ -259,9 +273,13 @@ ipcMain.on('env-updated', (event, updatedEnv) => {
     currentEnv = updatedEnv;
     const newCSP = buildCSP(currentEnv);
     logger.debug(`[${fileName}] Nueva CSP generada: ${newCSP}`);
-    BrowserWindow.getAllWindows().forEach((win) => {
-      win.webContents.send('update-csp', newCSP);
-    });
+
+    if (newCSP !== lastCSP) {
+      lastCSP = newCSP;
+      logger.info(`[${fileName}] CSP cambió, recreando ventana...`);
+      recreateWindow();
+      return;
+    }
   }
 
   BrowserWindow.getAllWindows().forEach((win) => {
