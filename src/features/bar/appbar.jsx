@@ -135,9 +135,14 @@ export default function DenseAppBar() {
                     >
                         <Avatar alt="Avatar" src={avatarSelect} />
                         {showData && (
-                            <Typography variant="h6">
-                                {(userInit?.user || '')}
-                            </Typography>
+                            <>
+                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                    {(config?.client || '')}{' | '}
+                                </Typography>
+                                <Typography variant="h6">
+                                    {(config?.login?.user || '')}
+                                </Typography>
+                            </>
                         )}
                     </Box>
                 </Box>
@@ -152,10 +157,10 @@ export default function DenseAppBar() {
                     {showData && (
                         <>
                             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                SAC -
+                                {(config?.locationDevice || '')} {' | '}
                             </Typography>
                             <Typography variant="h6">
-                                {(config?.locationDevice || '')}
+                                {(config?.pointDevice || '')}
                             </Typography>
                         </>
                     )}

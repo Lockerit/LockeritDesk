@@ -11,22 +11,38 @@ import {
 const fileName = 'addAssignLocker';
 
 const log = (level, message) => {
-  if (typeof window !== 'undefined' && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
-  }
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
 };
+
 
 const AddAssignLocker = async (payload, timeoutMs) => {
 
     const env = getEnv(); // 🔁 Actualiza si `.env` cambió
-
     const maxRetries = env?.apiBaseMaxRetries || 5;
     const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
+
+    log('debug', 'peticion assign 0', isWebSocketConnected());
 
     log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+
+        log('debug', 'peticion assign ' + attempt + ' - ' + isWebSocketConnected());
+
+        if (!isWebSocketConnected()) {
+            log('info', `Conexión WebSocket cerrada, abortando intento ${attempt}`);
+            return {
+                success: false,
+                data: '',
+                status: 499,
+            };
+            break;
+        }
+
         try {
+            log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
             log('info', `Intento ${attempt}: URL -> ${API_ROUTES.ASSIGN_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
@@ -101,7 +117,6 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                     if (onLoading && typeof onLoading === 'function') {
                         onLoading(true); // Enciende loading cuando WS indique que ya terminó
                     }
-
                     closeWebSocket();
                     resolve('WebSocket complete');
                 }
@@ -113,6 +128,14 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                 httpResponse = res;
 
                 if (!res.success) {
+                    // Si es 499, no mostramos el error, solo lo devolvemos
+                    if (res.status === 499) {
+                        log('warn', 'WebSocket desconectado - status 499');
+                        closeWebSocket();
+                        return res; // no lanzamos error
+                    }
+
+                    // Para cualquier otro error, sí lo mostramos/lanzamos
                     const err = res.data?.message || 'Error HTTP en servidor (002)';
                     log('error', err);
                     closeWebSocket();
@@ -131,7 +154,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
             setTimeout(() => {
                 const err = 'Timeout en WebSocket (002)';
                 log('error', err);
-                reject(new Error(err));
+                // reject(new Error(err));
             }, effectiveTimeout)
         );
 

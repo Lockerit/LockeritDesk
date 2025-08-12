@@ -10,7 +10,7 @@ const log = (level, message) => {
   }
 };
 const SetStatusLocker = async (payload) => {
-    log('info', 'Iniciando petición para abrir casillero');
+    log('info', 'Iniciando petición para cambiar estado casillero');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
     const maxRetries = env?.apiBaseMaxRetries || 5;
@@ -22,10 +22,11 @@ const SetStatusLocker = async (payload) => {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+            log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
             log('info', `Intento ${attempt}: URL -> ${API_ROUTES.SETSTATUS_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
-            const response = await axios.post(API_ROUTES.SETSTATUS_LOCKER, payload, { timeout: effectiveTimeout });
+            const response = await axios.post(API_ROUTES.SET_STATUS_LOCKER, payload, { timeout: effectiveTimeout });
 
             log('info', `Response. Status: ${response.status}`);
             log('info', `Response. Data: ${JSON.stringify(response.data)}`);

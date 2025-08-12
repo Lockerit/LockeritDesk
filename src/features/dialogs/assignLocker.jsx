@@ -17,15 +17,14 @@ import {
 import {
     formatTime
 } from '../utils/utils.js';
-import { speak } from '../utils/speak.js'
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const fileName = 'assignLocher';
+const fileName = 'assignLocker';
 
-export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 600 }) {
+export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 15, backColor }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
 
@@ -34,24 +33,31 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 6
         if (open) {
             setSecondsLeft(timeout); // reinicia cada vez que abre
         }
-    }, [open]);
+    }, [open, timeout]);
 
+    // Manejar conteo
     useEffect(() => {
-        if (open && secondsLeft > 0) {
-            const interval = setInterval(() => {
-                setSecondsLeft(prev => prev - 1);
-            }, 1000);
+        if (!open || secondsLeft <= 0) return;
 
-            return () => clearInterval(interval);
-        } else if (open && secondsLeft === 0) {
-            onConfirm(); // cerrar automáticamente
-        }
+        const interval = setInterval(() => {
+            setSecondsLeft(prev => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
     }, [open, secondsLeft]);
+
+    // Cerrar automáticamente cuando llegue a 0
+    useEffect(() => {
+        if (open && secondsLeft === 0) {
+            setSecondsLeft(timeout);
+            setTimeout(() => onConfirm(), 100);
+        }
+    }, [open, secondsLeft, onConfirm]);
 
     return (
         <Dialog open={open} onClose={(event, reason) => {
             if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                onCancel(); // tu función personalizada para cerrar
+                setTimeout(() => onConfirm(), 0); // diferir para evitar el warning
             }
 
         }}
@@ -117,7 +123,7 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 6
                             with: '30%',
                             mx: 'auto',
                             my: 2,
-                            backgroundColor: 'error.main',
+                            backgroundColor: backColor || 'primary.main',
                             color: 'error.contrastText',
                             // border: '5px solid', // (azul)
                             // color: 'error.main',
@@ -128,12 +134,17 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 6
                         </Typography>
                     </Paper>
                 </Box>
-                <Typography variant="h4" sx={{ textAlign: 'center', mt: 5, mb: 3 }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', my: 2 }}>
                     {msg}
                 </Typography>
-                <Typography variant="h4" sx={{ textAlign: 'center', mt: 5, mb: 3, fontWeight: 'bold' }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', my: 2, fontWeight: 'bold' }}>
                     ¡No olvides cerrar el casillero!
                 </Typography>
+                {msg.substring(0, 6) === 'Retira' && (
+                    <Typography variant="h5" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+                        Disponible para una nueva asignación.
+                    </Typography>
+                )}
             </DialogContent>
 
             <DialogActions

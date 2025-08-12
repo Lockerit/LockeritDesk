@@ -19,7 +19,7 @@ const baseURL =
         : defaultURL;
 
 const timeout =
-    env?.apiBaseTimeout ? env?.apiBaseTimeout : '300';
+    env?.apiBaseTimeout ? env?.apiBaseTimeout : '30';
 
 log('info', `API BaseURL Inicial: ${baseURL}`);
 log('info', `API BaseTimeout Inicial: ${timeout}`);

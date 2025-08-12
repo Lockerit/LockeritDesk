@@ -1,31 +1,25 @@
 // voiceService.js
 
 let voices = [];
-let defaultVoiceName = '';
-let defaultRate = 1;
-let defaultPitch = 1;
-let defaultVolume = 1;
 
-// Cargar voces (esto puede ser asincrónico)
+// Cargar voces disponibles
 const loadVoices = () => {
     voices = window.speechSynthesis.getVoices();
-    if (voices.length && !defaultVoiceName) {
-        defaultVoiceName = voices[0].name;
-    }
 };
 
-// Suscribirse al evento de voces
 window.speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
 
-export const setVoiceOptions = ({ voiceName, rate, pitch, volume }) => {
-    if (voiceName) defaultVoiceName = voiceName;
-    if (rate !== undefined) defaultRate = rate;
-    if (pitch !== undefined) defaultPitch = pitch;
-    if (volume !== undefined) defaultVolume = volume;
-};
-
-export const speak = (text) => {
+/**
+ * Hablar un texto con las opciones especificadas
+ * @param {string} text - Texto a pronunciar
+ * @param {Object} options - Opciones de voz
+ * @param {string} [options.voiceName] - Nombre exacto de la voz
+ * @param {number} [options.rate=1] - Velocidad (0.1 - 10)
+ * @param {number} [options.pitch=1] - Tono (0 - 2)
+ * @param {number} [options.volume=1] - Volumen (0 - 1)
+ */
+export const speak = (text, { voiceName, rate = 1.5, pitch = 2, volume = 1 } = {}) => {
     if (!window.speechSynthesis) {
         console.warn('API de síntesis de voz no disponible');
         return;
@@ -33,12 +27,14 @@ export const speak = (text) => {
 
     const utterance = new SpeechSynthesisUtterance(text);
 
-    const voice = voices.find(v => v.name === defaultVoiceName);
-    if (voice) utterance.voice = voice;
+    if (voiceName) {
+        const voice = voices.find(v => v.name === voiceName);
+        if (voice) utterance.voice = voice;
+    }
 
-    utterance.rate = defaultRate;
-    utterance.pitch = defaultPitch;
-    utterance.volume = defaultVolume;
+    utterance.rate = rate;
+    utterance.pitch = pitch;
+    utterance.volume = volume;
 
     window.speechSynthesis.speak(utterance);
 };

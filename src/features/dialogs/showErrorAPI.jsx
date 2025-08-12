@@ -24,7 +24,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const fileName = 'showErrorAPI';
 
-export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 600 }) {
+export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
 
@@ -32,24 +32,33 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 600 }) {
         if (open) {
             setSecondsLeft(timeout); // reinicia cada vez que abre
         }
-    }, [open]);
+    }, [open, timeout]);
 
+    // Manejar conteo
     useEffect(() => {
-        if (open && secondsLeft > 0) {
-            const interval = setInterval(() => {
-                setSecondsLeft(prev => prev - 1);
-            }, 1000);
+        if (!open || secondsLeft <= 0) return;
 
-            return () => clearInterval(interval);
-        } else if (open && secondsLeft === 0) {
-            onConfirm(); // cerrar automáticamente
-        }
+        const interval = setInterval(() => {
+            setSecondsLeft(prev => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
     }, [open, secondsLeft]);
+
+    // Cerrar automáticamente cuando llegue a 0
+    useEffect(() => {
+        if (open && secondsLeft === 0) {
+            setSecondsLeft(timeout);
+            setTimeout(() => {
+                onConfirm();
+            }, 0);
+        }
+    }, [open, secondsLeft, onConfirm]);
 
     return (
         <Dialog open={open} onClose={(event, reason) => {
             if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                onCancel(); // tu función personalizada para cerrar
+                setTimeout(() => onConfirm(), 0); // diferir para evitar el warning
             }
 
         }}
