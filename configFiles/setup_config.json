@@ -20,7 +20,7 @@
         },
         "modalTimeouts": {
             "timeoutKeypad": 300,
-            "timeoutInsertMoney": 120,
+            "timeoutInsertMoney": 10,
             "timeoutShowMessage": 15
         }
     }

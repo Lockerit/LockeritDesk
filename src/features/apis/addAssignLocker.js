@@ -128,6 +128,14 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                 httpResponse = res;
 
                 if (!res.success) {
+                    // Si es 499, no mostramos el error, solo lo devolvemos
+                    if (res.status === 499) {
+                        log('warn', 'WebSocket desconectado - status 499');
+                        closeWebSocket();
+                        return res; // no lanzamos error
+                    }
+
+                    // Para cualquier otro error, sí lo mostramos/lanzamos
                     const err = res.data?.message || 'Error HTTP en servidor (002)';
                     log('error', err);
                     closeWebSocket();
@@ -146,7 +154,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
             setTimeout(() => {
                 const err = 'Timeout en WebSocket (002)';
                 log('error', err);
-                reject(new Error(err));
+                // reject(new Error(err));
             }, effectiveTimeout)
         );
 
@@ -163,6 +171,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
         };
 
     } catch (error) {
+        console.log(`Error en el proceso de asignación: ${error}`);
         log('error', `Error general: ${error.message}`);
         closeWebSocket();
         return {

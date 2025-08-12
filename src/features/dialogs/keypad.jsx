@@ -307,7 +307,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     } else {
       setMessageLoading('Buscando Casilllero...');
       setSecondsLeft(timeout);
-      const payload = { phone, password }
+
+      const payload = {
+        phone: phone,
+        pin: password
+      }
 
       try {
         setLoading(true);
@@ -379,12 +383,17 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
-    const payload = { phone, password }
+    const payload = {
+      phone: phone,
+      pin: password
+    }
+
     setInsertMoneyOpen(true);
 
     try {
       setLoading(true);
-      const result = await paymentService(payload, (timeoutInsert * 1000 * 10), handleTotalUpdate, handleLoadingChange);
+
+      const result = await paymentService(payload, (timeoutInsert * 1000), handleTotalUpdate, handleLoadingChange);
 
       if (result?.http?.success) {
         speak(`Tu casillero es el: ${result.http.data.lockerCode}, guarda tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
@@ -394,7 +403,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setAssignLockerOpen(true);
         }
       } else {
-        if (!result.websocket) return;
+        if (result.status === 499) return;
         setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
         setShowErrorAPIOpen(true);
       }
