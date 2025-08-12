@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import LoadingScreen from '../dialogs/loading.jsx';
-import GetStatusLockers from '../apis/statusLockers.js';
+import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
+import OpenByCodeLocker from '../apis/openByCodeLocker.js';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import OpenLocker from '../apis/openLocker.js';
 import SetStatusLocker from '../apis/setStatusLocker.js';
 import SnackBarAlert from '../bar/snackAlert.jsx';
 import {
@@ -60,7 +60,7 @@ const AdminLockers = () => {
         setMessageLoading('Cargando...');
         setLoading(true);
         try {
-            const result = await GetStatusLockers(); // Reemplaza por tu axios.get()
+            const result = await GetAllStatusLockers();
             if (result?.success) {
                 setData(result?.default || result?.data);
             } else {
@@ -115,7 +115,7 @@ const AdminLockers = () => {
                         setFree
                     };
 
-                    const resultOpen = await OpenLocker(payloadOpen);
+                    const resultOpen = await OpenByCodeLocker(payloadOpen);
 
                     if (resultOpen?.success) {
                         successfulLockers.push(lockerCode);
@@ -152,7 +152,6 @@ const AdminLockers = () => {
 
             for (const { lockerCode } of selectedLockers) {
                 try {
-                    console.log(`Liberando casillero: ${lockerCode}, ${newStatus}`);
 
                     const payloadSetStatus = {
                         lockerCode,
@@ -169,7 +168,7 @@ const AdminLockers = () => {
                                 setFree
                             };
 
-                            const resultOpen = await OpenLocker(payloadOpen);
+                            const resultOpen = await OpenByCodeLocker(payloadOpen);
 
                             if (resultOpen?.success) {
                                 successfulLockers.push(lockerCode);

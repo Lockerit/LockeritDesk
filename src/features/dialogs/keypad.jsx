@@ -22,11 +22,11 @@ import {
 import SnackBarAlert from '../bar/snackAlert.jsx';
 import ConfirmDialog from './confirmDialog.jsx';
 import InsertMoney from './insertMoney.jsx';
-import AssignLocker from './assignLocker.jsx';
 import ShowErrorAPI from './showErrorAPI.jsx';
 import { paymentService } from '../apis/addAssignLocker.js';
 import LoadingScreen from '../dialogs/loading.jsx';
-import RemoveLocker from '../apis/removeLocker.js';
+import AssignLocker from './assignLocker.jsx';
+import OpenSessionLocker from '../apis/openSessionLocker.js';
 import {
   formatTime,
   phoneRegex,
@@ -316,7 +316,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       try {
         setLoading(true);
 
-        const result = await RemoveLocker(payload);
+        const result = await OpenSessionLocker(payload);
 
         if (result?.success) {
           speak(`Tu casillero es el: ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio, ¡No olvides cerrar el casillero!, disponible para una nueva asignación`);

@@ -4,7 +4,7 @@ import KeyPadModal from '../dialogs/keypad.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useElectronConfig } from '../hooks/useConfig.js';
-import GetStatusLockers from '../apis/statusLockers.js';
+import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
 import {
@@ -102,7 +102,7 @@ export default function Ppal() {
     const fetchDataStatusLocker = async () => {
         setLoading(true);
         try {
-            const result = await GetStatusLockers();
+            const result = await GetAllStatusLockers();
 
             if (result.success) {
                 if (Array.isArray(result?.data?.general)) {

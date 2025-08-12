@@ -26,7 +26,7 @@ const SetStatusLocker = async (payload) => {
             log('info', `Intento ${attempt}: URL -> ${API_ROUTES.SETSTATUS_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
-            const response = await axios.post(API_ROUTES.SETSTATUS_LOCKER, payload, { timeout: effectiveTimeout });
+            const response = await axios.post(API_ROUTES.SET_STATUS_LOCKER, payload, { timeout: effectiveTimeout });
 
             log('info', `Response. Status: ${response.status}`);
             log('info', `Response. Data: ${JSON.stringify(response.data)}`);

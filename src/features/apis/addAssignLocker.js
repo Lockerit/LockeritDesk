@@ -171,7 +171,6 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
         };
 
     } catch (error) {
-        console.log(`Error en el proceso de asignación: ${error}`);
         log('error', `Error general: ${error.message}`);
         closeWebSocket();
         return {
