@@ -8,10 +8,11 @@ const { exec } = require('child_process');
 const fileName = path.parse(__filename).name;
 
 let win = null;
+let lastCSP = null;
+const isProd = app.isPackaged;
 
 logger.info(`[${fileName}] Iniciando aplicación Electron`);
 
-const isProd = app.isPackaged;
 
 const envPath = isProd
   ? path.join(process.resourcesPath, 'configFiles/.env')
@@ -29,16 +30,15 @@ let currentEnv = {
   apiBasePort: process.env.REACT_APP_API_BASE_PORT || '8080',
   apiBaseTimeout: process.env.REACT_APP_API_BASE_TIMEOUT || '30',
   apiBaseMaxRetries: process.env.REACT_APP_API_BASE_MAXRETRIES || 10,
-  apiBaseMaxRetries: process.env.REACT_APP_API_BASE_DELAYRETRIES || 2,
+  apiBaseDelayRetries: process.env.REACT_APP_API_BASE_DELAYRETRIES || 2,
   wsBaseUrl: process.env.REACT_APP_WS_URL || 'ws://localhost',
   wsBasePort: process.env.REACT_APP_WS_PORT || '8080'
 };
 
-let lastCSP = buildCSP(currentEnv);
 
-function buildCSP(currentEnv) {
-  const apiBaseUrl = `${currentEnv.apiBaseUrl}:${currentEnv.apiBasePort}`;
-  const websocketUrl = `${currentEnv.wsBaseUrl}:${currentEnv.wsBasePort}`;
+function buildCSP(env) {
+  const apiBaseUrl = `${env.apiBaseUrl}:${env.apiBasePort}`;
+  const websocketUrl = `${env.wsBaseUrl}:${env.wsBasePort}`;
 
   const csp = [
     "default-src 'self'",
@@ -53,20 +53,48 @@ function buildCSP(currentEnv) {
   return csp;
 }
 
+function sendCSPIfChanged(win, newCsp) {
+  if (newCsp && newCsp !== lastCSP) {
+    logger.info(`[${fileName}] CSP cambió, enviando al renderer`);
+    win.webContents.send('update-csp', newCsp);
+    lastCSP = newCsp;
+  } else {
+    logger.debug(`[${fileName}] CSP igual a la última enviada, no se envía`);
+  }
+}
+
+let isRecreating = false;
+
 function recreateWindow() {
+  if (isRecreating) {
+    logger.warn(`[${fileName}] Ya se está recreando la ventana, se ignora la petición`);
+    return;
+  }
+
+  isRecreating = true;
+
   if (win) {
+    logger.info(`[${fileName}] Destruyendo ventana actual para recrearla...`);
+
     win.once('closed', () => {
+      logger.info(`[${fileName}] Ventana destruida, recreando...`);
       win = null;
-      createWindow();
+      setTimeout(() => {
+        createWindow();
+        isRecreating = false;
+      }, 100);
     });
-    win.close(); // Usa close() para disparar el evento 'closed'
+
+    win.close();
   } else {
     createWindow();
+    isRecreating = false;
   }
 }
 
 function createWindow() {
   logger.info(`[${fileName}] Creando ventana principal...`);
+
   const preloadPath = path.join(__dirname, 'preload.js');
 
   win = new BrowserWindow({
@@ -81,6 +109,7 @@ function createWindow() {
     }
   });
 
+  // Bloqueo de Google Fonts externos
   win.webContents.session.webRequest.onBeforeRequest(
     { urls: ['https://fonts.googleapis.com/*'] },
     (details, callback) => {
@@ -96,15 +125,11 @@ function createWindow() {
   win.loadURL(loadUrl);
   logger.info(`[${fileName}] Cargando URL: ${loadUrl}`);
 
-  if (!isProd) {
-    win.webContents.openDevTools();
-  }
-
-  const initialCSP = buildCSP(currentEnv);
+  if (!isProd) win.webContents.openDevTools();
 
   win.webContents.on('did-finish-load', () => {
-    logger.info(`[${fileName}] Enviando CSP inicial al renderer`);
-    win.webContents.send('update-csp', initialCSP);
+    const initialCSP = buildCSP(currentEnv);
+    sendCSPIfChanged(win, initialCSP);
   });
 }
 
@@ -266,25 +291,25 @@ ipcMain.handle('get-env', async () => {
   };
 });
 
+// === Cuando se actualiza el .env ===
+// Evento cuando cambia el .env
 ipcMain.on('env-updated', (event, updatedEnv) => {
   logger.info(`[${fileName}] Recibido env actualizado`);
 
   if (isProd) {
     currentEnv = updatedEnv;
     const newCSP = buildCSP(currentEnv);
-    logger.debug(`[${fileName}] Nueva CSP generada: ${newCSP}`);
-
-    if (newCSP !== lastCSP) {
-      lastCSP = newCSP;
-      logger.info(`[${fileName}] CSP cambió, recreando ventana...`);
-      recreateWindow();
-      return;
-    }
+    BrowserWindow.getAllWindows().forEach((w) => sendCSPIfChanged(w, newCSP));
   }
 
-  BrowserWindow.getAllWindows().forEach((win) => {
-    win.webContents.send('env-updated', updatedEnv);
+  BrowserWindow.getAllWindows().forEach((w) => {
+    w.webContents.send('env-updated', updatedEnv);
   });
+});
+
+ipcMain.on('reload-app', () => {
+  logger.info(`[${fileName}] Recargando aplicación por petición del usuario`);
+  recreateWindow()
 });
 
 ipcMain.on('log-message', (event, { level, message }) => {

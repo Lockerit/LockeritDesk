@@ -12,7 +12,8 @@
   "main": "main.js",
   "homepage": ".",
   "scripts": {
-    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electronmon .\"",
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "dev:watch": "concurrently \"vite\" \"wait-on http://localhost:5173 && electronmon .\"",
     "clean": "rimraf dist release",
     "build:web": "vite build",
     "build:electron": "electron-builder",
