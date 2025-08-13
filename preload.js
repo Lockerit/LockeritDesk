@@ -66,7 +66,8 @@ try {
     onAuthUpdate: (callback) => ipcRenderer.on('auth-updated', (_, data) => callback(data)),
     log: (level, message) => ipcRenderer.send('log-message', { level, message }),
     getAppVersion: () => packageJson.version,
-    onUpdateCSP: (callback) => ipcRenderer.on('update-csp', (_event, csp) => callback(csp))
+    onUpdateCSP: (callback) => ipcRenderer.on('update-csp', (_event, csp) => callback(csp)),
+    reloadApp: () => ipcRenderer.send('reload-app')
   });
 
   logger.info(`[${fileName}] API expuesta en window.electronAPI`);
