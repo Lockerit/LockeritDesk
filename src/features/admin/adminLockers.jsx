@@ -101,450 +101,394 @@ const AdminLockers = () => {
 
 
     const handleAction = async (action) => {
+
+        let setFree = null;
+
         if (action === 'abrir') {
             setMessageLoading('Abriendo...');
-            setLoading(true);
-            const successfulLockers = [];
-            const failedLockers = [];
-            const setFree = false;
-            const openBy = 'local';
-
-            for (const { lockerCode } of selectedLockers) {
-                try {
-                    const payloadOpen = {
-                        lockerCode,
-                        setFree,
-                        openBy
-                    };
-
-                    const resultOpen = await OpenByCodeLocker(payloadOpen);
-
-                    if (resultOpen?.success) {
-                        successfulLockers.push(lockerCode);
-                    } else {
-                        failedLockers.push(lockerCode);
-                    }
-                } catch (err) {
-                    failedLockers.push(lockerCode);
-                }
-            }
-            setLoading(false);
-
-            if (failedLockers.length > 0) {
-                setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no se abrieron`);
-                setShowErrorAPIOpen(true);
-            }
-
-            if (successfulLockers.length > 0) {
-                setTimeout(() => {
-                    showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
-                }, 1000); // Espera 1s después del modal
-            }
-
-            await fetchData();
-            setSelectedLockers([]); // Deseleccionar todos
+            setFree = false;
         } else if (action === 'liberar') {
             setMessageLoading('Liberando...');
-            setLoading(true);
-
-            const successfulLockers = [];
-            const failedLockers = [];
-            const setFree = true;
-            const newStatus = 'libre';
-            const openBy = 'local';
-
-            for (const { lockerCode } of selectedLockers) {
-                try {
-
-                    const payloadSetStatus = {
-                        lockerCode,
-                        newStatus
-                    };
-
-                    const resultStatus = await SetStatusLocker(payloadSetStatus);
-
-                    if (resultStatus?.success) {
-                        try {
-
-                            const payloadOpen = {
-                                lockerCode,
-                                setFree,
-                                openBy
-                            };
-
-                            const resultOpen = await OpenByCodeLocker(payloadOpen);
-
-                            if (resultOpen?.success) {
-                                successfulLockers.push(lockerCode);
-                            } else {
-                                failedLockers.push(lockerCode);
-                            }
-                        } catch (err) {
-                            failedLockers.push(lockerCode);
-                        }
-                    } else {
-                        failedLockers.push(lockerCode);
-                    }
-                } catch (err) {
-                    failedLockers.push(lockerCode);
-                }
-            }
-
-            setLoading(false);
-
-            if (failedLockers.length > 0) {
-                setMessageErrorAPI(`Los casilleros: (${failedLockers.join(', ')}) no se liberaron`);
-                setShowErrorAPIOpen(true);
-            }
-
-            if (successfulLockers.length > 0) {
-                setTimeout(() => {
-                    showAlert(`Los casilleros (${successfulLockers.join(', ')}) se liberaron exitosamente`, 'info');
-                }, 1000); // Espera 1s después del modal
-            }
-
-            await fetchData();
-            setSelectedLockers([]); // Deseleccionar todos
+            setFree = true;
         }
 
-    };
-
-    const showAlert = (msg, severity = 'error') => {
-        setSnackbarMessage(msg);
-        setSnackbarSeverity(severity);
-        setSnackbarOpen(true);
-    };
-
-    // if (loading) return <LoadingScreen />;
-
-    const totalLockers = data?.general?.reduce((sum, item) => sum + item.total, 0);
-
-    const currentModule = data?.modules?.find((mod) => mod.module === selectedModule);
-
-    const confirmShowErrorAPI = () => {
-        setShowErrorAPIOpen(false);
-    };
-
-    const handleMenuClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleCantidadClick = () => {
-        fetchData();
-    }
-
-    const handleStatusChange = async (status) => {
-
-        setMessageLoading('Cambiando estado...');
         setLoading(true);
-
         const successfulLockers = [];
         const failedLockers = [];
+        const openBy = 'local';
 
-        for (const locker of selectedLockers) {
+        for (const { lockerCode } of selectedLockers) {
+            try {
+                const payloadOpen = {
+                    lockerCode,
+                    setFree,
+                    openBy
+                };
 
-            if (locker.status.toLowerCase() !== 'ocupado') {
-                try {
-                    const payloadSetStatus = {
-                        lockerCode: locker.lockerCode,
-                        newStatus: status
-                    };
+                const resultOpen = await OpenByCodeLocker(payloadOpen);
 
-                    const resultStatus = await SetStatusLocker(payloadSetStatus);
-
-                    if (resultStatus?.success) {
-                        successfulLockers.push(locker.lockerCode);
-                    } else {
-                        failedLockers.push(locker.lockerCode);
-                    }
-                } catch (err) {
-                    failedLockers.push(locker.lockerCode);
+                if (resultOpen?.success) {
+                    successfulLockers.push(lockerCode);
+                } else {
+                    failedLockers.push(lockerCode);
                 }
-            } else {
-                failedLockers.push(locker.lockerCode);
+            } catch (err) {
+                failedLockers.push(lockerCode);
             }
         }
-
         setLoading(false);
 
         if (failedLockers.length > 0) {
-            setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
+            setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no se abrieron`);
             setShowErrorAPIOpen(true);
         }
 
         if (successfulLockers.length > 0) {
             setTimeout(() => {
-                showAlert(`Los casilleros (${successfulLockers.join(', ')}) cambiaron de estado exitosamente`, 'info');
+                showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
             }, 1000); // Espera 1s después del modal
         }
 
         await fetchData();
         setSelectedLockers([]); // Deseleccionar todos
-        handleMenuClose();
-    };
+};
 
-    const handleSelectAll = (checked) => {
-        if (checked) {
-            // Selecciona todos los lockers visibles en el módulo actual
-            const allLockers = currentModule.lockers.map(locker => ({
-                lockerCode: locker.lockerCode,
-                status: locker.status
-            }));
-            setSelectedLockers(allLockers);
+const showAlert = (msg, severity = 'error') => {
+    setSnackbarMessage(msg);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+};
+
+// if (loading) return <LoadingScreen />;
+
+const totalLockers = data?.general?.reduce((sum, item) => sum + item.total, 0);
+
+const currentModule = data?.modules?.find((mod) => mod.module === selectedModule);
+
+const confirmShowErrorAPI = () => {
+    setShowErrorAPIOpen(false);
+};
+
+const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+};
+
+const handleMenuClose = () => {
+    setAnchorEl(null);
+};
+
+const handleCantidadClick = () => {
+    fetchData();
+}
+
+const handleStatusChange = async (status) => {
+
+    setMessageLoading('Cambiando estado...');
+    setLoading(true);
+
+    const successfulLockers = [];
+    const failedLockers = [];
+
+    for (const locker of selectedLockers) {
+
+        if (locker.status.toLowerCase() !== 'ocupado') {
+            try {
+                const payloadSetStatus = {
+                    lockerCode: locker.lockerCode,
+                    newStatus: status
+                };
+
+                const resultStatus = await SetStatusLocker(payloadSetStatus);
+
+                if (resultStatus?.success) {
+                    successfulLockers.push(locker.lockerCode);
+                } else {
+                    failedLockers.push(locker.lockerCode);
+                }
+            } catch (err) {
+                failedLockers.push(locker.lockerCode);
+            }
         } else {
-            // Deselecciona todos
-            setSelectedLockers([]);
+            failedLockers.push(locker.lockerCode);
         }
-    };
+    }
 
-    // Colores por estado
-    const getColorByStatus = (status) => {
-        switch (status.toLowerCase()) {
-            case 'libre':
-                return 'text.secondary';
-            case 'ocupado':
-                return 'error.main';
-            case 'reservado':
-                return 'text.primary';
-            case 'deshabilitado':
-                return '#757575'
-            default:
-                return '#757575'
-        }
-    };
+    setLoading(false);
 
-    return (
-        <>
-            <Box
-                sx={{
-                    height: '87vh', // Ajusta según la altura del AppBar
-                    display: 'flex',
-                    flexDirection: 'column',
-                    px: 4,
-                    py: 2,
-                    width: '100%',
-                    alignItems: 'center'
-                }}>
-                <Box textAlign="center" sx={{ mt: 5, display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
-                    <Typography variant="h3"
-                        sx={{ fontWeight: 'bold', mb: 2 }}
-                    >
-                        Estado de Casilleros
-                    </Typography>
-                    <Typography
-                        variant="h4"
-                        component="span"
-                        onClick={handleCantidadClick}
-                        sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            '&:hover': {
-                                textDecoration: 'underline',
-                            }
-                        }}
-                    >
-                        {'Cantidad: '} {totalLockers}
-                        <Sync sx={{ fontSize: 40, ml: 1 }} />
-                    </Typography>
-                </Box>
-                {/* Datos generales */}
+    if (failedLockers.length > 0) {
+        setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
+        setShowErrorAPIOpen(true);
+    }
 
+    if (successfulLockers.length > 0) {
+        setTimeout(() => {
+            showAlert(`Los casilleros (${successfulLockers.join(', ')}) cambiaron de estado exitosamente`, 'info');
+        }, 1000); // Espera 1s después del modal
+    }
 
-                {/* Indicadores */}
-                <Box textAlign="center" sx={{ mt: 5, mb: 2, display: 'flex', justifyContent: 'space-between', height: '5%', width: '100%' }}>
-                    {data?.general?.map((item, idx) => (
-                        <Box key={item.status}>
-                            <Typography variant="h4" component="span"
-                                sx={{
-                                    fontWeight: 'bold',
-                                    color: getColorByStatus(item.status.toUpperCase())
-                                }}>
-                                {item.status.toUpperCase()}{': '}
-                            </Typography>
-                            <Typography variant="h4" component="span"
-                                sx={{
-                                    fontWeight: 'bold',
-                                    color: getColorByStatus(item.status.toUpperCase())
-                                }}>
-                                {item.total}
-                            </Typography>
-                        </Box>
-                    ))}
-                </Box>
+    await fetchData();
+    setSelectedLockers([]); // Deseleccionar todos
+    handleMenuClose();
+};
 
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%', mt: 2 }}>
-                    <FormControl variant="standard" sx={{ width: '80%' }}>
-                        <InputLabel id="select-module-label">Selecciona un módulo</InputLabel>
-                        <Select
-                            labelId="select-module-label"
-                            value={selectedModule}
-                            label="Selecciona un módulo"
-                            onChange={handleModuleChange}
-                        >
-                            {data?.modules?.map((mod) => (
-                                <MenuItem key={mod.module} value={mod.module}>
-                                    Módulo {mod.module}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+const handleSelectAll = (checked) => {
+    if (checked) {
+        // Selecciona todos los lockers visibles en el módulo actual
+        const allLockers = currentModule.lockers.map(locker => ({
+            lockerCode: locker.lockerCode,
+            status: locker.status
+        }));
+        setSelectedLockers(allLockers);
+    } else {
+        // Deselecciona todos
+        setSelectedLockers([]);
+    }
+};
 
-                    {currentModule && (
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    sx={{
-                                        '& .MuiSvgIcon-root': {
-                                            fontSize: '45px' // Aquí sí afecta el tamaño del ícono
-                                        }
-                                    }}
-                                    checked={
-                                        currentModule.lockers.length > 0 &&
-                                        selectedLockers.length === currentModule.lockers.length
-                                    }
-                                    onChange={(e) => handleSelectAll(e.target.checked)}
-                                />
-                            }
-                            label="Seleccionar todos"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: '24px' } }}
-                        />
-                    )}
-                </Stack>
+// Colores por estado
+const getColorByStatus = (status) => {
+    switch (status.toLowerCase()) {
+        case 'libre':
+            return 'text.secondary';
+        case 'ocupado':
+            return 'error.main';
+        case 'reservado':
+            return 'text.primary';
+        case 'deshabilitado':
+            return '#757575'
+        default:
+            return '#757575'
+    }
+};
 
-
-                {/* Botones de lockers */}
-                {currentModule && (
-                    <Box sx={{
-                        height: '70%',
-                        width: '100%',
-                        overflowY: 'auto',
-                        scrollBehavior: 'smooth',
-                        pr: 2,
-                        mt: 2,
-                        p: 2,
-                        boxSizing: 'border-box',
-                    }} >
-                        <Grid container spacing={1} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
-                            {currentModule.lockers.map((locker) => {
-                                const selected = selectedLockers.some(
-                                    (item) => item.lockerCode === locker.lockerCode
-                                );
-                                return (
-                                    <Grid size={2.4} key={locker.lockerCode} sx={{ maxHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => handleLockerClick(locker)}
-                                            sx={{
-                                                backgroundColor: getColorByStatus(locker.status),
-                                                border: selected ? '5px solid black' : 'none',
-                                                color: '#fff',
-                                                width: '100%',
-                                                height: '100%',
-                                                fontSize: '32px'
-                                                // '&:hover': {
-                                                //     backgroundColor: getHoverColorByStatus(locker.status),
-                                                //     color: '#fff'
-                                                // }
-                                            }}
-                                        >
-                                            {locker.lockerCode}
-                                        </Button>
-                                    </Grid>
-                                );
-                            })}
-                        </Grid>
-                    </Box>
-                )}
-                {currentModule && (
-                    <Box sx={{
-                        height: '15%', width: '100%'
-                    }} >
-                        {/* Acciones */}
-                        {selectedLockers.length > 0 && (
-                            <Stack spacing={2} alignItems="center" sx={{ mt: 2, height: '100%', width: '100%' }}>
-                                <Box
-                                    sx={{
-                                        maxHeight: 80,
-                                        minHeight: 40,
-                                        overflowY: 'auto',
-                                        width: '100%',
-                                        px: 2,
-                                        py: 1,
-                                        borderRadius: 2,
-                                        display: 'flex',
-                                        flexWrap: 'wrap',
-                                        gap: 1,
-                                    }}
-                                >
-                                    {selectedLockers.map((l) => (
-                                        <Chip key={l.lockerCode} label={l.lockerCode} />
-                                    ))}
-                                </Box>
-                                <Stack direction="row" spacing={1} sx={{ width: '100%', maxHeight: '100%' }}>
-                                    <Button variant="outlined" color="primary" fullWidth onClick={() => handleAction('abrir')}>
-                                        Abrir
-                                    </Button>
-                                    <Button variant="outlined" color="secondary" fullWidth onClick={() => handleAction('liberar')}>
-                                        Liberar
-                                    </Button>
-                                    <Button variant="outlined" color="warning" fullWidth onClick={handleMenuClick}>
-                                        Cambiar estado
-                                    </Button>
-                                    <Menu
-                                        anchorEl={anchorEl}
-                                        open={menuOpen}
-                                        onClose={handleMenuClose}
-                                    >
-                                        {data.general
-                                            .filter(item => item.status !== 'ocupado') // excluye los que son "ocupado"
-                                            .map(item => (
-                                                <MenuItem
-                                                    key={item.status}
-                                                    onClick={() => handleStatusChange(item.status)}
-                                                    sx={{
-                                                        color: getColorByStatus(item.status),
-                                                        fontWeight: 'bold',
-                                                        fontSize: '24px'
-                                                    }}
-                                                >
-                                                    {item.status}
-                                                </MenuItem>
-                                            ))}
-                                    </Menu>
-                                </Stack>
-                            </Stack>
-                        )}
-                    </Box>
-                )}
+return (
+    <>
+        <Box
+            sx={{
+                height: '87vh', // Ajusta según la altura del AppBar
+                display: 'flex',
+                flexDirection: 'column',
+                px: 4,
+                py: 2,
+                width: '100%',
+                alignItems: 'center'
+            }}>
+            <Box textAlign="center" sx={{ mt: 5, display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
+                <Typography variant="h3"
+                    sx={{ fontWeight: 'bold', mb: 2 }}
+                >
+                    Estado de Casilleros
+                </Typography>
+                <Typography
+                    variant="h4"
+                    component="span"
+                    onClick={handleCantidadClick}
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        '&:hover': {
+                            textDecoration: 'underline',
+                        }
+                    }}
+                >
+                    {'Cantidad: '} {totalLockers}
+                    <Sync sx={{ fontSize: 40, ml: 1 }} />
+                </Typography>
             </Box>
-            {loading && (<LoadingScreen
-                message={messageLoading}
-            />)}
+            {/* Datos generales */}
 
-            <ShowErrorAPI
-                open={showErrorAPIOpen}
-                onConfirm={confirmShowErrorAPI}
-                msg={messageErrorAPI}
-                timeout={timeoutShowMessage}
-                disableEnforceFocus
-                disableAutoFocus
-                disableRestoreFocus
-            />
 
-            <SnackBarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
-        </>
-    );
+            {/* Indicadores */}
+            <Box textAlign="center" sx={{ mt: 5, mb: 2, display: 'flex', justifyContent: 'space-between', height: '5%', width: '100%' }}>
+                {data?.general?.map((item, idx) => (
+                    <Box key={item.status}>
+                        <Typography variant="h4" component="span"
+                            sx={{
+                                fontWeight: 'bold',
+                                color: getColorByStatus(item.status.toUpperCase())
+                            }}>
+                            {item.status.toUpperCase()}{': '}
+                        </Typography>
+                        <Typography variant="h4" component="span"
+                            sx={{
+                                fontWeight: 'bold',
+                                color: getColorByStatus(item.status.toUpperCase())
+                            }}>
+                            {item.total}
+                        </Typography>
+                    </Box>
+                ))}
+            </Box>
+
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%', mt: 2 }}>
+                <FormControl variant="standard" sx={{ width: '80%', mr: 5 }}>
+                    <InputLabel id="select-module-label">Selecciona un módulo</InputLabel>
+                    <Select
+                        labelId="select-module-label"
+                        value={selectedModule}
+                        label="Selecciona un módulo"
+                        onChange={handleModuleChange}
+                    >
+                        {data?.modules?.map((mod) => (
+                            <MenuItem key={mod.module} value={mod.module}>
+                                Módulo {mod.module}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                {currentModule && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                sx={{
+                                    '& .MuiSvgIcon-root': {
+                                        fontSize: '45px' // Aquí sí afecta el tamaño del ícono
+                                    }
+                                }}
+                                checked={
+                                    currentModule.lockers.length > 0 &&
+                                    selectedLockers.length === currentModule.lockers.length
+                                }
+                                onChange={(e) => handleSelectAll(e.target.checked)}
+                            />
+                        }
+                        label="Seleccionar todos"
+                        sx={{ '& .MuiFormControlLabel-label': { fontSize: '24px' } }}
+                    />
+                )}
+            </Stack>
+
+
+            {/* Botones de lockers */}
+            {currentModule && (
+                <Box sx={{
+                    height: '70%',
+                    width: '100%',
+                    overflowY: 'auto',
+                    scrollBehavior: 'smooth',
+                    pr: 2,
+                    mt: 2,
+                    p: 2,
+                    boxSizing: 'border-box',
+                }} >
+                    <Grid container spacing={1} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
+                        {currentModule.lockers.map((locker) => {
+                            const selected = selectedLockers.some(
+                                (item) => item.lockerCode === locker.lockerCode
+                            );
+                            return (
+                                <Grid size={2.4} key={locker.lockerCode} sx={{ maxHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => handleLockerClick(locker)}
+                                        sx={{
+                                            backgroundColor: getColorByStatus(locker.status),
+                                            border: selected ? '5px solid black' : 'none',
+                                            color: '#fff',
+                                            width: '100%',
+                                            height: '100%',
+                                            fontSize: '32px'
+                                            // '&:hover': {
+                                            //     backgroundColor: getHoverColorByStatus(locker.status),
+                                            //     color: '#fff'
+                                            // }
+                                        }}
+                                    >
+                                        {locker.lockerCode}
+                                    </Button>
+                                </Grid>
+                            );
+                        })}
+                    </Grid>
+                </Box>
+            )}
+            {currentModule && (
+                <Box sx={{
+                    height: '15%', width: '100%'
+                }} >
+                    {/* Acciones */}
+                    {selectedLockers.length > 0 && (
+                        <Stack spacing={2} alignItems="center" sx={{ mt: 2, height: '100%', width: '100%' }}>
+                            <Box
+                                sx={{
+                                    maxHeight: 80,
+                                    minHeight: 40,
+                                    overflowY: 'auto',
+                                    width: '100%',
+                                    px: 2,
+                                    py: 1,
+                                    borderRadius: 2,
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 1,
+                                }}
+                            >
+                                {selectedLockers.map((l) => (
+                                    <Chip key={l.lockerCode} label={l.lockerCode} />
+                                ))}
+                            </Box>
+                            <Stack direction="row" spacing={1} sx={{ width: '100%', maxHeight: '100%' }}>
+                                <Button variant="outlined" color="primary" fullWidth onClick={() => handleAction('abrir')}>
+                                    Abrir
+                                </Button>
+                                <Button variant="outlined" color="secondary" fullWidth onClick={() => handleAction('liberar')}>
+                                    Liberar
+                                </Button>
+                                <Button variant="outlined" color="warning" fullWidth onClick={handleMenuClick}>
+                                    Cambiar estado
+                                </Button>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    open={menuOpen}
+                                    onClose={handleMenuClose}
+                                >
+                                    {data.general
+                                        .filter(item => item.status !== 'ocupado') // excluye los que son "ocupado"
+                                        .map(item => (
+                                            <MenuItem
+                                                key={item.status}
+                                                onClick={() => handleStatusChange(item.status)}
+                                                sx={{
+                                                    color: getColorByStatus(item.status),
+                                                    fontWeight: 'bold',
+                                                    fontSize: '24px'
+                                                }}
+                                            >
+                                                {item.status}
+                                            </MenuItem>
+                                        ))}
+                                </Menu>
+                            </Stack>
+                        </Stack>
+                    )}
+                </Box>
+            )}
+        </Box>
+        {loading && (<LoadingScreen
+            message={messageLoading}
+        />)}
+
+        <ShowErrorAPI
+            open={showErrorAPIOpen}
+            onConfirm={confirmShowErrorAPI}
+            msg={messageErrorAPI}
+            timeout={timeoutShowMessage}
+            disableEnforceFocus
+            disableAutoFocus
+            disableRestoreFocus
+        />
+
+        <SnackBarAlert
+            open={snackbarOpen}
+            message={snackbarMessage}
+            severity={snackbarSeverity}
+            onClose={() => setSnackbarOpen(false)}
+        />
+    </>
+);
 };
 
 export default AdminLockers;

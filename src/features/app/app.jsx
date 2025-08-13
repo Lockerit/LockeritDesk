@@ -24,6 +24,8 @@ export default function App() {
 
         if (!userInit) return;
 
+        localStorage.setItem('isCancelInsertMoney', false);
+
         const lsUserInit = localStorage.getItem(USER_STORAGE_KEY);
 
         if (!lsUserInit)

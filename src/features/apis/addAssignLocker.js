@@ -29,16 +29,18 @@ const AddAssignLocker = async (payload, timeoutMs) => {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
 
-        log('debug', 'peticion assign ' + attempt + ' - ' + isWebSocketConnected());
+        const isCancelInsertMoney = JSON.parse(localStorage.getItem('isCancelInsertMoney') || 'false');
 
-        if (!isWebSocketConnected()) {
+        log('debug', 'peticion assign: ' + attempt + ' - cancel:' + isCancelInsertMoney);
+
+        if (isCancelInsertMoney) {
             log('info', `Conexión WebSocket cerrada, abortando intento ${attempt}`);
+            localStorage.setItem('isCancelInsertMoney', false);
             return {
                 success: false,
                 data: '',
                 status: 499,
             };
-            break;
         }
 
         try {
@@ -141,7 +143,6 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                     closeWebSocket();
                     throw new Error(err);
                 }
-
                 return 'HTTP complete';
             })
             .catch((err) => {

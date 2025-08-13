@@ -358,6 +358,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     // setLocker('');
     setActiveInput('phone');
     setErrorsEmpty({ phone: false, password: false, confirmPassword: false });
+    localStorage.setItem('isCancelInsertMoney', false);
     cancelConfirmation();
   }
 
@@ -382,6 +383,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const confirmSendData = async () => {
     // setAssignLockerOpen(false);
+    localStorage.setItem('isCancelInsertMoney', false);
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
@@ -427,11 +429,13 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const cancelConfirmation = () => {
     setConfirmDialogOpen(false);
+    localStorage.setItem('isCancelInsertMoney', false);
   };
 
 
   const cancelInsertMoney = () => {
     if (cleanupRef.current) cleanupRef.current();
+    localStorage.setItem('isCancelInsertMoney', true);
     setAmountPay(0);
     setInsertMoneyOpen(false);
     closeWebSocket();
