@@ -39,6 +39,7 @@ import {
 } from '../apis/websocket.js'
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { speak } from '../utils/speak.js'
+import { cancelObservable } from '../utils/cancelObservable.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -358,7 +359,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     // setLocker('');
     setActiveInput('phone');
     setErrorsEmpty({ phone: false, password: false, confirmPassword: false });
-    localStorage.setItem('isCancelInsertMoney', false);
     cancelConfirmation();
   }
 
@@ -383,7 +383,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const confirmSendData = async () => {
     // setAssignLockerOpen(false);
-    localStorage.setItem('isCancelInsertMoney', false);
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
@@ -429,13 +428,12 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const cancelConfirmation = () => {
     setConfirmDialogOpen(false);
-    localStorage.setItem('isCancelInsertMoney', false);
   };
 
 
   const cancelInsertMoney = () => {
     if (cleanupRef.current) cleanupRef.current();
-    localStorage.setItem('isCancelInsertMoney', true);
+    cancelObservable.setCancel(true);
     setAmountPay(0);
     setInsertMoneyOpen(false);
     closeWebSocket();
