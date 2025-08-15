@@ -406,8 +406,12 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setAssignLockerOpen(true);
         }
       } else {
-        if (result.status === 499) return;
-        setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
+        console.log('result', result?.http?.status);
+        if (result?.http?.status === 499) {
+          setMessageErrorAPI('Operación cancelada');
+        } else {
+          setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
+        }
         setShowErrorAPIOpen(true);
       }
 

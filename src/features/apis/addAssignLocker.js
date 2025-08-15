@@ -10,6 +10,7 @@ import {
 import { cancelObservable } from '../utils/cancelObservable.js';
 
 const fileName = 'addAssignLocker';
+let abortCancel = null; // Controla la cancelación de la petición
 
 const log = (level, message) => {
     if (typeof window !== 'undefined' && window.electronAPI?.log) {
@@ -22,6 +23,7 @@ const AddAssignLocker = async (payload, timeoutMs) => {
     const env = getEnv();
     const maxRetries = env?.apiBaseMaxRetries || 5;
     const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
+    abortCancel = false;
 
     log('debug', 'peticion assign 0', isWebSocketConnected());
     log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
@@ -45,6 +47,7 @@ const AddAssignLocker = async (payload, timeoutMs) => {
             if (cancelled) {
                 log('info', `Conexión WebSocket cerrada, abortando intento ${attempt} - cancelled`);
                 cancelObservable.setCancel(false);
+                abortCancel = true;
                 return {
                     success: false,
                     data: '',
@@ -77,6 +80,7 @@ const AddAssignLocker = async (payload, timeoutMs) => {
                 if (axios.isCancel?.(error) || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
                     log('warn', `Petición cancelada por el usuario`);
                     log('info', `Conexión WebSocket cerrada, abortando intento ${attempt} - catch`);
+                    abortCancel = true;
                     return {
                         success: false,
                         data: '',

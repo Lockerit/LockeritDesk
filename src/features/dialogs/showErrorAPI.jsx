@@ -12,7 +12,8 @@ import {
 } from '@mui/material';
 import {
     SmsFailed,
-    Close
+    Close,
+    ErrorOutline
 } from '@mui/icons-material';
 import {
     formatTime
@@ -113,10 +114,10 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
                 }}
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 }}>
-                    <SmsFailed color="error" sx={{ fontSize: 100 }} />
+                    <ErrorOutline color="error" sx={{ fontSize: 75 }} />
                 </Box>
                 <Box textAlign="center">
-                    <Typography variant="h3" component="span" color="error" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                         {typeof msg === 'string' ? msg : msg?.message || JSON.stringify(msg)}
                     </Typography>
                 </Box>
