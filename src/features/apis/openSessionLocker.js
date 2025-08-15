@@ -24,7 +24,7 @@ const OpenSessionLocker = async (payload) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
-            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.REMOVE_LOCKER}`);
+            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.OPEN_SESSION_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
             const response = await axios.post(API_ROUTES.OPEN_SESSION_LOCKER, payload, { timeout: effectiveTimeout });

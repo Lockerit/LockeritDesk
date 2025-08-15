@@ -39,6 +39,7 @@ import {
 } from '../apis/websocket.js'
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { speak } from '../utils/speak.js'
+import { cancelObservable } from '../utils/cancelObservable.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -405,8 +406,12 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setAssignLockerOpen(true);
         }
       } else {
-        if (result.status === 499) return;
-        setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
+        console.log('result', result?.http?.status);
+        if (result?.http?.status === 499) {
+          setMessageErrorAPI('Operación cancelada');
+        } else {
+          setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
+        }
         setShowErrorAPIOpen(true);
       }
 
@@ -432,6 +437,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const cancelInsertMoney = () => {
     if (cleanupRef.current) cleanupRef.current();
+    cancelObservable.setCancel(true);
     setAmountPay(0);
     setInsertMoneyOpen(false);
     closeWebSocket();

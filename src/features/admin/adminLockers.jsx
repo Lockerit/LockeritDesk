@@ -101,112 +101,65 @@ const AdminLockers = () => {
 
 
     const handleAction = async (action) => {
+
+        let setFree = null;
+
         if (action === 'abrir') {
             setMessageLoading('Abriendo...');
-            setLoading(true);
-            const successfulLockers = [];
-            const failedLockers = [];
-            const setFree = false;
-            const openBy = 'local';
-
-            for (const { lockerCode } of selectedLockers) {
-                try {
-                    const payloadOpen = {
-                        lockerCode,
-                        setFree,
-                        openBy
-                    };
-
-                    const resultOpen = await OpenByCodeLocker(payloadOpen);
-
-                    if (resultOpen?.success) {
-                        successfulLockers.push(lockerCode);
-                    } else {
-                        failedLockers.push(lockerCode);
-                    }
-                } catch (err) {
-                    failedLockers.push(lockerCode);
-                }
-            }
-            setLoading(false);
-
-            if (failedLockers.length > 0) {
-                setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no se abrieron`);
-                setShowErrorAPIOpen(true);
-            }
-
-            if (successfulLockers.length > 0) {
-                setTimeout(() => {
-                    showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
-                }, 1000); // Espera 1s después del modal
-            }
-
-            await fetchData();
-            setSelectedLockers([]); // Deseleccionar todos
+            setFree = false;
         } else if (action === 'liberar') {
             setMessageLoading('Liberando...');
-            setLoading(true);
-
-            const successfulLockers = [];
-            const failedLockers = [];
-            const setFree = true;
-            const newStatus = 'libre';
-            const openBy = 'local';
-
-            for (const { lockerCode } of selectedLockers) {
-                try {
-
-                    const payloadSetStatus = {
-                        lockerCode,
-                        newStatus
-                    };
-
-                    const resultStatus = await SetStatusLocker(payloadSetStatus);
-
-                    if (resultStatus?.success) {
-                        try {
-
-                            const payloadOpen = {
-                                lockerCode,
-                                setFree,
-                                openBy
-                            };
-
-                            const resultOpen = await OpenByCodeLocker(payloadOpen);
-
-                            if (resultOpen?.success) {
-                                successfulLockers.push(lockerCode);
-                            } else {
-                                failedLockers.push(lockerCode);
-                            }
-                        } catch (err) {
-                            failedLockers.push(lockerCode);
-                        }
-                    } else {
-                        failedLockers.push(lockerCode);
-                    }
-                } catch (err) {
-                    failedLockers.push(lockerCode);
-                }
-            }
-
-            setLoading(false);
-
-            if (failedLockers.length > 0) {
-                setMessageErrorAPI(`Los casilleros: (${failedLockers.join(', ')}) no se liberaron`);
-                setShowErrorAPIOpen(true);
-            }
-
-            if (successfulLockers.length > 0) {
-                setTimeout(() => {
-                    showAlert(`Los casilleros (${successfulLockers.join(', ')}) se liberaron exitosamente`, 'info');
-                }, 1000); // Espera 1s después del modal
-            }
-
-            await fetchData();
-            setSelectedLockers([]); // Deseleccionar todos
+            setFree = true;
         }
 
+        setLoading(true);
+        const successfulLockers = [];
+        const failedLockers = [];
+        const openBy = 'local';
+
+        for (const { lockerCode } of selectedLockers) {
+            try {
+                const payloadOpen = {
+                    lockerCode,
+                    setFree,
+                    openBy
+                };
+
+                const resultOpen = await OpenByCodeLocker(payloadOpen);
+
+                if (resultOpen?.success) {
+                    successfulLockers.push(lockerCode);
+                } else {
+                    failedLockers.push(lockerCode);
+                }
+            } catch (err) {
+                failedLockers.push(lockerCode);
+            }
+        }
+        setLoading(false);
+
+        if (failedLockers.length > 0) {
+            if (failedLockers.length > 1) {
+                setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no se abrieron`);
+            }
+            else {
+                setMessageErrorAPI(`El casillero (${failedLockers.join(', ')}) no se abrió`);
+            }
+            setShowErrorAPIOpen(true);
+        }
+
+        if (successfulLockers.length > 0) {
+            setTimeout(() => {
+                if (successfulLockers.length > 1) {
+                    showAlert(`Los casilleros (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
+                } else {
+                    showAlert(`El casillero (${successfulLockers.join(', ')}) se abrió exitosamente`, 'info');
+                }
+            }, 500); // Espera 1s después del modal
+        }
+
+        await fetchData();
+        setSelectedLockers([]); // Deseleccionar todos
     };
 
     const showAlert = (msg, severity = 'error') => {
@@ -272,13 +225,21 @@ const AdminLockers = () => {
         setLoading(false);
 
         if (failedLockers.length > 0) {
-            setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
+            if (failedLockers.length > 1) {
+                setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
+            } else {
+                setMessageErrorAPI(`El casillero (${failedLockers.join(', ')}) no cambió de estado`);
+            }
             setShowErrorAPIOpen(true);
         }
 
         if (successfulLockers.length > 0) {
             setTimeout(() => {
-                showAlert(`Los casilleros (${successfulLockers.join(', ')}) cambiaron de estado exitosamente`, 'info');
+                if (successfulLockers.length > 1) {
+                    showAlert(`Los casilleros (${successfulLockers.join(', ')}) cambiaron de estado exitosamente`, 'info');
+                } else {
+                    showAlert(`El casillero (${successfulLockers.join(', ')}) cambió de estado exitosamente`, 'info');
+                }
             }, 1000); // Espera 1s después del modal
         }
 
@@ -379,7 +340,7 @@ const AdminLockers = () => {
                 </Box>
 
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%', mt: 2 }}>
-                    <FormControl variant="standard" sx={{ width: '80%' }}>
+                    <FormControl variant="standard" sx={{ width: '80%', mr: 5 }}>
                         <InputLabel id="select-module-label">Selecciona un módulo</InputLabel>
                         <Select
                             labelId="select-module-label"
