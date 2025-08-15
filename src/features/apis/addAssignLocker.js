@@ -148,7 +148,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                 if (onLoading && typeof onLoading === 'function') {
                     onLoading(true);
                 }
-                closeWebSocket();
+                // closeWebSocket();
             }
         });
 
