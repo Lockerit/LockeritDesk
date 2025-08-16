@@ -14,6 +14,7 @@ import Clock from './clock.jsx';
 import { useUser } from '../context/userContext.jsx';
 import ConfirmDialog from '../dialogs/confirmDialog.jsx';
 import { useElectronConfig } from '../hooks/useConfig.js';
+import { useWindowSize } from "../hooks/useWindowSize.js";
 import {
     Logout,
     SupervisorAccount,
@@ -31,6 +32,9 @@ export default function DenseAppBar() {
     const [showAdmin, setShowAdmin] = useState(true);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = Math.max(30, 50 * scale); // mínimo 40px, escala hasta 80px o más
 
     const config = useElectronConfig();
     const avatarBoxRef = useRef(null);
@@ -122,9 +126,15 @@ export default function DenseAppBar() {
     };
 
     return (
-        <AppBar position="fixed" elevation={0}>
+        <AppBar
+            position="fixed"
+            elevation={0}
+            sx={{
+                height: `${Math.max(30, Math.min(80, 62 * scale))}px`, // entre 30px y 80px
+                justifyContent: 'center', // centra el contenido verticalmente
+            }}
+        >
             <Toolbar>
-
                 {/* Usuario (izquierda) */}
                 <Box sx={{ flex: 1 }}>
                     <Box
@@ -133,7 +143,11 @@ export default function DenseAppBar() {
                         sx={{ display: 'flex', gap: 1, cursor: 'pointer' }}
                         onClick={handleMenuOpen}
                     >
-                        <Avatar alt="Avatar" src={avatarSelect} />
+                        <Avatar alt="Avatar" src={avatarSelect}
+                            sx={{
+                                width: size,
+                                height: size
+                            }} />
                         {showData && (
                             <>
                                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>

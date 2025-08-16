@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const dotenv = require('dotenv');
 const { logger } = require('./electron/logger/logger');
 const { exec } = require('child_process');
@@ -63,6 +63,28 @@ function sendCSPIfChanged(win, newCsp) {
   }
 }
 
+function getScaleFactor() {
+  const display = screen.getPrimaryDisplay();
+  const { width } = display.workAreaSize;
+  const scaleFactor = display.scaleFactor || 1;
+
+  // Base: 1920px ancho con scaleFactor 1
+  let resolutionScale = width / 1920;
+  let finalScale = resolutionScale * scaleFactor;
+
+  return parseFloat(finalScale.toFixed(2));
+}
+
+function sendScreenData() {
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.workAreaSize;
+  const factor = getScaleFactor();
+
+  if (win) {
+    win.webContents.send('screen-data', { width, height, factor });
+  }
+}
+
 let isRecreating = false;
 
 function recreateWindow() {
@@ -95,11 +117,15 @@ function recreateWindow() {
 function createWindow() {
   logger.info(`[${fileName}] Creando ventana principal...`);
 
+  const factor = getScaleFactor();
+
   const preloadPath = path.join(__dirname, 'preload.js');
 
   win = new BrowserWindow({
     fullscreen: true,
     frame: false,
+    width: 1920,
+    height: 1080,
     icon: path.join(__dirname, 'assets', 'icon.ico'),
     webPreferences: {
       preload: preloadPath,
@@ -130,7 +156,14 @@ function createWindow() {
   win.webContents.on('did-finish-load', () => {
     const initialCSP = buildCSP(currentEnv);
     sendCSPIfChanged(win, initialCSP);
+    win.webContents.setZoomFactor(factor);
+    sendScreenData();
   });
+
+  // Detectar cambio de pantalla o resolución
+  screen.on('display-metrics-changed', sendScreenData);
+  screen.on('display-added', sendScreenData);
+  screen.on('display-removed', sendScreenData);
 }
 
 // ------------------- IPC HANDLERS -------------------
@@ -318,6 +351,13 @@ ipcMain.on('log-message', (event, { level, message }) => {
   } else {
     logger.info(`[${fileName}] ${message}`);
   }
+});
+
+ipcMain.on('request-screen-data', (event) => {
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.workAreaSize;
+  const factor = getScaleFactor();
+  event.reply('screen-data', { width, height, factor });
 });
 
 

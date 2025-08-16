@@ -1,4 +1,6 @@
 import { useState, forwardRef, useEffect } from 'react';
+import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { scaledWidth } from '../utils/scaledWidth';
 import {
     Dialog,
     DialogTitle,
@@ -25,6 +27,9 @@ const Transition = forwardRef(function Transition(props, ref) {
 const fileName = 'assignLocker';
 
 export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 15, backColor }) {
+
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1;
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
 
@@ -64,11 +69,19 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
             disableEscapeKeyDown
             PaperProps={{
                 sx: {
-                    width: '40vw',
+                    width: scaledWidth(
+                        {
+                            xs: { base: 70, min: 65, max: 75 }, // en % para mobile
+                            sm: { base: 60, min: 55, max: 65 }, // tablet
+                            md: { base: 50, min: 45, max: 55 }, // desktop medio
+                            lg: { base: 40, min: 35, max: 45 }, // desktop grande
+                        },
+                        scale
+                    ),
                     height: 'auto',
-                    maxWidth: '90vw',
-                    borderRadius: 4,
-                    p: 2
+                    // maxWidth: `${Math.max(70, Math.min(95, 90 * scale))}vw`, // rango de 70%-95% según escala
+                    borderRadius: `${Math.max(8, 16 * scale)}px`, // esquinas suaves que escalan
+                    p: 2 * scale // padding proporcional
                 }
             }}
             slots={{
@@ -112,32 +125,32 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                     textAlign: 'center',
                 }}
             >
-                <Typography variant="h3" sx={{ textAlign: 'center', mt: 2, mb: 3, fontWeight: 'bold' }}>
+                <Typography variant="h3" sx={{ textAlign: 'center', mt: 2 * scale, mb: 3 * scale, fontWeight: 'bold' }}>
                     Tu casillero es el:
                 </Typography>
-                <Box textAlign="center">
+                <Box textAlign="center" sx={{ mb: 3 * scale }}>
                     <Paper elevation={24}
                         sx={{
-                            p: 5,
+                            p: 5 * scale,
                             height: '30%',
                             with: '30%',
                             mx: 'auto',
-                            my: 2,
+                            my: 5 * scale,
                             backgroundColor: backColor || 'primary.main',
                             color: 'error.contrastText',
                             // border: '5px solid', // (azul)
                             // color: 'error.main',
                             // borderRadius: '50%',
                         }}>
-                        <Typography variant="h1" sx={{ textAlign: 'center', m: 2, fontWeight: 'bold' }}>
+                        <Typography variant="h1" sx={{ textAlign: 'center', m: 2 * scale, fontWeight: 'bold' }}>
                             {locker}
                         </Typography>
                     </Paper>
                 </Box>
-                <Typography variant="h4" sx={{ textAlign: 'center', my: 2 }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', my: 5 * scale }}>
                     {msg}
                 </Typography>
-                <Typography variant="h4" sx={{ textAlign: 'center', my: 2, fontWeight: 'bold' }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', my: 2 * scale, fontWeight: 'bold' }}>
                     ¡No olvides cerrar el casillero!
                 </Typography>
                 {msg.substring(0, 6) === 'Retira' && (
@@ -156,7 +169,7 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                     height: '100%', // puedes ajustar esto según lo que necesites
                     width: '100%',
                 }}>
-                <Button onClick={onConfirm} color="primary" variant="contained" fullWidth sx={{ mr: 3, ml: 3, p: 3 }}>
+                <Button onClick={onConfirm} color="primary" variant="contained" fullWidth sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
                     Aceptar
                 </Button>
             </DialogActions>

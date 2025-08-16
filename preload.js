@@ -67,7 +67,9 @@ try {
     log: (level, message) => ipcRenderer.send('log-message', { level, message }),
     getAppVersion: () => packageJson.version,
     onUpdateCSP: (callback) => ipcRenderer.on('update-csp', (_event, csp) => callback(csp)),
-    reloadApp: () => ipcRenderer.send('reload-app')
+    reloadApp: () => ipcRenderer.send('reload-app'),
+    onScreenData: (callback) => ipcRenderer.on('screen-data', (_, data) => callback(data)),
+    requestScreenData: () => ipcRenderer.send('request-screen-data')
   });
 
   logger.info(`[${fileName}] API expuesta en window.electronAPI`);

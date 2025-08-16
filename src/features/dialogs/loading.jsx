@@ -1,10 +1,14 @@
 // src/components/LoadingScreen.jsx
 import React from 'react';
 import { Box, CircularProgress, Typography, Backdrop } from '@mui/material';
+import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
 
 const fileName = 'loading';
 
 const LoadingScreen = ({ open = true, message = 'Cargando...' }) => {
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1;
+
     return (
         <Backdrop
             sx={{
@@ -19,8 +23,8 @@ const LoadingScreen = ({ open = true, message = 'Cargando...' }) => {
             open={open}
         >
             <Box display="flex" flexDirection="column" alignItems="center">
-                <CircularProgress color="inherit" size={100} />
-                <Typography variant="h3" mt={2}>
+                <CircularProgress color="inherit" size={100 * scale} />
+                <Typography variant="h3" mt={2 * scale}>
                     {message}
                 </Typography>
             </Box>

@@ -7,6 +7,7 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
+import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
 import {
     Typography,
     Box,
@@ -34,6 +35,9 @@ export default function Ppal() {
     const [disabledButton, setDisabledButton] = useState(false);
     const [availableLockers, setAvailableLockers] = useState();
     const [unavailableLockers, setUnavailableLockers] = useState();
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1; // de tu hook useElectronScreenData()
+
 
     const navigate = useNavigate();
     const config = useElectronConfig();
@@ -82,12 +86,12 @@ export default function Ppal() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 textTransform: 'none',
-                fontSize: 72,
-                padding: 2,
+                fontSize: 72 * scale,
+                padding: 2 * scale,
                 width: '100%',
                 height: '100%',
-                borderRadius: '24px',
-                boxShadow: '0 18px 12px rgba(0,0,0,1)',
+                borderRadius: `${24 * scale}px`,
+                boxShadow: `0 ${18 * scale}px ${12 * scale}px rgba(0,0,0,1)`,
             }}
         >
             {text}
@@ -158,10 +162,6 @@ export default function Ppal() {
 
     return (
         <>
-            {/* <Box sx={{ mb: 5 }}>
-                <DenseAppBar />
-            </Box> */}
-
             <Box
                 sx={{
                     height: '80vh', // Ajusta según la altura del AppBar
@@ -178,7 +178,7 @@ export default function Ppal() {
                     {config?.login?.logoPath && (<img
                         src={config?.login?.logoPath}
                         alt="Título"
-                        style={{ height: 200 }}
+                        style={{ height: 200 * scale }}
                     />
                     )}
                 </Box>
@@ -188,7 +188,7 @@ export default function Ppal() {
                     <Grid size={6}>
                         <ActionButton
                             text="Guardar"
-                            icon={<AddCircle sx={{ fontSize: 100, mb: 0.5 }} />}
+                            icon={<AddCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
                             color="primary"
                             onClick={saveLocker}
                             disabled={disabledButton}
@@ -197,7 +197,7 @@ export default function Ppal() {
                     <Grid size={6}>
                         <ActionButton
                             text="Retirar"
-                            icon={<RemoveCircle sx={{ fontSize: 100, mb: 0.5 }} />}
+                            icon={<RemoveCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
                             color="secondary"
                             onClick={removeLocker}
                         />
@@ -208,7 +208,7 @@ export default function Ppal() {
                 {/* Indicadores */}
                 <Box
                     sx={{
-                        mt: 8,
+                        mt: 8 * scale,
                         display: 'flex',
                         alignItems: 'center',
                         gap: 5,
@@ -244,34 +244,34 @@ export default function Ppal() {
                                 src={config.login.QRPath}
                                 alt="QR"
                                 style={{
-                                    height: 150,
+                                    height: 200 * scale,
                                     objectFit: 'contain',
                                 }}
                             />
                         </Box>
                     )}
                 </Box>
-
-                <KeyPadModal
-                    open={modalOpen}
-                    onClose={closeKeypad}
-                    operation={operation}
-                    timeout={timeoutKeypad}
-                />
-
-                <ShowErrorAPI
-                    open={showErrorAPIOpen}
-                    onConfirm={confirmShowErrorAPI}
-                    msg={messageErrorAPI}
-                    timeout={timeoutShowMessage}
-                    disableEnforceFocus
-                    disableAutoFocus
-                    disableRestoreFocus
-                />
-
-                {loading && (<LoadingScreen />)}
-
             </Box>
+
+            <KeyPadModal
+                open={modalOpen}
+                onClose={closeKeypad}
+                operation={operation}
+                timeout={timeoutKeypad}
+            />
+
+            <ShowErrorAPI
+                open={showErrorAPIOpen}
+                onConfirm={confirmShowErrorAPI}
+                msg={messageErrorAPI}
+                timeout={timeoutShowMessage}
+                disableEnforceFocus
+                disableAutoFocus
+                disableRestoreFocus
+            />
+
+            {loading && (<LoadingScreen />)}
+
         </>
     );
 }
