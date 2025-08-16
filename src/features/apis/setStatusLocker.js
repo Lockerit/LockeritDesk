@@ -23,7 +23,7 @@ const SetStatusLocker = async (payload) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
-            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.SETSTATUS_LOCKER}`);
+            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.SET_STATUS_LOCKER}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
             const response = await axios.post(API_ROUTES.SET_STATUS_LOCKER, payload, { timeout: effectiveTimeout });

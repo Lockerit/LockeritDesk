@@ -4,6 +4,8 @@ import { useUser } from '../context/userContext.jsx';
 import SnackBarAlert from '../bar/snackAlert.jsx';
 import logo from '../../assets/Logo.png';
 import { useElectronConfig } from '../hooks/useConfig.js';
+import { useWindowSize } from "../hooks/useWindowSize.js";
+import { scaledWidth } from '../utils/scaledWidth';
 import {
     Box,
     Button,
@@ -51,9 +53,13 @@ export default function Login() {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
     const [buttonName, setButtonName] = useState('Iniciar Sesión');
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1; // de tu hook useElectronScreenData()
 
     const navigate = useNavigate();
     const config = useElectronConfig();
+
+    console.log('scale: ', scale);
 
     useEffect(() => {
         if (!userInit) return;
@@ -240,7 +246,7 @@ export default function Login() {
     return (
         <>
             <Box sx={{
-                maxHeight: 'calc(90vh - 64px)',
+                maxHeight: `${Math.min(75 * scale)}%`,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -251,38 +257,53 @@ export default function Login() {
                     component="form"
                     onSubmit={handleSubmit}
                     sx={{
-                        p: 5,
-                        width: {
-                            xs: '90%',
-                            sm: '70%',
-                            md: '50%',
-                            lg: '40%'
-                        },
-                        maxHeight: '80%',
+                        p: 5 * scale,
+                        width: scaledWidth(
+                            {
+                                xs: { base: 90, min: 85, max: 95 }, // en % para mobile
+                                sm: { base: 80, min: 70, max: 85 }, // tablet
+                                md: { base: 60, min: 55, max: 70 }, // desktop medio
+                                lg: { base: 45, min: 40, max: 50 }, // desktop grande
+                            },
+                            scale
+                        ),
                         mx: 'auto',
-                        mt: 10
-                    }}>
+                        mt: 5 * scale
+                    }}
+                >
                     <Box sx={{
                         height: '10%',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
                         width: '100%',
-                        mb: 2,
+                        mb: 2 * scale,
                     }}>
-                        <img src={logo} alt="Título" style={{ maxHeight: 150 }} />
+                        <img src={logo} alt="Título" style={{ maxHeight: 150 * scale }} />
                     </Box>
 
                     <Box textAlign="center" sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
-                        <Typography variant="h4"
-                            sx={{ fontWeight: 'bold', mb: 2 }}
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontWeight: 'bold',
+                                mb: 2 * scale,
+                                fontSize: `${2 * scale}rem`
+                            }}
                         >
                             {(userInit?.adminWindowInto || userInit?.adminWindow) ? 'Administración' : 'Aplicación'}
                         </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                        <Person sx={{ color: 'action.active', mr: 2, my: 1, fontSize: 40 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'flex-end', width: '90%' }}>
+                        <Person
+                            sx={{
+                                color: 'action.active',
+                                mr: 2 * scale,
+                                my: 1 * scale,
+                                fontSize: 40 * scale
+                            }}
+                        />
                         <TextField variant='standard'
                             fullWidth
                             label="Usuario"
@@ -295,8 +316,13 @@ export default function Login() {
                         />
                     </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                        <LockOpen sx={{ color: 'action.active', mr: 2, my: 1.5, fontSize: 40 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'flex-end', width: '90%' }}>
+                        <LockOpen sx={{
+                            color: 'action.active',
+                            mr: 2 * scale,
+                            my: 1.5 * scale,
+                            fontSize: 40 * scale
+                        }} />
                         <TextField variant='standard'
                             fullWidth
                             label="Contraseña"
@@ -332,20 +358,26 @@ export default function Login() {
                             />
                         }
                         label={
-                            <Typography fontSize={20}>Recordar usuario</Typography>
+                            <Typography fontSize={20 * scale}>Recordar usuario</Typography>
                         }
-                        sx={{ mt: 5 }}
+                        sx={{ mt: 5 * scale }}
                     />
 
-                    <Button variant="contained" color="success" type='submit' fullWidth sx={{ my: 1 }}>
+                    <Button variant="contained" color="success" type='submit' fullWidth sx={{ my: 1 * scale }}>
                         {buttonName}
-                        <Send sx={{ fontSize: 40, ml: 3 }} />
+                        <Send sx={{
+                            fontSize: 40 * scale,
+                            ml: 3 * scale
+                        }} />
                     </Button>
 
                     {(userInit?.closeSession || userInit?.closeWindow || userInit?.adminWindow) && (
-                        <Button variant="contained" color="secondary" type='button' onClick={backPage} fullWidth sx={{ my: 1 }}>
+                        <Button variant="contained" color="secondary" type='button' onClick={backPage} fullWidth sx={{ my: 1 * scale }}>
                             Atrás
-                            <Undo sx={{ fontSize: 40, ml: 3 }} />
+                            <Undo sx={{
+                                fontSize: 40 * scale,
+                                ml: 3 * scale
+                            }} />
                         </Button>
                     )}
 

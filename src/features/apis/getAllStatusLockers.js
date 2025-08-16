@@ -22,7 +22,7 @@ const GetAllStatusLockers = async () => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
-            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.STATUS_LOCKERS}`);
+            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.GET_ALL_STATUS_LOCKERS}`);
 
             const response = await axios.get(API_ROUTES.GET_ALL_STATUS_LOCKERS, {
                 timeout: effectiveTimeout,

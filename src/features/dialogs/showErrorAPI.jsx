@@ -1,4 +1,6 @@
 import { useState, forwardRef, useEffect } from 'react';
+import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { scaledWidth } from '../utils/scaledWidth';
 import {
     Dialog,
     DialogTitle,
@@ -12,7 +14,8 @@ import {
 } from '@mui/material';
 import {
     SmsFailed,
-    Close
+    Close,
+    ErrorOutline
 } from '@mui/icons-material';
 import {
     formatTime
@@ -27,6 +30,8 @@ const fileName = 'showErrorAPI';
 export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1;
 
     useEffect(() => {
         if (open) {
@@ -65,11 +70,19 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
             disableEscapeKeyDown
             PaperProps={{
                 sx: {
-                    width: '60vw',
+                    width: scaledWidth(
+                        {
+                            xs: { base: 70, min: 65, max: 75 }, // en % para mobile
+                            sm: { base: 60, min: 55, max: 65 }, // tablet
+                            md: { base: 50, min: 45, max: 55 }, // desktop medio
+                            lg: { base: 40, min: 35, max: 45 }, // desktop grande
+                        },
+                        scale
+                    ),
                     height: 'auto',
-                    maxWidth: '90vw',
-                    borderRadius: 4,
-                    p: 2
+                    // maxWidth: `${Math.max(70, Math.min(95, 90 * scale))}vw`, // rango de 70%-95% según escala
+                    borderRadius: `${Math.max(8, 16 * scale)}px`, // esquinas suaves que escalan
+                    p: 2 * scale // padding proporcional
                 }
             }}
             slots={{
@@ -113,10 +126,10 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
                 }}
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 }}>
-                    <SmsFailed color="error" sx={{ fontSize: 100 }} />
+                    <ErrorOutline color="error" sx={{ fontSize: 75 * scale }} />
                 </Box>
                 <Box textAlign="center">
-                    <Typography variant="h3" component="span" color="error" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                         {typeof msg === 'string' ? msg : msg?.message || JSON.stringify(msg)}
                     </Typography>
                 </Box>
@@ -131,7 +144,7 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
                     height: '100%', // puedes ajustar esto según lo que necesites
                     width: '100%',
                 }}>
-                <Button onClick={onConfirm} color="primary" variant="contained" fullWidth sx={{ mr: 3, ml: 3, p: 3 }}>
+                <Button onClick={onConfirm} color="primary" variant="contained" fullWidth sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
                     Aceptar
                 </Button>
             </DialogActions>

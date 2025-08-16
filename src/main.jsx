@@ -5,10 +5,11 @@ import Stack from '@mui/material/Stack';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './features/app/app.jsx';
-import theme from './features/utils/theme.js';
+import { createScaledTheme } from './features/utils/theme.js';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { UserProvider } from './features/context/userContext.jsx';
+import { useWindowSize } from './features/hooks/useWindowSize.js'; // Hook para tamaño pantalla
 import './fonts.css';
 
 const fileName = 'main-renderer';
@@ -21,6 +22,9 @@ const log = (level, message) => {
 
 function RootApp() {
   const [pendingCSP, setPendingCSP] = useState(null);
+
+  const { factor } = useWindowSize();
+  const theme = createScaledTheme(factor);
 
   useEffect(() => {
     const currentMetaCSP =

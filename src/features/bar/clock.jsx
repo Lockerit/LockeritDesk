@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Box } from '@mui/material';
+import { useWindowSize } from "../hooks/useWindowSize.js";
 
-const fileName = 'clcok';
+const fileName = 'clock';
 
 export default function Clock() {
     const [horaActual, setHoraActual] = useState(new Date());
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1; // de tu hook useElectronScreenData()
 
     useEffect(() => {
         const intervalo = setInterval(() => {
@@ -32,7 +35,7 @@ export default function Clock() {
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 {formatoHora}
             </Typography>
-            <Typography variant="body2" sx={{ fontSize: 14 }}>
+            <Typography variant="body2" sx={{ fontSize: 14 * scale }}>
                 {formatoFecha}
             </Typography>
         </Box>

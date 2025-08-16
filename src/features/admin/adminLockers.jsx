@@ -6,6 +6,7 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import SetStatusLocker from '../apis/setStatusLocker.js';
 import SnackBarAlert from '../bar/snackAlert.jsx';
+import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
 import {
     Box,
     Typography,
@@ -40,6 +41,8 @@ const AdminLockers = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1;
 
     const config = useElectronConfig();
 
@@ -101,112 +104,65 @@ const AdminLockers = () => {
 
 
     const handleAction = async (action) => {
+
+        let setFree = null;
+
         if (action === 'abrir') {
             setMessageLoading('Abriendo...');
-            setLoading(true);
-            const successfulLockers = [];
-            const failedLockers = [];
-            const setFree = false;
-            const openBy = 'local';
-
-            for (const { lockerCode } of selectedLockers) {
-                try {
-                    const payloadOpen = {
-                        lockerCode,
-                        setFree,
-                        openBy
-                    };
-
-                    const resultOpen = await OpenByCodeLocker(payloadOpen);
-
-                    if (resultOpen?.success) {
-                        successfulLockers.push(lockerCode);
-                    } else {
-                        failedLockers.push(lockerCode);
-                    }
-                } catch (err) {
-                    failedLockers.push(lockerCode);
-                }
-            }
-            setLoading(false);
-
-            if (failedLockers.length > 0) {
-                setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no se abrieron`);
-                setShowErrorAPIOpen(true);
-            }
-
-            if (successfulLockers.length > 0) {
-                setTimeout(() => {
-                    showAlert(`Los casilleros: (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
-                }, 1000); // Espera 1s después del modal
-            }
-
-            await fetchData();
-            setSelectedLockers([]); // Deseleccionar todos
+            setFree = false;
         } else if (action === 'liberar') {
             setMessageLoading('Liberando...');
-            setLoading(true);
-
-            const successfulLockers = [];
-            const failedLockers = [];
-            const setFree = true;
-            const newStatus = 'libre';
-            const openBy = 'local';
-
-            for (const { lockerCode } of selectedLockers) {
-                try {
-
-                    const payloadSetStatus = {
-                        lockerCode,
-                        newStatus
-                    };
-
-                    const resultStatus = await SetStatusLocker(payloadSetStatus);
-
-                    if (resultStatus?.success) {
-                        try {
-
-                            const payloadOpen = {
-                                lockerCode,
-                                setFree,
-                                openBy
-                            };
-
-                            const resultOpen = await OpenByCodeLocker(payloadOpen);
-
-                            if (resultOpen?.success) {
-                                successfulLockers.push(lockerCode);
-                            } else {
-                                failedLockers.push(lockerCode);
-                            }
-                        } catch (err) {
-                            failedLockers.push(lockerCode);
-                        }
-                    } else {
-                        failedLockers.push(lockerCode);
-                    }
-                } catch (err) {
-                    failedLockers.push(lockerCode);
-                }
-            }
-
-            setLoading(false);
-
-            if (failedLockers.length > 0) {
-                setMessageErrorAPI(`Los casilleros: (${failedLockers.join(', ')}) no se liberaron`);
-                setShowErrorAPIOpen(true);
-            }
-
-            if (successfulLockers.length > 0) {
-                setTimeout(() => {
-                    showAlert(`Los casilleros (${successfulLockers.join(', ')}) se liberaron exitosamente`, 'info');
-                }, 1000); // Espera 1s después del modal
-            }
-
-            await fetchData();
-            setSelectedLockers([]); // Deseleccionar todos
+            setFree = true;
         }
 
+        setLoading(true);
+        const successfulLockers = [];
+        const failedLockers = [];
+        const openBy = 'local';
+
+        for (const { lockerCode } of selectedLockers) {
+            try {
+                const payloadOpen = {
+                    lockerCode,
+                    setFree,
+                    openBy
+                };
+
+                const resultOpen = await OpenByCodeLocker(payloadOpen);
+
+                if (resultOpen?.success) {
+                    successfulLockers.push(lockerCode);
+                } else {
+                    failedLockers.push(lockerCode);
+                }
+            } catch (err) {
+                failedLockers.push(lockerCode);
+            }
+        }
+        setLoading(false);
+
+        if (failedLockers.length > 0) {
+            if (failedLockers.length > 1) {
+                setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no se abrieron`);
+            }
+            else {
+                setMessageErrorAPI(`El casillero (${failedLockers.join(', ')}) no se abrió`);
+            }
+            setShowErrorAPIOpen(true);
+        }
+
+        if (successfulLockers.length > 0) {
+            setTimeout(() => {
+                if (successfulLockers.length > 1) {
+                    showAlert(`Los casilleros (${successfulLockers.join(', ')}) se abrieron exitosamente`, 'info');
+                } else {
+                    showAlert(`El casillero (${successfulLockers.join(', ')}) se abrió exitosamente`, 'info');
+                }
+            }, 500); // Espera 1s después del modal
+        }
+
+        await fetchData();
+        setSelectedLockers([]); // Deseleccionar todos
     };
 
     const showAlert = (msg, severity = 'error') => {
@@ -272,13 +228,21 @@ const AdminLockers = () => {
         setLoading(false);
 
         if (failedLockers.length > 0) {
-            setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
+            if (failedLockers.length > 1) {
+                setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
+            } else {
+                setMessageErrorAPI(`El casillero (${failedLockers.join(', ')}) no cambió de estado`);
+            }
             setShowErrorAPIOpen(true);
         }
 
         if (successfulLockers.length > 0) {
             setTimeout(() => {
-                showAlert(`Los casilleros (${successfulLockers.join(', ')}) cambiaron de estado exitosamente`, 'info');
+                if (successfulLockers.length > 1) {
+                    showAlert(`Los casilleros (${successfulLockers.join(', ')}) cambiaron de estado exitosamente`, 'info');
+                } else {
+                    showAlert(`El casillero (${successfulLockers.join(', ')}) cambió de estado exitosamente`, 'info');
+                }
             }, 1000); // Espera 1s después del modal
         }
 
@@ -324,14 +288,14 @@ const AdminLockers = () => {
                     height: '87vh', // Ajusta según la altura del AppBar
                     display: 'flex',
                     flexDirection: 'column',
-                    px: 4,
-                    py: 2,
+                    px: 4 * scale,
+                    py: 2 * scale,
                     width: '100%',
                     alignItems: 'center'
                 }}>
-                <Box textAlign="center" sx={{ mt: 5, display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
+                <Box textAlign="center" sx={{ mt: 5 * scale, display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
                     <Typography variant="h3"
-                        sx={{ fontWeight: 'bold', mb: 2 }}
+                        sx={{ fontWeight: 'bold', mb: 2 * scale }}
                     >
                         Estado de Casilleros
                     </Typography>
@@ -350,14 +314,14 @@ const AdminLockers = () => {
                         }}
                     >
                         {'Cantidad: '} {totalLockers}
-                        <Sync sx={{ fontSize: 40, ml: 1 }} />
+                        <Sync sx={{ fontSize: 40 * scale, ml: 1 * scale }} />
                     </Typography>
                 </Box>
                 {/* Datos generales */}
 
 
                 {/* Indicadores */}
-                <Box textAlign="center" sx={{ mt: 5, mb: 2, display: 'flex', justifyContent: 'space-between', height: '5%', width: '100%' }}>
+                <Box textAlign="center" sx={{ mt: 5 * scale, mb: 2 * scale, display: 'flex', justifyContent: 'space-between', height: '5%', width: '100%' }}>
                     {data?.general?.map((item, idx) => (
                         <Box key={item.status}>
                             <Typography variant="h4" component="span"
@@ -378,8 +342,8 @@ const AdminLockers = () => {
                     ))}
                 </Box>
 
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%', mt: 2 }}>
-                    <FormControl variant="standard" sx={{ width: '80%' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%', mt: 2 * scale }}>
+                    <FormControl variant="standard" sx={{ width: '80%', mr: 5 * scale }}>
                         <InputLabel id="select-module-label">Selecciona un módulo</InputLabel>
                         <Select
                             labelId="select-module-label"
@@ -401,7 +365,7 @@ const AdminLockers = () => {
                                 <Checkbox
                                     sx={{
                                         '& .MuiSvgIcon-root': {
-                                            fontSize: '45px' // Aquí sí afecta el tamaño del ícono
+                                            fontSize: `${45 * scale}px` // Aquí sí afecta el tamaño del ícono
                                         }
                                     }}
                                     checked={
@@ -412,7 +376,7 @@ const AdminLockers = () => {
                                 />
                             }
                             label="Seleccionar todos"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: '24px' } }}
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: `${24 * scale}px` } }}
                         />
                     )}
                 </Stack>
@@ -425,9 +389,9 @@ const AdminLockers = () => {
                         width: '100%',
                         overflowY: 'auto',
                         scrollBehavior: 'smooth',
-                        pr: 2,
-                        mt: 2,
-                        p: 2,
+                        pr: 2 * scale,
+                        mt: 2 * scale,
+                        p: 2 * scale,
                         boxSizing: 'border-box',
                     }} >
                         <Grid container spacing={1} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
@@ -442,11 +406,11 @@ const AdminLockers = () => {
                                             onClick={() => handleLockerClick(locker)}
                                             sx={{
                                                 backgroundColor: getColorByStatus(locker.status),
-                                                border: selected ? '5px solid black' : 'none',
+                                                border: selected ? `${5 * scale}px solid black` : 'none',
                                                 color: '#fff',
                                                 width: '100%',
                                                 height: '100%',
-                                                fontSize: '32px'
+                                                fontSize: `${32 * scale}px`
                                                 // '&:hover': {
                                                 //     backgroundColor: getHoverColorByStatus(locker.status),
                                                 //     color: '#fff'
@@ -467,19 +431,19 @@ const AdminLockers = () => {
                     }} >
                         {/* Acciones */}
                         {selectedLockers.length > 0 && (
-                            <Stack spacing={2} alignItems="center" sx={{ mt: 2, height: '100%', width: '100%' }}>
+                            <Stack spacing={2} alignItems="center" sx={{ mt: 2 * scale, height: '100%', width: '100%' }}>
                                 <Box
                                     sx={{
-                                        maxHeight: 80,
-                                        minHeight: 40,
+                                        maxHeight: Math.max(60, Math.min(120, 80 * scale)),   // escala, mínimo 60px, máximo 120px
+                                        minHeight: Math.max(32, Math.min(60, 40 * scale)),    // escala, mínimo 32px, máximo 60px
                                         overflowY: 'auto',
                                         width: '100%',
-                                        px: 2,
-                                        py: 1,
-                                        borderRadius: 2,
+                                        px: 2 * scale,     // padding horizontal proporcional
+                                        py: 1 * scale,     // padding vertical proporcional
+                                        borderRadius: 2 * scale, // bordes redondeados proporcionales
                                         display: 'flex',
                                         flexWrap: 'wrap',
-                                        gap: 1,
+                                        gap: 1 * scale,    // espacio entre elementos proporcional
                                     }}
                                 >
                                     {selectedLockers.map((l) => (
@@ -510,7 +474,7 @@ const AdminLockers = () => {
                                                     sx={{
                                                         color: getColorByStatus(item.status),
                                                         fontWeight: 'bold',
-                                                        fontSize: '24px'
+                                                        fontSize: `${24 * scale}px`
                                                     }}
                                                 >
                                                     {item.status}

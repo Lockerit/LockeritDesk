@@ -39,6 +39,9 @@ import {
 } from '../apis/websocket.js'
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { speak } from '../utils/speak.js'
+import { cancelObservable } from '../utils/cancelObservable.js';
+import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { scaledWidth } from '../utils/scaledWidth';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -75,6 +78,8 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+  const { width, height, factor } = useWindowSize();
+  const scale = factor || 1;
 
   // Refs para cambiar el foco
   const phoneRef = useRef(null);
@@ -405,8 +410,12 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setAssignLockerOpen(true);
         }
       } else {
-        if (result.status === 499) return;
-        setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
+        console.log('result', result?.http?.status);
+        if (result?.http?.status === 499) {
+          setMessageErrorAPI('Operación cancelada');
+        } else {
+          setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
+        }
         setShowErrorAPIOpen(true);
       }
 
@@ -432,6 +441,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const cancelInsertMoney = () => {
     if (cleanupRef.current) cleanupRef.current();
+    cancelObservable.setCancel(true);
     setAmountPay(0);
     setInsertMoneyOpen(false);
     closeWebSocket();
@@ -461,7 +471,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     const commonProps = {
       variant: 'contained',
       // size: 'large',
-      sx: { width: '100%', height: '100%', fontSize: '32px' }
+      sx: { width: '100%', height: '100%', fontSize: `${32 * scale}px` }
     };
     const gridSize = value === 'Aceptar' ? 12 : 4;
 
@@ -477,16 +487,16 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           >
             {isFinalStep ? 'Aceptar' : 'Siguiente'}
             {isFinalStep
-              ? <DoneAll sx={{ fontSize: 40, ml: 1 }} />
-              : <ArrowForwardIos sx={{ fontSize: 40, ml: 1 }} />}
+              ? <DoneAll sx={{ fontSize: 40 * scale, ml: 1 * scale }} />
+              : <ArrowForwardIos sx={{ fontSize: 40 * scale, ml: 1 * scale }} />}
           </Button>
         </Grid>
       );
     }
 
     const icon = {
-      'Borrar': <Backspace sx={{ fontSize: 40, ml: 1 }} />,
-      'Cancelar': <Close sx={{ fontSize: 40, ml: 1 }} />,
+      'Borrar': <Backspace sx={{ fontSize: 32 * scale, ml: 1 * scale }} />,
+      'Cancelar': <Close sx={{ fontSize: 32 * scale, ml: 1 * scale }} />,
     }[value];
 
     const handler = {
@@ -520,9 +530,19 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         }}
         PaperProps={{
           sx: {
-            width: '50vw',
-            maxWidth: 'none',
-            height: '100vh'
+            width: scaledWidth(
+              {
+                xs: { base: 90, min: 80, max: 90 }, // en % para mobile
+                sm: { base: 80, min: 70, max: 80 }, // tablet
+                md: { base: 70, min: 60, max: 70 }, // desktop medio
+                lg: { base: 60, min: 50, max: 60 }, // desktop grande
+              },
+              scale
+            ),
+            maxWidth: 'none', // Lo dejas libre, sin límite de MUI
+            height: '100%',
+            borderRadius: `${Math.max(8, 16 * scale)}px`, // Opcional: esquinas redondeadas escaladas
+            p: 2 * scale // Opcional: padding escalado
           }
         }}
         slots={{
@@ -558,7 +578,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           {/* Texto centrado */}
           <Typography
             variant="h3"
-            sx={{ fontWeight: 'bold', textAlign: 'center', mt: 6 }} // mt para evitar superposición
+            sx={{ fontWeight: 'bold', textAlign: 'center', mt: 6 * scale }} // mt para evitar superposición
           >
             {operation}
           </Typography>
@@ -568,7 +588,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '25vh' }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <MobileFriendly sx={{ mr: 2, fontSize: 40 }} />
+              <MobileFriendly sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
               <TextField
                 label="Número Celular"
                 value={phone}
@@ -583,7 +603,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Password sx={{ mr: 2, fontSize: 40 }} />
+              <Password sx={{ mr: 2, fontSize: 52 * scale }} />
               <TextField
                 label={`Contraseña (${config?.params?.lenMaxInputPass} dígitos)`}
                 value={password}
@@ -600,7 +620,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
             </Box>
 
             {!operationRet && (<Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Refresh sx={{ mr: 2, fontSize: 40 }} />
+              <Refresh sx={{ mr: 2, fontSize: 52 * scale }} />
               <TextField
                 label="Confirmar Contraseña"
                 value={confirmPassword}
@@ -619,7 +639,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           </Box>
 
           <Box sx={{ height: '50vh' }}>
-            <Grid container spacing={2} sx={{ mt: 4, height: '1' }}>
+            <Grid container spacing={2} sx={{ mt: 4 * scale, height: '100%' }}>
               {keys().map(renderButton)}
             </Grid>
           </Box>

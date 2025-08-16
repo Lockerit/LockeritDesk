@@ -1,4 +1,6 @@
 import { useState, forwardRef, useEffect } from 'react';
+import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { scaledWidth } from '../utils/scaledWidth';
 import {
     Dialog,
     DialogTitle,
@@ -29,6 +31,8 @@ const fileName = 'InsertMoney';
 export default function InsertMoney({ open, onCancel, amountService, amountPay, timeout = 600 }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
+    const { width, height, factor } = useWindowSize();
+    const scale = factor || 1;
 
     useEffect(() => {
 
@@ -76,11 +80,19 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
             disableEscapeKeyDown
             PaperProps={{
                 sx: {
-                    width: '40vw',
+                    width: scaledWidth(
+                        {
+                            xs: { base: 70, min: 65, max: 75 }, // en % para mobile
+                            sm: { base: 60, min: 55, max: 65 }, // tablet
+                            md: { base: 50, min: 45, max: 55 }, // desktop medio
+                            lg: { base: 40, min: 35, max: 45 }, // desktop grande
+                        },
+                        scale
+                    ),
                     height: 'auto',
-                    maxWidth: '90vw',
-                    borderRadius: 4,
-                    p: 2
+                    // maxWidth: `${Math.max(70, Math.min(95, 90 * scale))}vw`, // rango de 70%-95% según escala
+                    borderRadius: `${Math.max(8, 16 * scale)}px`, // esquinas suaves que escalan
+                    p: 2 * scale // padding proporcional
                 }
             }}
             slots={{
@@ -123,7 +135,7 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
                     textAlign: 'center',
                 }}
             >
-                <Typography variant="h4" sx={{ textAlign: 'center', mt: 2, mb: 3 }}>
+                <Typography variant="h4" sx={{ textAlign: 'center', mt: 2 * scale, mb: 3 * scale }}>
                     Por favor deposite el dinero:
                 </Typography>
                 <Box textAlign="center">
@@ -134,8 +146,8 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
                         {amountService}
                     </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2, m: 5 }}>
-                    <CurrencyExchange color="primary" sx={{ fontSize: 150 }} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2, m: 5 * scale }}>
+                    <CurrencyExchange color="primary" sx={{ fontSize: 150 * scale }} />
                     <LoadingBar msg={'Valor ingresado:'} amountPay={amountPay} />
                 </Box>
             </DialogContent>
@@ -149,7 +161,7 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
                     height: '100%', // puedes ajustar esto según lo que necesites
                     width: '100%',
                 }}>
-                <Button onClick={onCancel} color="secondary" variant="contained" fullWidth sx={{ mr: 3, ml: 3, p: 3 }}>
+                <Button onClick={onCancel} color="secondary" variant="contained" fullWidth sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
                     Cancelar
                 </Button>
             </DialogActions>
