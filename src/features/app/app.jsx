@@ -22,6 +22,14 @@ export default function App() {
     const { width, height, factor } = useWindowSize();
     const scale = factor || 1; // de tu hook useElectronScreenData()
 
+    // Alturas base en px
+    const appBarBase = 64;   // alto típico del AppBar
+    const footerBase = 64;   // alto footer
+
+    // Ajustados con scale
+    const appBarHeight = appBarBase * scale;
+    const footerHeight = footerBase * scale;
+
     useEffect(() => {
         if (!userInit) return;
 
@@ -51,29 +59,45 @@ export default function App() {
             <Container
                 maxWidth={false}
                 sx={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    px: width < 1280 ? 2 : 4, // Márgenes dinámicos
-                    fontSize: width < 768 ? '0.9rem' : '1rem' // Fuente adaptable
+                    minHeight: "100vh",
+                    display: "flex",
+                    flexDirection: "column",
                 }}
             >
                 {/* AppBar */}
-                <Box sx={{
-                    flexGrow: 1,
-                    my: 2 * scale,
-                    mt: `${Math.max(40, Math.min(80, 30 * scale))}px` // misma altura dinámica que el AppBar
-                }}>
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: `${appBarHeight}px`,
+                        zIndex: 1200,
+                    }}
+                >
                     <DenseAppBar />
                 </Box>
 
-                {/* Contenido principal */}
-                <Box sx={{ flexGrow: 1, my: 2 * scale }}>
+                {/* Contenido */}
+                <Box
+                    sx={{
+                        marginTop: `${appBarHeight}px`, // mismo alto del AppBar
+                        height: `calc(100vh - ${appBarHeight}px - ${footerHeight}px)`,
+                        overflow: "auto",
+                    }}
+                >
                     <AppRoutes />
                 </Box>
 
                 {/* Footer */}
-                <Box sx={{ my: 2 * scale }}>
+                <Box
+                    sx={{
+                        height: `${footerHeight}px`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
                     <Copyright />
                 </Box>
             </Container>

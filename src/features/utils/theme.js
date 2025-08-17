@@ -179,6 +179,38 @@ export function createScaledTheme(factor = 1) {
           },
         },
       },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            // color del texto normal
+            color: '#0c315e',
+            // background por defecto del tab
+            backgroundColor: '#d0d3d4',
+            // para que no se vean muy juntos
+            minHeight: '48px',
+            // cuando está seleccionado
+            '&.Mui-selected': {
+              color: '#009640',
+              backgroundColor: '#d0d3d4',
+              fontWeight: 'bold',
+            },
+            // al hacer hover
+            '&:hover': {
+              backgroundColor: '#d0d3d4',
+            },
+          },
+        },
+      },
+      MuiTabs: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#d0d3d4', // fondo de la barra que contiene los tabs
+          },
+          indicator: {
+            backgroundColor: '#009640', // color del indicador debajo del tab
+          },
+        },
+      },
       MuiCssBaseline: {
         styleOverrides: {
           body: {

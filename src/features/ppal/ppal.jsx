@@ -164,14 +164,16 @@ export default function Ppal() {
         <>
             <Box
                 sx={{
-                    height: '80vh', // Ajusta según la altura del AppBar
+                    flex: 1, // ocupa todo el espacio disponible del contenedor padre
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     px: 4,
                     py: 2,
                     width: '100%',
-                    alignItems: 'center'
+                    height: '100%',
+                    alignItems: 'center',
+                    overflow: 'hidden', // evita que genere scroll
                 }}
             >
                 <Box>

@@ -285,22 +285,31 @@ const AdminLockers = () => {
         <>
             <Box
                 sx={{
-                    height: '87vh', // Ajusta según la altura del AppBar
-                    display: 'flex',
-                    flexDirection: 'column',
+                    height: "100%",           // ocupa todo el espacio disponible
+                    display: "flex",
+                    flexDirection: "column",
                     px: 4 * scale,
-                    py: 2 * scale,
-                    width: '100%',
-                    alignItems: 'center'
-                }}>
-                <Box textAlign="center" sx={{ mt: 5 * scale, display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
-                    <Typography variant="h3"
+                    width: "100%",
+                    alignItems: "center",
+                    boxSizing: "border-box",
+                }}
+            >
+                <Box textAlign="center"
+                    sx={{
+                        flex: "0 0 7%",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}
+                >
+                    {/* <Typography variant="h4"
                         sx={{ fontWeight: 'bold', mb: 2 * scale }}
                     >
                         Estado de Casilleros
-                    </Typography>
+                    </Typography> */}
                     <Typography
-                        variant="h4"
+                        variant="h5"
                         component="span"
                         onClick={handleCantidadClick}
                         sx={{
@@ -309,29 +318,37 @@ const AdminLockers = () => {
                             fontWeight: 'bold',
                             cursor: 'pointer',
                             '&:hover': {
-                                textDecoration: 'underline',
+                                color: 'primary.main',
                             }
                         }}
                     >
                         {'Cantidad: '} {totalLockers}
-                        <Sync sx={{ fontSize: 40 * scale, ml: 1 * scale }} />
+                        <Sync sx={{ fontSize: 24 * scale, ml: 1 * scale }} />
                     </Typography>
                 </Box>
                 {/* Datos generales */}
 
 
                 {/* Indicadores */}
-                <Box textAlign="center" sx={{ mt: 5 * scale, mb: 2 * scale, display: 'flex', justifyContent: 'space-between', height: '5%', width: '100%' }}>
+                <Box textAlign="center"
+                    sx={{
+                        flex: "0 0 5%",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        width: "100%",
+                    }}
+                >
                     {data?.general?.map((item, idx) => (
                         <Box key={item.status}>
-                            <Typography variant="h4" component="span"
+                            <Typography variant="h5" component="span"
                                 sx={{
                                     fontWeight: 'bold',
                                     color: getColorByStatus(item.status.toUpperCase())
                                 }}>
                                 {item.status.toUpperCase()}{': '}
                             </Typography>
-                            <Typography variant="h4" component="span"
+                            <Typography variant="h5" component="span"
                                 sx={{
                                     fontWeight: 'bold',
                                     color: getColorByStatus(item.status.toUpperCase())
@@ -342,7 +359,7 @@ const AdminLockers = () => {
                     ))}
                 </Box>
 
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%', mt: 2 * scale }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: "100%", flex: "0 0 10%" }}>
                     <FormControl variant="standard" sx={{ width: '80%', mr: 5 * scale }}>
                         <InputLabel id="select-module-label">Selecciona un módulo</InputLabel>
                         <Select
@@ -384,16 +401,18 @@ const AdminLockers = () => {
 
                 {/* Botones de lockers */}
                 {currentModule && (
-                    <Box sx={{
-                        height: '70%',
-                        width: '100%',
-                        overflowY: 'auto',
-                        scrollBehavior: 'smooth',
-                        pr: 2 * scale,
-                        mt: 2 * scale,
-                        p: 2 * scale,
-                        boxSizing: 'border-box',
-                    }} >
+                    <Box
+                        sx={{
+                            flex: 1,               // ocupa el resto de la pantalla
+                            width: "100%",
+                            overflowY: "auto",     // scroll SOLO aquí
+                            scrollBehavior: "smooth",
+                            pr: 2 * scale,
+                            mt: 2 * scale,
+                            p: 2 * scale,
+                            boxSizing: "border-box",
+                        }}
+                    >
                         <Grid container spacing={1} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
                             {currentModule.lockers.map((locker) => {
                                 const selected = selectedLockers.some(
@@ -426,9 +445,7 @@ const AdminLockers = () => {
                     </Box>
                 )}
                 {currentModule && (
-                    <Box sx={{
-                        height: '15%', width: '100%'
-                    }} >
+                    <Box sx={{ flex: "0 0 15%", width: "100%" }}>
                         {/* Acciones */}
                         {selectedLockers.length > 0 && (
                             <Stack spacing={2} alignItems="center" sx={{ mt: 2 * scale, height: '100%', width: '100%' }}>

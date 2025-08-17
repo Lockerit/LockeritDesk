@@ -59,8 +59,6 @@ export default function Login() {
     const navigate = useNavigate();
     const config = useElectronConfig();
 
-    console.log('scale: ', scale);
-
     useEffect(() => {
         if (!userInit) return;
 
@@ -245,19 +243,21 @@ export default function Login() {
 
     return (
         <>
-            <Box sx={{
-                maxHeight: `${Math.min(75 * scale)}%`,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                width: '100%',
-                alignItems: 'center'
-            }}>
-                <Paper elevation={24}
+            <Box
+                sx={{
+                    height: "100%",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Paper
+                    elevation={24}
                     component="form"
                     onSubmit={handleSubmit}
                     sx={{
-                        p: 5 * scale,
+                        // height: "95%",
                         width: scaledWidth(
                             {
                                 xs: { base: 90, min: 85, max: 95 }, // en % para mobile
@@ -267,128 +267,146 @@ export default function Login() {
                             },
                             scale
                         ),
-                        mx: 'auto',
-                        mt: 5 * scale
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        p: 5 * scale,
+                        boxSizing: "border-box",
                     }}
                 >
-                    <Box sx={{
-                        height: '10%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                        mb: 2 * scale,
-                    }}>
+                    {/* Logo */}
+                    <Box
+                        sx={{
+                            flex: `0 0 ${12 * scale}%`, // dinámico con scale
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <img src={logo} alt="Título" style={{ maxHeight: 150 * scale }} />
                     </Box>
 
-                    <Box textAlign="center" sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', height: '10%' }}>
+                    {/* Título */}
+                    <Box
+                        sx={{
+                            flex: `0 0 ${10 * scale}%`,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            flexDirection: "column",
+                            width: "100%",
+                        }}
+                    >
                         <Typography
                             variant="h4"
                             sx={{
-                                fontWeight: 'bold',
-                                mb: 2 * scale,
-                                fontSize: `${2 * scale}rem`
+                                fontWeight: "bold",
+                                fontSize: `${2 * scale}rem`,
                             }}
                         >
-                            {(userInit?.adminWindowInto || userInit?.adminWindow) ? 'Administración' : 'Aplicación'}
+                            {(userInit?.adminWindowInto || userInit?.adminWindow)
+                                ? "Administración"
+                                : "Aplicación"}
                         </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'flex-end', width: '90%' }}>
-                        <Person
-                            sx={{
-                                color: 'action.active',
-                                mr: 2 * scale,
-                                my: 1 * scale,
-                                fontSize: 40 * scale
-                            }}
-                        />
-                        <TextField variant='standard'
-                            fullWidth
-                            label="Usuario"
-                            value={userName}
-                            onChange={(e) => setUserName(e.target.value)}
-                            onFocus={() => window.electronAPI?.openKeyboard()}
-                            margin="normal"
-                            error={errorsEmpty.username}
-                            helperText={errorsEmpty.username ? msgUser : ''}
-                        />
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'flex-end', width: '90%' }}>
-                        <LockOpen sx={{
-                            color: 'action.active',
-                            mr: 2 * scale,
-                            my: 1.5 * scale,
-                            fontSize: 40 * scale
-                        }} />
-                        <TextField variant='standard'
-                            fullWidth
-                            label="Contraseña"
-                            type={showPassword ? 'text' : 'password'}
-                            onFocus={() => window.electronAPI?.openKeyboard()}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={handleTogglePassword}
-                                            edge="end"
-                                            aria-label="toggle password visibility"
-                                        >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            value={pass}
-                            onChange={(e) => setPass(e.target.value)}
-                            margin="normal"
-                            error={errorsEmpty.password}
-                            helperText={errorsEmpty.password ? msgPass : ''}
-                        />
-                    </Box>
-
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={remember}
-                                onChange={(e) => setRemember(e.target.checked)}
-                                color="primary"
+                    {/* Inputs */}
+                    <Box
+                        sx={{
+                            flex: 1,
+                            width: "90%",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            gap: 3 * scale, // separación dinámica
+                        }}
+                    >
+                        <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                            <Person sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
+                            <TextField
+                                variant="standard"
+                                fullWidth
+                                label="Usuario"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                onFocus={() => window.electronAPI?.openKeyboard()}
+                                error={errorsEmpty.username}
+                                helperText={errorsEmpty.username ? msgUser : ""}
                             />
-                        }
-                        label={
-                            <Typography fontSize={20 * scale}>Recordar usuario</Typography>
-                        }
-                        sx={{ mt: 5 * scale }}
-                    />
+                        </Box>
 
-                    <Button variant="contained" color="success" type='submit' fullWidth sx={{ my: 1 * scale }}>
-                        {buttonName}
-                        <Send sx={{
-                            fontSize: 40 * scale,
-                            ml: 3 * scale
-                        }} />
-                    </Button>
+                        <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                            <LockOpen sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
+                            <TextField
+                                variant="standard"
+                                fullWidth
+                                label="Contraseña"
+                                type={showPassword ? "text" : "password"}
+                                value={pass}
+                                onChange={(e) => setPass(e.target.value)}
+                                onFocus={() => window.electronAPI?.openKeyboard()}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={handleTogglePassword} edge="end">
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                error={errorsEmpty.password}
+                                helperText={errorsEmpty.password ? msgPass : ""}
+                            />
+                        </Box>
+                    </Box>
 
-                    {(userInit?.closeSession || userInit?.closeWindow || userInit?.adminWindow) && (
-                        <Button variant="contained" color="secondary" type='button' onClick={backPage} fullWidth sx={{ my: 1 * scale }}>
-                            Atrás
-                            <Undo sx={{
-                                fontSize: 40 * scale,
-                                ml: 3 * scale
-                            }} />
+                    {/* Opciones y botones */}
+                    <Box
+                        sx={{
+                            flex: `0 0 ${30 * scale}%`,
+                            width: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            gap: 2 * scale,
+                            mt: 5 * scale,
+                        }}
+                    >
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={remember}
+                                    onChange={(e) => setRemember(e.target.checked)}
+                                    color="primary"
+                                    sx={{ transform: `scale(${scale})` }} // checkbox escalado
+                                />
+                            }
+                            label={<Typography fontSize={20 * scale}>Recordar usuario</Typography>}
+                        />
+
+                        <Button variant="contained" color="success" type="submit" fullWidth>
+                            {buttonName}
+                            <Send sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
                         </Button>
-                    )}
 
-                    <SnackBarAlert
-                        open={snackbarOpen}
-                        message={snackbarMessage}
-                        severity={snackbarSeverity}
-                        onClose={() => setSnackbarOpen(false)}
-                    />
+                        {(userInit?.closeSession || userInit?.closeWindow || userInit?.adminWindow) && (
+                            <Button variant="contained" color="secondary" onClick={backPage} fullWidth>
+                                Atrás
+                                <Undo sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
+                            </Button>
+                        )}
+                    </Box>
                 </Paper>
             </Box>
+
+            <SnackBarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
         </>
     );
 }
