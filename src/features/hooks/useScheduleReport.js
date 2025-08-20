@@ -55,47 +55,19 @@ function shouldRunNow({ frequency, hour, minute, dayOfWeek, dayOfMonth }) {
     const now = new Date();
     const target = getTargetDate({ frequency, hour, minute, dayOfWeek, dayOfMonth });
 
-    log(
-        "debug",
-        `Ahora: ${now.toLocaleString()} | Target: ${target.toISOString()} | Última ejecución: ${lastExec ? new Date(lastExec).toLocaleString() : "N/A"
-        }`
-    );
-
-    // 🚀 Primera ejecución → dispara inmediatamente
     if (!lastExec) {
-        log("debug", "Primera ejecución detectada, disparando tarea inmediatamente");
         return { run: true, target };
     }
 
     const lastExecDate = new Date(lastExec);
 
-    if (frequency === "daily") {
-        if (now >= target && lastExecDate < target) {
-            return { run: true, target };
-        }
-    }
-
-    if (frequency === "weekly") {
-        log("debug", `Última ejecución (semanal): ${lastExecDate.toLocaleString()} | Target: ${target.toLocaleString()}`);
-        if (now >= target && (lastExecDate < target || lastExecDate.getDay() !== dayOfWeek)) {
-            log("debug", "Condiciones para ejecución semanal cumplidas");
-            return { run: true, target };
-        }
-    }
-
-    if (frequency === "monthly") {
-        if (
-            now >= target &&
-            (lastExecDate < target ||
-                lastExecDate.getDate() !== dayOfMonth ||
-                lastExecDate.getMonth() !== now.getMonth())
-        ) {
-            return { run: true, target };
-        }
+    if (now >= target && lastExecDate < target) {
+        return { run: true, target };
     }
 
     return { run: false, target };
 }
+
 
 // Hook
 export function useSchedulerReport({
