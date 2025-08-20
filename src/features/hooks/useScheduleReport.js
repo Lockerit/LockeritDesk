@@ -23,18 +23,28 @@ function setLastExecution(targetDate) {
 
 function getTargetDate({ frequency, hour, minute, dayOfWeek, dayOfMonth }) {
     const now = new Date();
-    log("debug", `Calculando fecha objetivo para: ${JSON.stringify({ frequency, hour, minute, dayOfWeek, dayOfMonth })}`);
     let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0);
-    log("debug", `Fecha objetivo inicial: ${target.toLocaleString()}`);
+
+    if (frequency === "daily") {
+        if (target <= now) {
+            target.setDate(target.getDate() + 1); // mañana
+        }
+    }
 
     if (frequency === "weekly") {
-        target.setDate(now.getDate() - now.getDay() + dayOfWeek);
-        log("debug", `Fecha objetivo ajustada (semanal): ${target.toLocaleString()}`);
+        const currentDay = now.getDay(); // 0=domingo
+        let diff = dayOfWeek - currentDay;
+        if (diff < 0 || (diff === 0 && target <= now)) {
+            diff += 7;
+        }
+        target.setDate(now.getDate() + diff);
     }
 
     if (frequency === "monthly") {
         target = new Date(now.getFullYear(), now.getMonth(), dayOfMonth, hour, minute, 0);
-        log("debug", `Fecha objetivo ajustada (mensual): ${target.toLocaleString()}`);
+        if (target <= now) {
+            target = new Date(now.getFullYear(), now.getMonth() + 1, dayOfMonth, hour, minute, 0);
+        }
     }
 
     return target;
