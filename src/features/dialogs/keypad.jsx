@@ -553,17 +553,17 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         disableRestoreFocus
       >
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
           {/* Encabezado superior: tiempo y botón cerrar */}
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'flex-end',
               alignItems: 'center',
-              gap: 1,
+              gap: 1 * scale,
               position: 'absolute',
-              right: 8,
-              top: 8,
+              right: 8 * scale,
+              top: 8 * scale,
             }}
           >
             <Typography variant="body2">
@@ -585,7 +585,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
 
         <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '25vh' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, height: '25vh' }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
               <MobileFriendly sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
               <TextField
@@ -602,7 +602,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Password sx={{ mr: 2, fontSize: 52 * scale }} />
+              <Password sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
               <TextField
                 label={`Contraseña (${config?.paramsHtml?.lenMaxInputPass} dígitos)`}
                 value={password}
@@ -619,7 +619,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
             </Box>
 
             {!operationRet && (<Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Refresh sx={{ mr: 2, fontSize: 52 * scale }} />
+              <Refresh sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
               <TextField
                 label="Confirmar Contraseña"
                 value={confirmPassword}
@@ -638,7 +638,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           </Box>
 
           <Box sx={{ height: '50vh' }}>
-            <Grid container spacing={2} sx={{ mt: 4 * scale, height: '100%' }}>
+            <Grid container spacing={2 * scale} sx={{ mt: 4 * scale, height: '100%' }}>
               {keys().map(renderButton)}
             </Grid>
           </Box>

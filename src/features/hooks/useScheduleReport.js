@@ -21,7 +21,7 @@ function setExecutionDates(targetDate) {
     const realExec = dayjs();
 
     localStorage.setItem("lastExecution", realExec.format("YYYY-MM-DD HH:mm:ss")); // ⏱ real execution
-    localStorage.setItem("lastTarget", targetDate.format("YYYY-MM-DD HH:mm:ss"));  // 🎯 scheduled slot
+    localStorage.setItem("nextTarget", targetDate.format("YYYY-MM-DD HH:mm:ss"));  // 🎯 scheduled slot
 
     log(
         "info",
@@ -103,10 +103,10 @@ export function useSchedulerReport({
 
         async function runTask(target) {
             try {
-                log("info", `Iniciando tarea programada dayjs [${dayjs().format("YYYY-MM-DD HH:mm:ss")}]`);
-                log("info", `Iniciando tarea programada frecuencia [${frequency}]`);
-                log("info", `Iniciando tarea programada semana [${dayOfWeek}]`);
-                log("info", `Iniciando tarea programada mes [${dayOfMonth}]`);
+                log("debug", `Iniciando tarea programada dayjs [${dayjs().format("YYYY-MM-DD HH:mm:ss")}]`);
+                log("debug", `Iniciando tarea programada frecuencia [${frequency}]`);
+                log("debug", `Iniciando tarea programada semana [${dayOfWeek}]`);
+                log("debug", `Iniciando tarea programada mes [${dayOfMonth}]`);
 
                 const { startDate, endDate } = getDateRange(dayjs(), frequency, dayOfWeek, dayOfMonth);
 

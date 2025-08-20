@@ -89,17 +89,17 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
                 transition: Transition,
             }}
         >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
                 {/* Encabezado superior: tiempo y botón cerrar */}
                 <Box
                     sx={{
                         display: 'flex',
                         justifyContent: 'flex-end',
                         alignItems: 'center',
-                        gap: 1,
+                        gap: 1 * scale,
                         position: 'absolute',
-                        right: 8,
-                        top: 8,
+                        right: 8 * scale,
+                        top: 8 * scale,
                     }}
                 >
                     <Typography variant="body2">
@@ -125,7 +125,7 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
                     textAlign: 'center',
                 }}
             >
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 * scale }}>
                     <ErrorOutline color="error" sx={{ fontSize: 75 * scale }} />
                 </Box>
                 <Box textAlign="center">

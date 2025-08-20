@@ -1,11 +1,11 @@
 {
     "client": "Tulocker",
-    "locationDevice": "CC Prueba",
+    "locationDevice": "CC Outlet Factory",
     "pointDevice": "Sótano 1",
     "totalLockers": 60,
     "login": {
-        "user": "admin",
-        "pass": "5555",
+        "user": "Administrador",
+        "pass": "070125",
         "avatarPath": "./assets/TuLockerIcono.jpg",
         "logoPath": "./assets/TuLockerHorizontal.png",
         "QRPath": "./assets/CodigoQR.png"

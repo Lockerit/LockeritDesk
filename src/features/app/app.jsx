@@ -134,11 +134,11 @@ export default function App() {
                 sx={{
                     display: "flex",
                     flexDirection: "column",
-                    height: "100vh", // 🔹 en lugar de minHeight
-                    overflow: "hidden", // 🔹 evita scroll "doble"
+                    height: "100vh", // ocupa toda la pantalla
+                    overflow: "hidden", // evita scroll doble
                 }}
             >
-                {/* AppBar */}
+                {/* AppBar fijo */}
                 <Box
                     sx={{
                         position: "fixed",
@@ -152,29 +152,25 @@ export default function App() {
                     <DenseAppBar />
                 </Box>
 
-                {/* Contenido */}
+                {/* Contenido principal */}
                 <Box
                     sx={{
-                        flex: 1, // 🔹 ocupa todo el espacio disponible
-                        marginTop: `${appBarHeight}px`,
-                        marginBottom: `${footerHeight}px`,
-                        overflow: "auto", // 🔹 el scroll solo aquí
+                        flex: 1,
+                        marginTop: `${appBarHeight}px`, // deja espacio bajo AppBar
+                        overflow: "hidden",
                     }}
                 >
                     <AppRoutes />
                 </Box>
 
-                {/* Footer */}
+                {/* Footer dentro del flujo (no fixed) */}
                 <Box
                     sx={{
-                        position: "fixed",
-                        bottom: 0,
-                        left: 0,
-                        width: "100%",
                         height: `${footerHeight}px`,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        flexShrink: 0, // evita que se encoja
                     }}
                 >
                     <Copyright />

@@ -413,7 +413,7 @@ const AdminLockers = () => {
                             boxSizing: "border-box",
                         }}
                     >
-                        <Grid container spacing={1} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
+                        <Grid container spacing={1 * scale} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
                             {currentModule.lockers.map((locker) => {
                                 const selected = selectedLockers.some(
                                     (item) => item.lockerCode === locker.lockerCode
@@ -448,7 +448,7 @@ const AdminLockers = () => {
                     <Box sx={{ flex: "0 0 15%", width: "100%" }}>
                         {/* Acciones */}
                         {selectedLockers.length > 0 && (
-                            <Stack spacing={2} alignItems="center" sx={{ mt: 2 * scale, height: '100%', width: '100%' }}>
+                            <Stack spacing={2 * scale} alignItems="center" sx={{ mt: 2 * scale, height: '100%', width: '100%' }}>
                                 <Box
                                     sx={{
                                         maxHeight: Math.max(60, Math.min(120, 80 * scale)),   // escala, mínimo 60px, máximo 120px
@@ -467,7 +467,7 @@ const AdminLockers = () => {
                                         <Chip key={l.lockerCode} label={l.lockerCode} />
                                     ))}
                                 </Box>
-                                <Stack direction="row" spacing={1} sx={{ width: '100%', maxHeight: '100%' }}>
+                                <Stack direction="row" spacing={1 * scale} sx={{ width: '100%', maxHeight: '100%', padding: 2 * scale }}>
                                     <Button variant="outlined" color="primary" fullWidth onClick={() => handleAction('abrir')}>
                                         Abrir
                                     </Button>

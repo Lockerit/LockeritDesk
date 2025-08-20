@@ -14,7 +14,7 @@ const Tabadmin = () => {
     const scale = factor || 1;
 
     // Altura base de la barra de tabs
-    const tabBarBase = 48; // altura típica MUI Tabs
+    const tabBarBase = 48 * scale; // altura típica MUI Tabs
     const tabBarHeight = Math.max(30, Math.min(80, tabBarBase * scale));
 
     const handleChange = (event, newValue) => {

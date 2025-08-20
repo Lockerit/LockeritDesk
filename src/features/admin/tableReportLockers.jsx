@@ -57,9 +57,9 @@ const ReportTable = ({ data }) => {
                     sx={{
                         flex: "0 0 auto",   // alto dinámico (no fijo en %)
                         display: "flex",
-                        gap: 3,
+                        gap: 3 * scale,
                         alignItems: "flex-end",
-                        p: 2,
+                        p: 2 * scale,
                     }}
                 >
                     <Box sx={{ flex: 1 }}>

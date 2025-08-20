@@ -140,7 +140,7 @@ export default function DenseAppBar() {
                     <Box
                         ref={avatarBoxRef}
                         tabIndex={-1}
-                        sx={{ display: 'flex', gap: 1, cursor: 'pointer', alignItems: 'center' }}
+                        sx={{ display: 'flex', gap: 1 * scale, cursor: 'pointer', alignItems: 'center' }}
                         onClick={handleMenuOpen}
                     >
                         <Avatar alt="Avatar" src={avatarSelect}
@@ -168,7 +168,7 @@ export default function DenseAppBar() {
                 </Box>
 
                 {/* Ubicación (derecha) */}
-                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 * scale }}>
                     {showData && (
                         <>
                             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>

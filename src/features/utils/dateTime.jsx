@@ -144,7 +144,7 @@ const DateTime = ({ label, value, onChange }) => {
                             {props.tabs}
 
                             {/* Calendario + columnas */}
-                            <Box sx={{ display: 'flex', gap: 2, p: 2 * scale }}>
+                            <Box sx={{ display: 'flex', gap: 2 * scale, p: 2 * scale }}>
                                 <DateCalendar
                                     views={['year', 'month', 'day']}
                                     openTo='day'
@@ -159,7 +159,7 @@ const DateTime = ({ label, value, onChange }) => {
                                         );
                                     }}
                                 />
-                                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', gap: 2 * scale, alignItems: 'center' }}>
                                     <NumberColumn
                                         label='Horas'
                                         values={Array.from({ length: 24 }, (_, i) => i)}

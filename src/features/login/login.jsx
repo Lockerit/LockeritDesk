@@ -253,7 +253,7 @@ export default function Login() {
                 }}
             >
                 <Paper
-                    elevation={24}
+                    elevation={24 * scale}
                     component="form"
                     onSubmit={handleSubmit}
                     sx={{
@@ -278,7 +278,7 @@ export default function Login() {
                     {/* Logo */}
                     <Box
                         sx={{
-                            flex: `0 0 ${12 * scale}%`, // dinámico con scale
+                            flex: `0 0 12%%`, // dinámico con scale
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
@@ -291,7 +291,7 @@ export default function Login() {
                     {/* Título */}
                     <Box
                         sx={{
-                            flex: `0 0 ${10 * scale}%`,
+                            flex: `0 0 10%%`,
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
@@ -365,7 +365,7 @@ export default function Login() {
                     {/* Opciones y botones */}
                     <Box
                         sx={{
-                            flex: `0 0 ${30 * scale}%`,
+                            flex: `0 0 30%`,
                             width: "100%",
                             display: "flex",
                             flexDirection: "column",

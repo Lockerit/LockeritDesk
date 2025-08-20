@@ -66,9 +66,9 @@ const ReportLockers = () => {
                 sx={{
                     flex: "0 0 5%", // 20% del alto fijo
                     display: "flex",
-                    gap: 3,
+                    gap: 3 * scale,
                     alignItems: "flex-end",
-                    p: 2,
+                    p: 2 * scale,
                 }}
             >
                 <Box sx={{ flex: 1 }}>

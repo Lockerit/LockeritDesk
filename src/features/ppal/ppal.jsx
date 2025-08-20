@@ -168,8 +168,8 @@ export default function Ppal() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    px: 4,
-                    py: 2,
+                    px: 4 * scale,
+                    py: 2 * scale,
                     width: '100%',
                     height: '100%',
                     alignItems: 'center',
@@ -186,7 +186,7 @@ export default function Ppal() {
                 </Box>
 
                 {/* Botones */}
-                <Grid container spacing={2} sx={{ minHeight: '60%', width: '60%' }}>
+                <Grid container spacing={2 * scale} sx={{ minHeight: '60%', width: '60%' }}>
                     <Grid size={6}>
                         <ActionButton
                             text="Guardar"
@@ -210,10 +210,8 @@ export default function Ppal() {
                 {/* Indicadores */}
                 <Box
                     sx={{
-                        mt: 8 * scale,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 5,
                         width: '100%',
                         maxHeight: '100%'
                     }}
@@ -246,7 +244,7 @@ export default function Ppal() {
                                 src={config.login.QRPath}
                                 alt="QR"
                                 style={{
-                                    height: 200 * scale,
+                                    height: 180 * scale,
                                     objectFit: 'contain',
                                 }}
                             />
