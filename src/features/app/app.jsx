@@ -20,6 +20,36 @@ const log = (level, message) => {
     }
 };
 
+function normalizeReportConfig(report) {
+    // solo tomamos los campos relevantes
+    return {
+        frequency: report.frequency,
+        dayOfWeek: report.dayOfWeek,
+        dayOfMonth: report.dayOfMonth,
+        hour: report.hour,
+        minute: report.minute,
+        timezoneMode: report.timezoneMode,
+    };
+}
+
+function useResetLocalStorageOnConfigChange(config) {
+    useEffect(() => {
+        if (!config?.report) return;
+
+        const newConfig = normalizeReportConfig(config.report);
+        const prevConfig = JSON.parse(localStorage.getItem("reportConfigSnapshot") || "null");
+
+        if (!prevConfig || JSON.stringify(prevConfig) !== JSON.stringify(newConfig)) {
+            // Config cambió → limpiar lastExecution y lastTarget
+            localStorage.removeItem("lastExecution");
+            localStorage.removeItem("lastTarget");
+            log('info', '[Scheduler] Config cambió → reseteando localStorage');
+
+            localStorage.setItem("reportConfigSnapshot", JSON.stringify(newConfig));
+        }
+    }, [config]);
+}
+
 export default function App() {
     const { userInit, setUserInit } = useUser();
     const [version, setVersion] = useState('');
@@ -59,26 +89,22 @@ export default function App() {
         }
     }, []);
 
+    useResetLocalStorageOnConfigChange(config);
+
     useSchedulerReport({
-        frequency: config?.report?.frequency || "daily",
-        dayOfWeek: config?.report?.dayOfWeek || 1,
-        dayOfMonth: config?.report?.dayOfMonth || 1,
-        hour: config?.report?.hour || 0,
-        minute: config?.report?.minute || 5,
-        enabled: !!config,
+        frequency: config?.report?.frequency ?? "daily",
+        dayOfWeek: config?.report?.dayOfWeek ?? 0,
+        dayOfMonth: config?.report?.dayOfMonth ?? 1,
+        hour: config?.report?.hour ?? 0,
+        minute: config?.report?.minute ?? 0,
+        enabled: !!config,   // 👈 solo corre cuando hay config
         task: async (startDate, endDate) => {
-
-            if (!config) {
-                log("warn", "Configuración no disponible, no se ejecutará la tarea programada");
-                return;
-            }
-
-            const timezoneMode = config?.report?.timezoneMode || "local";
+            const timezoneMode = config.report?.timezoneMode || "local";
             log("info", `Generando payload en modo [${timezoneMode}]`);
 
             const formatter = timezoneMode === "utc"
                 ? (d) => d.utc()
-                : (d) => d
+                : (d) => d;
 
             const payload = {
                 startDate: formatter(startDate).format("YYYY-MM-DD HH:mm:ss"),
@@ -89,35 +115,27 @@ export default function App() {
 
             try {
                 const result = await GetReportLockers(payload);
-
                 if (result.success) {
                     log("info", `Datos del reporte obtenidos: ${JSON.stringify(result.data)}`);
-
-                    if (!Array.isArray(result.data) || result.data.length === 0) {
-                        log("info", "No hay registros para esa fecha");
-                    }
                 } else {
-                    const msg =
-                        typeof result?.data === "string"
-                            ? result.data
-                            : result?.data?.message || "Error al obtener reporte";
-
-                    log("error", msg);
+                    log("error", result?.data?.message || "Error al obtener reporte");
                 }
             } catch (err) {
                 log("error", err.message || "Error al obtener reporte");
             }
-        },
+        }
     });
 
     return (
         <HashRouter>
             <Container
                 maxWidth={false}
+                disableGutters
                 sx={{
-                    minHeight: "100vh",
                     display: "flex",
                     flexDirection: "column",
+                    height: "100vh", // 🔹 en lugar de minHeight
+                    overflow: "hidden", // 🔹 evita scroll "doble"
                 }}
             >
                 {/* AppBar */}
@@ -137,9 +155,10 @@ export default function App() {
                 {/* Contenido */}
                 <Box
                     sx={{
-                        marginTop: `${appBarHeight}px`, // mismo alto del AppBar
-                        height: `calc(100vh - ${appBarHeight}px - ${footerHeight}px)`,
-                        overflow: "auto",
+                        flex: 1, // 🔹 ocupa todo el espacio disponible
+                        marginTop: `${appBarHeight}px`,
+                        marginBottom: `${footerHeight}px`,
+                        overflow: "auto", // 🔹 el scroll solo aquí
                     }}
                 >
                     <AppRoutes />
@@ -148,6 +167,10 @@ export default function App() {
                 {/* Footer */}
                 <Box
                     sx={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        width: "100%",
                         height: `${footerHeight}px`,
                         display: "flex",
                         alignItems: "center",

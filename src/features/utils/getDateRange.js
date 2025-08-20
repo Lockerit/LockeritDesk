@@ -1,5 +1,11 @@
 import dayjs from "dayjs";
 
+/**
+ * Calcula el rango de fechas según la frecuencia:
+ * - daily   → día anterior completo
+ * - weekly  → bloque de 7 días comenzando en el dayOfWeek de la semana anterior
+ * - monthly → mes pasado completo desde el dayOfMonth elegido
+ */
 export function getDateRange(referenceDate, frequency, dayOfWeek = 1, dayOfMonth = 1) {
     const now = dayjs(referenceDate);
 
@@ -12,24 +18,28 @@ export function getDateRange(referenceDate, frequency, dayOfWeek = 1, dayOfMonth
     }
 
     if (frequency === "weekly") {
-        const dow = Number(dayOfWeek) || 0; // asegurar número
+        const dow = Number(dayOfWeek) || 0; // 0=domingo ... 6=sábado
 
-        // Domingo de ESTA semana (robusto, independiente del locale)
-        const thisWeekSunday = now.startOf("day").subtract(now.day(), "day");
+        // Tomar el día de la semana *anterior* al hoy
+        // (ej: si hoy es martes y pido martes → me da el martes pasado)
+        let startDate = now.day(dow).startOf("day").subtract(7, "day");
 
-        // Semana PASADA empezando en el dayOfWeek solicitado
-        const startDate = thisWeekSunday.subtract(7, "day").add(dow, "day").startOf("day");
         const endDate = startDate.add(6, "day").endOf("day");
 
         return { startDate, endDate };
     }
 
     if (frequency === "monthly") {
-        const startDate = dayjs(new Date(now.year(), now.month() - 1, dayOfMonth)).startOf("day");
+        // Mes pasado desde el dayOfMonth
+        const prev = now.subtract(1, "month");
+        const safeDay = Math.min(Number(dayOfMonth) || 1, prev.daysInMonth());
+        const startDate = prev.date(safeDay).startOf("day");
         const endDate = startDate.add(1, "month").subtract(1, "day").endOf("day");
+
         return { startDate, endDate };
     }
 
+    // fallback: día actual
     return {
         startDate: now.startOf("day"),
         endDate: now.endOf("day"),

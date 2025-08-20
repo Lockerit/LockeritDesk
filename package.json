@@ -19,7 +19,8 @@
     "build:electron": "electron-builder",
     "build": "npm run clean && npm run build:web && npm run build:electron",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:range": "node ./src/features/utils/testGetDateRange.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

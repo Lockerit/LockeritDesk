@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { getDateRange } from "../utils/getDateRange.js";
+import dayjs from "dayjs";
 
 const fileName = "scheduleReport";
 
@@ -16,34 +17,37 @@ function getLastExecution() {
     return localStorage.getItem("lastExecution");
 }
 
-function setLastExecution(targetDate) {
-    localStorage.setItem("lastExecution", targetDate.toISOString());
-    log("info", `Actualizando última ejecución al slot: ${targetDate.toLocaleString()}`);
+function setExecutionDates(targetDate) {
+    const realExec = dayjs();
+
+    localStorage.setItem("lastExecution", realExec.format("YYYY-MM-DD HH:mm:ss")); // ⏱ real execution
+    localStorage.setItem("lastTarget", targetDate.format("YYYY-MM-DD HH:mm:ss"));  // 🎯 scheduled slot
+
+    log(
+        "info",
+        `Actualizando ejecución → Real: ${realExec.format("YYYY-MM-DD HH:mm:ss")} | Target: ${targetDate.format("YYYY-MM-DD HH:mm:ss")}`
+    );
 }
 
 function getTargetDate({ frequency, hour, minute, dayOfWeek, dayOfMonth }) {
-    const now = new Date();
-    let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0);
+    const now = dayjs();
+    let target = now.hour(hour).minute(minute).second(0).millisecond(0);
 
     if (frequency === "daily") {
-        if (target <= now) {
-            target.setDate(target.getDate() + 1); // mañana
+        if (target.isBefore(now)) {
+            target = target.add(1, "day"); // mañana
         }
     }
 
     if (frequency === "weekly") {
-        const currentDay = now.getDay(); // 0=domingo
-        let diff = dayOfWeek - currentDay;
-        if (diff < 0 || (diff === 0 && target <= now)) {
-            diff += 7;
-        }
-        target.setDate(now.getDate() + diff);
+        const diff = (dayOfWeek - now.day() + 7) % 7;
+        target = target.add(diff === 0 && target.isBefore(now) ? 7 : diff, "day");
     }
 
     if (frequency === "monthly") {
-        target = new Date(now.getFullYear(), now.getMonth(), dayOfMonth, hour, minute, 0);
-        if (target <= now) {
-            target = new Date(now.getFullYear(), now.getMonth() + 1, dayOfMonth, hour, minute, 0);
+        target = now.date(dayOfMonth).hour(hour).minute(minute).second(0).millisecond(0);
+        if (target.isBefore(now)) {
+            target = target.add(1, "month").date(dayOfMonth);
         }
     }
 
@@ -52,22 +56,29 @@ function getTargetDate({ frequency, hour, minute, dayOfWeek, dayOfMonth }) {
 
 function shouldRunNow({ frequency, hour, minute, dayOfWeek, dayOfMonth }) {
     const lastExec = getLastExecution();
-    const now = new Date();
+    const now = dayjs();
     const target = getTargetDate({ frequency, hour, minute, dayOfWeek, dayOfMonth });
 
+    log(
+        "debug",
+        `Ahora: ${now.format("YYYY-MM-DD HH:mm:ss")} | Próximo target: ${target.format("YYYY-MM-DD HH:mm:ss")} | Última ejecución: ${lastExec ?? "N/A"}`
+    );
+
+    // 🚀 Primera ejecución → dispara inmediatamente
     if (!lastExec) {
+        log("debug", "Primera ejecución detectada, disparando tarea inmediatamente");
         return { run: true, target };
     }
 
-    const lastExecDate = new Date(lastExec);
+    const lastExecDate = dayjs(lastExec, "YYYY-MM-DD HH:mm:ss");
 
-    if (now >= target && lastExecDate < target) {
+    // Si ya pasó el target y no hemos corrido todavía en este slot → correr
+    if (now.isAfter(target) && lastExecDate.isBefore(target)) {
         return { run: true, target };
     }
 
     return { run: false, target };
 }
-
 
 // Hook
 export function useSchedulerReport({
@@ -85,9 +96,19 @@ export function useSchedulerReport({
             return;
         }
 
+        if (typeof task !== "function") {
+            log("warn", "Task no definida, no se ejecutará scheduler");
+            return;
+        }
+
         async function runTask(target) {
             try {
-                const { startDate, endDate } = getDateRange(new Date(), frequency, dayOfWeek, dayOfMonth);
+                log("info", `Iniciando tarea programada dayjs [${dayjs().format("YYYY-MM-DD HH:mm:ss")}]`);
+                log("info", `Iniciando tarea programada frecuencia [${frequency}]`);
+                log("info", `Iniciando tarea programada semana [${dayOfWeek}]`);
+                log("info", `Iniciando tarea programada mes [${dayOfMonth}]`);
+
+                const { startDate, endDate } = getDateRange(dayjs(), frequency, dayOfWeek, dayOfMonth);
 
                 log(
                     "info",
@@ -97,7 +118,9 @@ export function useSchedulerReport({
                 );
 
                 await task(startDate, endDate);
-                setLastExecution(target); // guardamos el slot exacto
+
+                // ✅ Solo aquí se guardan lastExecution y lastTarget
+                setExecutionDates(target);
                 log("info", "Tarea ejecutada correctamente");
             } catch (err) {
                 log("error", `Error en tarea programada: ${err.message}`);
