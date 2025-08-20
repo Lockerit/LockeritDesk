@@ -35,6 +35,7 @@ const ReportTable = ({ data, startDate, endDate }) => {
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const config = useElectronConfig();
     const [isErrorMsj, setIsErrorMsj] = useState(true);
+    const [disabledButton, setDisabledButton] = useState(true);
 
 
     useEffect(() => {
@@ -44,6 +45,15 @@ const ReportTable = ({ data, startDate, endDate }) => {
             setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
         }
     }, [config])
+
+    useEffect(() => {
+        if (filteredData.length === 0) {
+            setDisabledButton(true);
+            return;
+        }
+
+        setDisabledButton(false);
+    }, [data]);
 
     const handleChangePage = (event, newPage) => setPage(newPage);
 
@@ -79,6 +89,7 @@ const ReportTable = ({ data, startDate, endDate }) => {
     }, [currentPageData]);
 
     const fetchDataReportLocker = async (showMsg = false) => {
+
         setIsErrorMsj(true);
         setLoading(true);
 
@@ -87,16 +98,6 @@ const ReportTable = ({ data, startDate, endDate }) => {
             endDate: dayjs(endDate).format("YYYY-MM-DD HH:mm:ss"),
             sendMail: true
         };
-
-        if (filteredData.length === 0) {
-            setLoading(false);
-            const msg = 'No se encontraron resultados para enviar';
-            log('info', msg);
-            setMessageErrorAPI(msg);
-            setShowErrorAPIOpen(true);
-            setIsErrorMsj(true);
-            return;
-        }
 
         try {
             const result = await GetReportLockers(payload);
@@ -168,6 +169,7 @@ const ReportTable = ({ data, startDate, endDate }) => {
                                 fontWeight: 'normal',
                             }}
                             onClick={() => fetchDataReportLocker(true)}
+                            disabled={disabledButton}
                         >
                             Enviar reporte
                         </Button>
