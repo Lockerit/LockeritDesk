@@ -10,12 +10,13 @@ import {
     Button,
     Box,
     Slide,
-    IconButton
+    IconButton,
 } from '@mui/material';
 import {
     SmsFailed,
     Close,
-    ErrorOutline
+    ErrorOutline,
+    CheckCircleOutline
 } from '@mui/icons-material';
 import {
     formatTime
@@ -27,7 +28,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const fileName = 'showErrorAPI';
 
-export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
+export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15, isError = true }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const { width, height, factor } = useWindowSize();
@@ -125,8 +126,20 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15 }) {
                     textAlign: 'center',
                 }}
             >
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 * scale }}>
-                    <ErrorOutline color="error" sx={{ fontSize: 75 * scale }} />
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        gap: 2 * scale,
+                    }}
+                >
+                    {isError ? (
+                        <ErrorOutline color="error" sx={{ fontSize: 75 * scale }} />
+                    ) : (
+                        <CheckCircleOutline color="success" sx={{ fontSize: 75 * scale }} />
+                    )}
                 </Box>
                 <Box textAlign="center">
                     <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>

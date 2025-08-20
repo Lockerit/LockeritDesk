@@ -27,6 +27,13 @@ import { Sync } from '@mui/icons-material';
 
 const fileName = 'adminLockers';
 
+// Logging centralizado
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
 const AdminLockers = () => {
     const [data, setData] = useState(null);
     const [selectedModule, setSelectedModule] = useState('');

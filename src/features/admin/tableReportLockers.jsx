@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
     Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Paper, TablePagination, TablePaginationActions,
@@ -8,13 +8,42 @@ import {
 import dayjs from "dayjs";
 import { useWindowSize } from '../hooks/useWindowSize.js';
 import { formatCurrency } from "../utils/utils.js";
+import GetReportLockers from "../apis/report.js";
+import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
+import LoadingScreen from '../dialogs/loading.jsx';
+import { useElectronConfig } from '../hooks/useConfig.js';
 
-const ReportTable = ({ data }) => {
+
+const fileName = 'tableReportLockers';
+
+// Logging centralizado
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
+const ReportTable = ({ data, startDate, endDate }) => {
+    const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
+    const [messageErrorAPI, setMessageErrorAPI] = useState('');
+    const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [search, setSearch] = useState(""); // 🔍 Estado búsqueda
+    const [search, setSearch] = useState("");
     const { factor } = useWindowSize();
     const scale = factor || 1;
+    const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+    const config = useElectronConfig();
+    const [isErrorMsj, setIsErrorMsj] = useState(true);
+
+
+    useEffect(() => {
+        if (!config) return;
+
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
+        }
+    }, [config])
 
     const handleChangePage = (event, newPage) => setPage(newPage);
 
@@ -49,6 +78,64 @@ const ReportTable = ({ data }) => {
         return currentPageData.reduce((acc, row) => acc + (Number(row.AmountPaid) || 0), 0);
     }, [currentPageData]);
 
+    const fetchDataReportLocker = async (showMsg = false) => {
+        setIsErrorMsj(true);
+        setLoading(true);
+
+        const payload = {
+            startDate: dayjs(startDate).format("YYYY-MM-DD HH:mm:ss"),
+            endDate: dayjs(endDate).format("YYYY-MM-DD HH:mm:ss"),
+            sendMail: true
+        };
+
+        if (filteredData.length === 0) {
+            setLoading(false);
+            const msg = 'No se encontraron resultados para enviar';
+            log('info', msg);
+            setMessageErrorAPI(msg);
+            setShowErrorAPIOpen(true);
+            setIsErrorMsj(true);
+            return;
+        }
+
+        try {
+            const result = await GetReportLockers(payload);
+
+            if (result?.success) {
+
+                if (showMsg) {
+
+                    let msg = '';
+
+                    if (!result?.data) {
+                        msg = 'No se encontraron resultados para enviar';
+                        setIsErrorMsj(true);
+                    } else {
+                        msg = 'Reporte enviado con éxito';
+                        setIsErrorMsj(false);
+                    }
+                    log('info', msg);
+                    setMessageErrorAPI(msg);;
+                    setShowErrorAPIOpen(true);
+                } else {
+                    setShowErrorAPIOpen(false);
+                }
+            } else {
+                const msg = typeof result?.data === 'string'
+                    ? result.data
+                    : result?.data?.message || 'Error al obtener reporte';
+
+                setMessageErrorAPI(msg);
+                setShowErrorAPIOpen(true);
+            }
+        } catch (err) {
+            setMessageErrorAPI(err.message || 'Error al obtener reporte');
+            setShowErrorAPIOpen(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
@@ -80,9 +167,7 @@ const ReportTable = ({ data }) => {
                                 fontSize: `${16 * scale}px`,
                                 fontWeight: 'normal',
                             }}
-                            onClick={() => {
-                                // Lógica para generar el reporte
-                            }}
+                            onClick={() => fetchDataReportLocker(true)}
                         >
                             Enviar reporte
                         </Button>
@@ -168,6 +253,21 @@ const ReportTable = ({ data }) => {
                     </Box>
                 </Paper>
             </Box>
+
+            {loading && <LoadingScreen message={'Enviando...'} />}
+
+            {showErrorAPIOpen && (
+                <ShowErrorAPI
+                    open={showErrorAPIOpen}
+                    onConfirm={() => setShowErrorAPIOpen(false)}
+                    msg={messageErrorAPI}
+                    timeout={timeoutShowMessage}
+                    isError={isErrorMsj}
+                    disableEnforceFocus
+                    disableAutoFocus
+                    disableRestoreFocus
+                />
+            )}
         </>
     );
 };

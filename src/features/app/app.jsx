@@ -109,6 +109,7 @@ export default function App() {
             const payload = {
                 startDate: formatter(startDate).format("YYYY-MM-DD HH:mm:ss"),
                 endDate: formatter(endDate).format("YYYY-MM-DD HH:mm:ss"),
+                sendMail: true
             };
 
             log("info", `Payload generado: ${JSON.stringify(payload)}`);

@@ -6,11 +6,22 @@ import GetReportLockers from "../apis/report.js";
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
 import ReportTable from "./tableReportLockers.jsx";
+import { useElectronConfig } from '../hooks/useConfig.js';
+
 import {
     Box,
     Button,
     TextField
 } from "@mui/material";
+
+const fileName = 'reportLockers';
+
+// Logging centralizado
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
 
 const ReportLockers = () => {
     const [endDate, setEndDate] = useState(dayjs());
@@ -19,28 +30,58 @@ const ReportLockers = () => {
     const scale = factor || 1;
 
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
+    const [isErrorMsj, setIsErrorMsj] = useState(true);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
     const [loading, setLoading] = useState(true);
     const [reportData, setReportData] = useState([]);
+    const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+    const config = useElectronConfig();
 
     useEffect(() => {
-        fetchDataReportLocker();
+        fetchDataReportLocker(false);
     }, []);
 
-    const fetchDataReportLocker = async () => {
+    useEffect(() => {
+        if (!config) return;
+
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
+        }
+    }, [config])
+
+    const fetchDataReportLocker = async (showMsg = false) => {
+        setIsErrorMsj(true);
         setLoading(true);
 
         const payload = {
             startDate: dayjs(startDate).format("YYYY-MM-DD HH:mm:ss"),
             endDate: dayjs(endDate).format("YYYY-MM-DD HH:mm:ss"),
+            sendMail: false
         };
 
         try {
             const result = await GetReportLockers(payload);
 
-            if (result.success) {
-                setReportData(result.data || []);
-                setShowErrorAPIOpen(false);
+            if (result?.success) {
+                setReportData(result?.data || []);
+
+                if (showMsg) {
+
+                    let msg = '';
+
+                    if (!result?.data) {
+                        msg= 'No se encontraron resultados';
+                        setIsErrorMsj(true);
+                    } else {
+                        msg = 'Reporte generado con éxito';
+                        setIsErrorMsj(false);
+                    }
+                    log('info', msg);
+                    setMessageErrorAPI(msg);;
+                    setShowErrorAPIOpen(true);
+                } else {
+                    setShowErrorAPIOpen(false);
+                }
             } else {
                 const msg = typeof result?.data === 'string'
                     ? result.data
@@ -94,7 +135,7 @@ const ReportLockers = () => {
                             fontSize: `${16 * scale}px`,
                             fontWeight: 'normal',
                         }}
-                        onClick={fetchDataReportLocker}
+                        onClick={() => fetchDataReportLocker(true)}
                     >
                         Generar reporte
                     </Button>
@@ -111,15 +152,21 @@ const ReportLockers = () => {
                     minHeight: 0, // 🔑 evita que los hijos desborden
                 }}
             >
-                <ReportTable data={reportData} />
+                <ReportTable data={reportData} startDate={startDate} endDate={endDate} />
             </Box>
 
             {loading && <LoadingScreen />}
+
             {showErrorAPIOpen && (
                 <ShowErrorAPI
                     open={showErrorAPIOpen}
-                    message={messageErrorAPI}
-                    onClose={() => setShowErrorAPIOpen(false)}
+                    onConfirm={() => setShowErrorAPIOpen(false)}
+                    msg={messageErrorAPI}
+                    timeout={timeoutShowMessage}
+                    isError={isErrorMsj}
+                    disableEnforceFocus
+                    disableAutoFocus
+                    disableRestoreFocus
                 />
             )}
         </Box>

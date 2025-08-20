@@ -8,6 +8,13 @@ import { useWindowSize } from "../hooks/useWindowSize.js";
 import AdminLockers from './adminLockers.jsx';
 import ReportLockers from './reportLockers.jsx';
 
+// Logging centralizado
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
 const Tabadmin = () => {
     const [value, setValue] = useState('1');
     const { factor } = useWindowSize();
