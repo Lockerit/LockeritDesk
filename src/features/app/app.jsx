@@ -53,7 +53,7 @@ function useResetLocalStorageOnConfigChange(config) {
 export default function App() {
     const { userInit, setUserInit } = useUser();
     const [version, setVersion] = useState('');
-    const { width, height, factor } = useWindowSize();
+    const { factor } = useWindowSize();
     const scale = factor || 1; // de tu hook useElectronScreenData()
     const config = useElectronConfig();
 
