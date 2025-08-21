@@ -51,6 +51,8 @@ function useResetLocalStorageOnConfigChange(config) {
 }
 
 export default function App() {
+
+    // Comentario cambio para subir a GitHub
     const { userInit, setUserInit } = useUser();
     const [version, setVersion] = useState('');
     const { factor } = useWindowSize();
