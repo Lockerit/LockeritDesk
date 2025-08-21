@@ -18,7 +18,7 @@ export default function SnackBarAlert({ open, message, severity, onClose }) {
             anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
             <MuiAlert
-                elevation={6}
+                elevation={6 * scale}
                 variant="filled"
                 severity={severity}
                 onClose={onClose}

@@ -59,16 +59,16 @@ export default function Ppal() {
             navigate('/', { replace: true });
         }
 
-        if (config?.params?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutKeypad(config?.params?.modalTimeouts?.timeoutKeypad);
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutKeypad(config?.paramsHtml?.modalTimeouts?.timeoutKeypad);
         }
     }, [config, userInit, navigate]);
 
     useEffect(() => {
         if (!config) return;
 
-        if (config?.params?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutShowMessage(config?.params?.modalTimeouts?.timeoutShowMessage);
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
         }
 
     }, [config]);
@@ -164,14 +164,16 @@ export default function Ppal() {
         <>
             <Box
                 sx={{
-                    height: '80vh', // Ajusta según la altura del AppBar
+                    flex: 1, // ocupa todo el espacio disponible del contenedor padre
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    px: 4,
-                    py: 2,
+                    px: 4 * scale,
+                    py: 2 * scale,
                     width: '100%',
-                    alignItems: 'center'
+                    height: '100%',
+                    alignItems: 'center',
+                    overflow: 'hidden', // evita que genere scroll
                 }}
             >
                 <Box>
@@ -184,7 +186,7 @@ export default function Ppal() {
                 </Box>
 
                 {/* Botones */}
-                <Grid container spacing={2} sx={{ minHeight: '60%', width: '60%' }}>
+                <Grid container spacing={2 * scale} sx={{ minHeight: '60%', width: '60%' }}>
                     <Grid size={6}>
                         <ActionButton
                             text="Guardar"
@@ -208,10 +210,8 @@ export default function Ppal() {
                 {/* Indicadores */}
                 <Box
                     sx={{
-                        mt: 8 * scale,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 5,
                         width: '100%',
                         maxHeight: '100%'
                     }}
@@ -244,7 +244,7 @@ export default function Ppal() {
                                 src={config.login.QRPath}
                                 alt="QR"
                                 style={{
-                                    height: 200 * scale,
+                                    height: 180 * scale,
                                     objectFit: 'contain',
                                 }}
                             />
