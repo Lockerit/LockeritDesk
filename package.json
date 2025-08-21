@@ -19,16 +19,21 @@
     "build:electron": "electron-builder",
     "build": "npm run clean && npm run build:web && npm run build:electron",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:range": "node ./src/features/utils/testGetDateRange.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fontsource/nunito": "^5.2.6",
     "@mui/icons-material": "^7.2.0",
+    "@mui/lab": "^7.0.0-beta.16",
     "@mui/material": "^7.2.0",
     "@mui/styled-engine-sc": "^7.2.0",
+    "@mui/x-date-pickers": "^8.10.0",
+    "@mui/x-date-pickers-pro": "^8.10.1",
     "axios": "^1.10.0",
+    "dayjs": "^1.11.13",
     "dotenv": "^17.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

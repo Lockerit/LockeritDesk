@@ -1,16 +1,16 @@
 {
     "client": "Tulocker",
-    "locationDevice": "CC Prueba",
-    "pointDevice": "Zotano 1",
+    "locationDevice": "CC Outlet Factory",
+    "pointDevice": "Sótano 1",
     "totalLockers": 60,
     "login": {
-        "user": "admin",
-        "pass": "5555",
+        "user": "Administrador",
+        "pass": "070125",
         "avatarPath": "./assets/TuLockerIcono.jpg",
         "logoPath": "./assets/TuLockerHorizontal.png",
         "QRPath": "./assets/CodigoQR.png"
     },
-    "params": {
+    "paramsHtml": {
         "lenMaxInputPass": 4,
         "lenMinInputPass": 4,
         "currency": {
@@ -23,5 +23,13 @@
             "timeoutInsertMoney": 120,
             "timeoutShowMessage": 15
         }
+    },
+    "report": {
+        "frequency": "daily",
+        "dayOfWeek": 2,
+        "dayOfMonth": 25,
+        "hour": 0,
+        "minute": 5,
+        "timezoneMode": "local"
     }
 }

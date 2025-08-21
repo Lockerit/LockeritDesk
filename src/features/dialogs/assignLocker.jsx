@@ -88,17 +88,17 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                 transition: Transition,
             }}
         >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
                 {/* Encabezado superior: tiempo y botón cerrar */}
                 <Box
                     sx={{
                         display: 'flex',
                         justifyContent: 'flex-end',
                         alignItems: 'center',
-                        gap: 1,
+                        gap: 1 * scale,
                         position: 'absolute',
-                        right: 8,
-                        top: 8,
+                        right: 8 * scale,
+                        top: 8 * scale ,
                     }}
                 >
                     <Typography variant="body2">
@@ -129,7 +129,7 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                     Tu casillero es el:
                 </Typography>
                 <Box textAlign="center" sx={{ mb: 3 * scale }}>
-                    <Paper elevation={24}
+                    <Paper elevation={24 * scale}
                         sx={{
                             p: 5 * scale,
                             height: '30%',

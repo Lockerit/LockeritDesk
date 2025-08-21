@@ -68,7 +68,7 @@ export default function ConfirmDialog({ open, onConfirm, onCancel, title, mesg, 
                     textAlign: 'center',
                 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center', gap: 2, mt: 1 * scale }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center', gap: 2 * scale, mt: 1 * scale }}>
                     {isPhone && (<MobileFriendly color="primary" sx={{ fontSize: 40 * scale }} />)}
                     <Typography variant="h4" sx={{ whiteSpace: 'pre-line' }}>
                         {mesg}

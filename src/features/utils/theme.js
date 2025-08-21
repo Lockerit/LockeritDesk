@@ -28,19 +28,32 @@ export function createScaledTheme(factor = 1) {
     },
     spacing: 8 * factor, // escala global de espaciado
     components: {
-      MuiInputLabel: {
-        styleOverrides: {
-          root: {
-            color: '#0c315e',
-            fontSize: `${20 * factor}px`,
-            transform: 'translate(0, 20px) scale(1)',
-            transition: 'all 0.2s ease-out',
-            '&.MuiInputLabel-shrink': {
-              transform: 'translate(0, -6px) scale(0.75)',
+      MuiDateTimePicker: {
+        defaultProps: {
+          slotProps: {
+            textField: {
+              variant: 'standard',
+              fullWidth: true,
+              size: 'medium',        // 👈 evita que se aplique .MuiInputBase-inputSizeSmall
             },
           },
         },
       },
+      MuiInputLabel: {
+        styleOverrides: {
+          root: {
+            color: "#0c315e",
+            fontSize: `${20 * factor}px`,
+            transform: "translate(0, 20px) scale(1)",
+            transition: "all 0.2s ease-out",
+            "&.MuiInputLabel-shrink": {
+              transform: "translate(0, -6px) scale(0.75)",
+            },
+          },
+        },
+      },
+
+      // 🔹 variant="standard"
       MuiInput: {
         styleOverrides: {
           root: {
@@ -49,19 +62,73 @@ export function createScaledTheme(factor = 1) {
             paddingBottom: 0,
           },
           underline: {
-            '&:before': {
-              borderBottomColor: '#0c315e',
+            "&:before": {
+              borderBottomColor: "#0c315e",
             },
-            '&:hover:not(.Mui-disabled):before': {
-              borderBottomColor: '#009640',
+            "&:hover:not(.Mui-disabled):before": {
+              borderBottomColor: "#009640",
             },
-            '&:after': {
-              borderBottomColor: '#0c315e',
-              borderBottomWidth: `${5 * factor}px`,
+            "&:after": {
+              borderBottomColor: "#009640",
+              borderBottomWidth: `${2 * factor}px`,
             },
           },
         },
       },
+
+      // 🔹 variant="outlined"
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            fontSize: `${18 * factor}px`,
+            "& .MuiInputBase-input": {
+              color: "#009640",
+              fontSize: `${32 * factor}px`,
+              fontWeight: "bold",
+              "&::placeholder": {
+                color: "#0c315e",
+                opacity: 0.3,
+                fontStyle: "italic",
+              },
+            },
+          },
+          notchedOutline: {
+            borderColor: "#0c315e",
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#009640",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#009640",
+            borderWidth: `${2 * factor}px`,
+          },
+        },
+      },
+
+      // 🔹 variant="filled"
+      MuiFilledInput: {
+        styleOverrides: {
+          root: {
+            backgroundColor: "#fff",
+            "& .MuiInputBase-input": {
+              color: "#009640",
+              fontSize: `${32 * factor}px`,
+              fontWeight: "bold",
+            },
+            "&:before": {
+              borderBottomColor: "#0c315e",
+            },
+            "&:after": {
+              borderBottomColor: "#009640",
+              borderBottomWidth: `${2 * factor}px`,
+            },
+            "&:hover:not(.Mui-disabled):before": {
+              borderBottomColor: "#009640",
+            },
+          },
+        },
+      },
+
       MuiInputBase: {
         styleOverrides: {
           input: {
@@ -74,14 +141,64 @@ export function createScaledTheme(factor = 1) {
               fontStyle: 'italic',
             },
           },
+          // 👇 cuando el input tenga la clase "inputSizeSmall", mantiene tu font-size
+          inputSizeSmall: {
+            fontSize: `${32 * factor}px`,
+            fontWeight: 'bold',
+          },
         },
         defaultProps: {
           autoComplete: 'off',
         },
       },
+      // (Opcional) si quieres asegurar el label también para todos los TextField
       MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiInputLabel-root': {
+              color: '#0c315e',
+              fontSize: `${20 * factor}px`,
+            },
+            '& .MuiInputBase-input': {
+              color: '#009640',
+              fontSize: `${32 * factor}px`,
+              fontWeight: 'bold',
+            },
+          },
+        },
         defaultProps: {
           autoComplete: 'off',
+          fullWidth: true,
+          variant: 'standard',
+          size: 'medium', // 👈 evita small por defecto
+        },
+      },
+      MuiPickersSectionList: {
+        styleOverrides: {
+          root: {
+            fontSize: `${24 * factor}px`,
+            fontWeight: "bold",
+            color: "#009640",
+            "& .MuiPickersSectionList-sectionContent": {
+              fontSize: `${24 * factor}px`,
+              fontWeight: "bold",
+              color: "#009640",
+            },
+          },
+        },
+      },
+      MuiPickersInputBase: {
+        styleOverrides: {
+          sectionContent: {
+            fontSize: `${24 * factor}px`,
+            fontWeight: "bold",
+            color: "#009640",
+          },
+          sectionSeparator: {
+            fontSize: `${28 * factor}px`,
+            fontWeight: "bold",
+            color: "#009640",
+          },
         },
       },
       MuiFormHelperText: {
@@ -176,6 +293,128 @@ export function createScaledTheme(factor = 1) {
               fontSize: 20 * factor,
               transition: 'color 0.2s ease',
             },
+          },
+        },
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            fontWeight: 'bold',
+            // color del texto normal
+            color: '#0c315e',
+            // background por defecto del tab
+            backgroundColor: '#d0d3d4',
+            // para que no se vean muy juntos
+            minHeight: '48px',
+            // cuando está seleccionado
+            '&.Mui-selected': {
+              color: '#009640',
+              backgroundColor: '#d0d3d4',
+              fontWeight: 'bold',
+            },
+            // al hacer hover
+            '&:hover': {
+              backgroundColor: '#d0d3d4',
+            },
+          },
+        },
+      },
+      MuiTabs: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#0c315e', // fondo de la barra que contiene los tabs
+          },
+          indicator: {
+            backgroundColor: '#009640', // color del indicador debajo del tab
+          },
+        },
+      },
+      MuiTablePagination: {
+        styleOverrides: {
+          root: {
+            backgroundColor: "#f5f5f5", //color de fondo contenedor
+            color: "#0c315e",
+          },
+          toolbar: {
+            minHeight: `${48 * factor}px`,
+          },
+          selectIcon: {
+            color: "#0c315e", // icono del select
+          },
+          actions: {
+            color: "#0c315e", // flechas
+          },
+          displayedRows: {
+            fontSize: `${16 * factor}px`,
+            color: "#0c315e",
+          },
+          selectLabel: {
+            fontSize: `${16 * factor}px`,
+            color: "#0c315e",
+          },
+          select: {
+            fontSize: `${16 * factor}px`,
+            color: "#0c315e",
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          head: {
+            backgroundColor: "#0c315e", // fondo encabezado
+            color: "#fff",              // texto encabezado
+            fontSize: `${15 * factor}px`,
+          },
+          body: {
+            fontSize: `${18 * factor}px`,
+            color: "#444",
+          },
+        },
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            "&:nth-of-type(odd)": {
+              backgroundColor: "#f9f9f9", // filas alternadas
+            },
+            "&:hover": {
+              backgroundColor: "#e6f2ff", // efecto hover
+            },
+          },
+        },
+      },
+      MuiPickersDay: {
+        styleOverrides: {
+          root: {
+            fontSize: `${18 * factor}px`,   // agranda el número de los días
+          },
+        },
+      },
+      MuiMonthCalendar: {
+        styleOverrides: {
+          root: {
+            '& .MuiMonthCalendar-button': {
+              fontSize: `${18 * factor}px`,
+              textTransform: 'capitalize',
+            },
+          },
+        },
+      },
+      // (opcional) si también quieres el tamaño de los años en la vista de años:
+      MuiYearCalendar: {
+        styleOverrides: {
+          root: {
+            '& .MuiYearCalendar-yearButton': {
+              fontSize: `${20 * factor}px`,
+              fontWeight: 'bold',
+            },
+          },
+        },
+      },
+      MuiDayCalendar: {
+        styleOverrides: {
+          weekDayLabel: {
+            fontSize: `${16 * factor}px`,   // agranda las etiquetas (L, M, X, J…)
           },
         },
       },
