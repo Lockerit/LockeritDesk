@@ -49,8 +49,8 @@ const AdminLockers = () => {
     useEffect(() => {
         if (!config) return;
 
-        if (config?.params?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutShowMessage(config?.params?.modalTimeouts?.timeoutShowMessage);
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
         }
 
     }, [config]);

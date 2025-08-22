@@ -136,7 +136,6 @@ const DateTime = ({ label, value, onChange }) => {
                 open={open}
                 onOpen={() => setOpen(true)}
                 onClose={() => setOpen(false)}
-                ampm={true}
                 format='DD/MM/YYYY HH:mm'
                 slots={{
                     layout: (props) => (
@@ -185,12 +184,10 @@ const DateTime = ({ label, value, onChange }) => {
                             {/* Botones */}
                             <CustomActionBar
                                 onAccept={() => {
-                                    console.log('Aceptar fecha y hora');
                                     props.onAccept?.();
                                     setOpen(false)
                                 }}
                                 onCancel={() => {
-                                    console.log('Cancelar fecha y hora');
                                     props.onCancel?.();
                                     setOpen(false);
                                 }}
@@ -198,12 +195,6 @@ const DateTime = ({ label, value, onChange }) => {
                             />
                         </Box>
                     ),
-                }}
-                slotProps={{
-                    textField: {
-                        fullWidth: true,
-                        variant: 'standard',
-                    },
                 }}
             />
         </LocalizationProvider>

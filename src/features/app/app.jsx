@@ -6,6 +6,10 @@ import Copyright from '../bar/copyright.jsx';
 import AppRoutes from '../router/router.jsx';
 import { useUser } from '../context/userContext.jsx';
 import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useSchedulerReport } from '../hooks/useScheduleReport.js';
+import { useElectronConfig } from '../hooks/useConfig.js';
+import dayjs from "dayjs";
+import GetReportLockers from '../apis/report.js';
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'app';
@@ -21,6 +25,7 @@ export default function App() {
     const [version, setVersion] = useState('');
     const { width, height, factor } = useWindowSize();
     const scale = factor || 1; // de tu hook useElectronScreenData()
+    const config = useElectronConfig();
 
     // Alturas base en px
     const appBarBase = 64;   // alto típico del AppBar
@@ -53,6 +58,57 @@ export default function App() {
             log('error', `Error al obtener la versión: ${err.message}`);
         }
     }, []);
+
+    useSchedulerReport({
+        frequency: config?.report?.frequency || "daily",
+        dayOfWeek: config?.report?.dayOfWeek || 1,
+        dayOfMonth: config?.report?.dayOfMonth || 1,
+        hour: config?.report?.hour || 0,
+        minute: config?.report?.minute || 5,
+        enabled: !!config,
+        task: async (startDate, endDate) => {
+
+            if (!config) {
+                log("warn", "Configuración no disponible, no se ejecutará la tarea programada");
+                return;
+            }
+
+            const timezoneMode = config?.report?.timezoneMode || "local";
+            log("info", `Generando payload en modo [${timezoneMode}]`);
+
+            const formatter = timezoneMode === "utc"
+                ? (d) => d.utc()
+                : (d) => d
+
+            const payload = {
+                startDate: formatter(startDate).format("YYYY-MM-DD HH:mm:ss"),
+                endDate: formatter(endDate).format("YYYY-MM-DD HH:mm:ss"),
+            };
+
+            log("info", `Payload generado: ${JSON.stringify(payload)}`);
+
+            try {
+                const result = await GetReportLockers(payload);
+
+                if (result.success) {
+                    log("info", `Datos del reporte obtenidos: ${JSON.stringify(result.data)}`);
+
+                    if (!Array.isArray(result.data) || result.data.length === 0) {
+                        log("info", "No hay registros para esa fecha");
+                    }
+                } else {
+                    const msg =
+                        typeof result?.data === "string"
+                            ? result.data
+                            : result?.data?.message || "Error al obtener reporte";
+
+                    log("error", msg);
+                }
+            } catch (err) {
+                log("error", err.message || "Error al obtener reporte");
+            }
+        },
+    });
 
     return (
         <HashRouter>

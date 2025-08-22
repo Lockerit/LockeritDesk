@@ -122,7 +122,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   useEffect(() => {
     if (!isConfigReady) return;
 
-    const rawAmount = config?.params?.currency?.amountService;
+    const rawAmount = config?.paramsHtml?.currency?.amountService;
 
     if (rawAmount != null && !isNaN(Number(rawAmount))) {
       setAmountService(formatCurrency(rawAmount));
@@ -130,9 +130,9 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       setAmountService('0'); // o '', o lo que desees mostrar si no hay valor
     }
 
-    if (config?.params?.modalTimeouts?.timeoutKeypad) {
-      setTimeoutInsert(config?.params?.modalTimeouts?.timeoutInsertMoney);
-      setTimeoutShowMessage(config?.params?.modalTimeouts?.timeoutShowMessage);
+    if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+      setTimeoutInsert(config?.paramsHtml?.modalTimeouts?.timeoutInsertMoney);
+      setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
     }
   }, [config])
 
@@ -156,7 +156,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   const addDigit = (digit) => {
     const current = getInputValue();
     if (activeInput === 'phone' && current.length >= 10) return;
-    if (activeInput !== 'phone' && current.length >= config?.params.lenMaxInputPass) return;
+    if (activeInput !== 'phone' && current.length >= config?.paramsHtml.lenMaxInputPass) return;
     setInputValue(current + digit);
   };
 
@@ -192,8 +192,8 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         setMsgPass(msg);
         showAlert(msg, 'error');
         error = true;
-      } else if ((password.length < config?.params?.lenMinInputPass) || (password.length > config?.params?.lenMaxInputPass)) {
-        const msg = `La contraseña debe tener ${config?.params?.lenMaxInputPass} dígitos.`;
+      } else if ((password.length < config?.paramsHtml?.lenMinInputPass) || (password.length > config?.paramsHtml?.lenMaxInputPass)) {
+        const msg = `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
         setMsgPass(msg);
         showAlert(msg, 'error');
         setErrorsEmpty(prev => ({ ...prev, password: true }));
@@ -217,8 +217,8 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setMsgConfPass(msg);
           showAlert(msg, 'error');
           error = true;
-        } else if ((confirmPassword.length < config?.params?.lenMinInputPass) || (confirmPassword.length > config?.params?.lenMaxInputPass)) {
-          const msg = `La contraseña debe tener ${config?.params?.lenMaxInputPass} dígitos.`;
+        } else if ((confirmPassword.length < config?.paramsHtml?.lenMinInputPass) || (confirmPassword.length > config?.paramsHtml?.lenMaxInputPass)) {
+          const msg = `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
           setMsgConfPass(msg);
           showAlert(msg, 'error');
           setErrorsEmpty(prev => ({ ...prev, confirmPassword: true }));
@@ -246,9 +246,9 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     }
 
     // Validación contraseña
-    const passInvalid = password.trim() === '' || (password.length < config?.params?.lenMinInputPass) || (password.length > config?.params?.lenMaxInputPass);
+    const passInvalid = password.trim() === '' || (password.length < config?.paramsHtml?.lenMinInputPass) || (password.length > config?.paramsHtml?.lenMaxInputPass);
     if (passInvalid) {
-      const msg = password.trim() === '' ? 'Ingresa la contraseña.' : `La contraseña debe tener ${config?.params?.lenMaxInputPass} dígitos.`;
+      const msg = password.trim() === '' ? 'Ingresa la contraseña.' : `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
       setMsgPass(msg);
       setErrorsEmpty(prev => ({ ...prev, password: true }));
       showAlert(msg, 'error');
@@ -259,12 +259,12 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
     if (!operationRet) {
       // Validación confirmación contraseña
-      const confInvalid = confirmPassword.trim() === '' || password !== confirmPassword || (confirmPassword.length < config?.params?.lenMinInputPass) || (confirmPassword.length > config?.params?.lenMaxInputPass);
+      const confInvalid = confirmPassword.trim() === '' || password !== confirmPassword || (confirmPassword.length < config?.paramsHtml?.lenMinInputPass) || (confirmPassword.length > config?.paramsHtml?.lenMaxInputPass);
       if (confInvalid) {
         let msg = '';
         if (confirmPassword.trim() === '') msg = 'Confirma la contraseña.';
         else if (password !== confirmPassword) msg = 'Las contraseñas no coinciden.';
-        else msg = `La contraseña debe tener ${config?.params?.lenMaxInputPass} dígitos.`;
+        else msg = `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
         setMsgConfPass(msg);
         setErrorsEmpty(prev => ({ ...prev, confirmPassword: true }));
         showAlert(msg, 'error');
@@ -410,7 +410,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
           setAssignLockerOpen(true);
         }
       } else {
-        console.log('result', result?.http?.status);
         if (result?.http?.status === 499) {
           setMessageErrorAPI('Operación cancelada');
         } else {
@@ -605,7 +604,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
               <Password sx={{ mr: 2, fontSize: 52 * scale }} />
               <TextField
-                label={`Contraseña (${config?.params?.lenMaxInputPass} dígitos)`}
+                label={`Contraseña (${config?.paramsHtml?.lenMaxInputPass} dígitos)`}
                 value={password}
                 variant="standard"
                 fullWidth

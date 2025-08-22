@@ -38,8 +38,8 @@ export const formatCurrency = (value) => {
         return value; // Devuelve el original si no es número
     }
 
-    const currencyCode = config?.params?.currency?.currency || 'COP';
-    const decimal = config?.params?.currency?.decimal ?? 0;
+    const currencyCode = config?.paramsHtml?.currency?.currency || 'COP';
+    const decimal = config?.paramsHtml?.currency?.decimal ?? 0;
 
     try {
         return new Intl.NumberFormat('es-CO', {

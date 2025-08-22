@@ -59,16 +59,16 @@ export default function Ppal() {
             navigate('/', { replace: true });
         }
 
-        if (config?.params?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutKeypad(config?.params?.modalTimeouts?.timeoutKeypad);
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutKeypad(config?.paramsHtml?.modalTimeouts?.timeoutKeypad);
         }
     }, [config, userInit, navigate]);
 
     useEffect(() => {
         if (!config) return;
 
-        if (config?.params?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutShowMessage(config?.params?.modalTimeouts?.timeoutShowMessage);
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
         }
 
     }, [config]);

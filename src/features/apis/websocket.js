@@ -30,11 +30,11 @@ const connectWebSocket = () => {
             return reject(new Error(`[WebSocket] ${msg}`));
         }
 
-        const queryParams = new URLSearchParams({ token });
+        const queryParamsHtml = new URLSearchParams({ token });
         const baseUrl = getEnv()?.wsBaseUrl || 'ws://localhost';
         const port = getEnv()?.wsBasePort || '3001';
         const path = getEnv()?.wsBasePath || '/ws/coinbox';
-        const wsURL = `${baseUrl}:${port}${path}?${queryParams.toString()}`;
+        const wsURL = `${baseUrl}:${port}${path}?${queryParamsHtml.toString()}`;
 
         log('info', `Conectando a WebSocket: ${baseUrl}:${port}`);
 

@@ -1,7 +1,7 @@
 {
     "client": "Tulocker",
     "locationDevice": "CC Prueba",
-    "pointDevice": "Zotano 1",
+    "pointDevice": "Sótano 1",
     "totalLockers": 60,
     "login": {
         "user": "admin",
@@ -10,7 +10,7 @@
         "logoPath": "./assets/TuLockerHorizontal.png",
         "QRPath": "./assets/CodigoQR.png"
     },
-    "params": {
+    "paramsHtml": {
         "lenMaxInputPass": 4,
         "lenMinInputPass": 4,
         "currency": {
@@ -23,5 +23,13 @@
             "timeoutInsertMoney": 120,
             "timeoutShowMessage": 15
         }
+    },
+    "report": {
+        "frequency": "weekly",
+        "dayOfWeek": 0,
+        "dayOfMonth": 20,
+        "hour": 0,
+        "minute": 5,
+        "timezoneMode": "local"
     }
 }
