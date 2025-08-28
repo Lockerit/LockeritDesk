@@ -8,6 +8,7 @@ import {
     Box,
     Menu,
     MenuItem,
+    ListItemIcon
 } from '@mui/material';
 import avatarImg from '../../assets/Icono.jpg';
 import Clock from './clock.jsx';
@@ -130,7 +131,7 @@ export default function DenseAppBar() {
             position="fixed"
             elevation={0}
             sx={{
-                height: `${Math.max(30, Math.min(80, 62 * scale))}px`, // entre 30px y 80px
+                height: `${Math.max(50, Math.min(100, 70 * scale))}px`, // entre 30px y 80px
                 justifyContent: 'center', // centra el contenido verticalmente
             }}
         >
@@ -151,10 +152,10 @@ export default function DenseAppBar() {
                         />
                         {showData && (
                             <>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                    {(config?.client || '')}{' | '}
+                                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                                    {(config?.customer || '')}{' | '}
                                 </Typography>
-                                <Typography variant="h6">
+                                <Typography variant="h4">
                                     {(config?.login?.user || '')}
                                 </Typography>
                             </>
@@ -171,11 +172,11 @@ export default function DenseAppBar() {
                 <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 * scale }}>
                     {showData && (
                         <>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                {(config?.locationDevice || '')} {' | '}
+                            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                                {(config?.pointName || '')} {' | '}
                             </Typography>
-                            <Typography variant="h6">
-                                {(config?.pointDevice || '')}
+                            <Typography variant="h4">
+                                {(config?.pointId || '')}
                             </Typography>
                         </>
                     )}
@@ -192,20 +193,33 @@ export default function DenseAppBar() {
             >
                 {showData && (
                     <MenuItem onClick={handleLogout}>
-                        <Logout />
+                        <ListItemIcon>
+                            <Logout />
+                        </ListItemIcon>
                         Cerrar sesión
                     </MenuItem>
                 )}
-                {showAdmin && (<MenuItem onClick={openAdmin}>
-                    <SupervisorAccount />
-                    Administración
-                </MenuItem>)}
+
+                {showAdmin && (
+                    <MenuItem onClick={openAdmin}>
+                        <ListItemIcon>
+                            <SupervisorAccount />
+                        </ListItemIcon>
+                        Administración
+                    </MenuItem>
+                )}
+
                 <MenuItem onClick={openKeyBoard}>
-                    <Keyboard />
+                    <ListItemIcon>
+                        <Keyboard />
+                    </ListItemIcon>
                     Teclado
                 </MenuItem>
+
                 <MenuItem onClick={openConfirmClose}>
-                    <CancelPresentation />
+                    <ListItemIcon>
+                        <CancelPresentation />
+                    </ListItemIcon>
                     Salir
                 </MenuItem>
             </Menu>

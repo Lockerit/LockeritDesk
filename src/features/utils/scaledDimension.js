@@ -1,7 +1,7 @@
-export function scaledWidth(values, scale) {
+export function scaledDimension(values, scale, unit = "%") {
   const compute = (base, min, max) => {
     if (!base) return undefined;
-    return `${Math.max(min ?? base, Math.min(max ?? base, base * scale))}%`;
+    return `${Math.max(min ?? base, Math.min(max ?? base, base * scale))}${unit}`;
   };
 
   return {

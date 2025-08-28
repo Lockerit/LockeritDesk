@@ -36,7 +36,7 @@ export default function Copyright() {
         mt: 'auto',
         textAlign: 'center',
         bgcolor: 'transparent',
-        height: `${Math.max(40, Math.min(80, 64 * scale))}px`, // entre 40px y 72px
+        height: `${Math.max(50, Math.min(80, 60 * scale))}px`, // entre 40px y 72px
         justifyContent: 'center', // centra el contenido verticalmente
       }}
     >

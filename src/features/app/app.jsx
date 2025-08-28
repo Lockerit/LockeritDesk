@@ -10,6 +10,9 @@ import { useSchedulerReport } from '../hooks/useScheduleReport.js';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import dayjs from "dayjs";
 import GetReportLockers from '../apis/report.js';
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'app';
@@ -60,8 +63,8 @@ export default function App() {
     const config = useElectronConfig();
 
     // Alturas base en px
-    const appBarBase = 64;   // alto típico del AppBar
-    const footerBase = 64;   // alto footer
+    const appBarBase = 100;   // alto típico del AppBar
+    const footerBase = 80;   // alto footer
 
     // Ajustados con scale
     const appBarHeight = appBarBase * scale;
@@ -104,14 +107,12 @@ export default function App() {
             const timezoneMode = config.report?.timezoneMode || "local";
             log("info", `Generando payload en modo [${timezoneMode}]`);
 
-            const formatter = timezoneMode === "utc"
-                ? (d) => d.utc()
-                : (d) => d;
+            const formatUTC = (d) => dayjs(d).utc().format("YYYY-MM-DD HH:mm:ss");
 
             const payload = {
-                startDate: formatter(startDate).format("YYYY-MM-DD HH:mm:ss"),
-                endDate: formatter(endDate).format("YYYY-MM-DD HH:mm:ss"),
-                sendMail: true
+                startDate: formatUTC(startDate),
+                endDate: formatUTC(endDate),
+                sendEmail: true
             };
 
             log("info", `Payload generado: ${JSON.stringify(payload)}`);
@@ -161,6 +162,8 @@ export default function App() {
                         flex: 1,
                         marginTop: `${appBarHeight}px`, // deja espacio bajo AppBar
                         overflow: "hidden",
+                        width: "95%",
+                        alignSelf: "center",
                     }}
                 >
                     <AppRoutes />
@@ -173,7 +176,7 @@ export default function App() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        flexShrink: 0, // evita que se encoja
+                        flexShrink: 0,
                     }}
                 >
                     <Copyright />

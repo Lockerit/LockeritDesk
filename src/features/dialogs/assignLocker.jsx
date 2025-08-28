@@ -1,6 +1,6 @@
 import { useState, forwardRef, useEffect } from 'react';
 import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
-import { scaledWidth } from '../utils/scaledWidth';
+import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Dialog,
     DialogTitle,
@@ -60,119 +60,137 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
     }, [open, secondsLeft, onConfirm]);
 
     return (
-        <Dialog open={open} onClose={(event, reason) => {
-            if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                setTimeout(() => onConfirm(), 0); // diferir para evitar el warning
-            }
-
-        }}
+        <Dialog
+            open={open}
+            onClose={(event, reason) => {
+                if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+                    setTimeout(() => onConfirm(), 0);
+                }
+            }}
             disableEscapeKeyDown
             PaperProps={{
                 sx: {
-                    width: scaledWidth(
+                    width: scaledDimension(
                         {
-                            xs: { base: 70, min: 65, max: 75 }, // en % para mobile
-                            sm: { base: 60, min: 55, max: 65 }, // tablet
-                            md: { base: 50, min: 45, max: 55 }, // desktop medio
-                            lg: { base: 40, min: 35, max: 45 }, // desktop grande
+                            xs: { base: 70, min: 65, max: 75 },
+                            sm: { base: 70, min: 65, max: 75 },
+                            md: { base: 50, min: 45, max: 55 },
+                            lg: { base: 40, min: 35, max: 45 },
                         },
                         scale
                     ),
-                    height: 'auto',
-                    // maxWidth: `${Math.max(70, Math.min(95, 90 * scale))}vw`, // rango de 70%-95% según escala
-                    borderRadius: `${Math.max(8, 16 * scale)}px`, // esquinas suaves que escalan
-                    p: 2 * scale // padding proporcional
-                }
+                    height: scaledDimension(
+                        {
+                            xs: { base: 40, min: 35, max: 45 },
+                            sm: { base: 40, min: 35, max: 45 },
+                            md: { base: 80, min: 75, max: 85 },
+                            lg: { base: 80, min: 75, max: 85 },
+                        },
+                        scale
+                    ),
+                    maxHeight: '90vh',
+                    overflow: "hidden",   // ✅ scroll si se pasa
+                    borderRadius: `${Math.max(8, 16 * scale)}px`,
+                    display: "flex",
+                    flexDirection: "column",
+                    p: 3 * scale,
+                },
             }}
-            slots={{
-                transition: Transition,
-            }}
+            slots={{ transition: Transition }}
         >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
-                {/* Encabezado superior: tiempo y botón cerrar */}
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        gap: 1 * scale,
-                        position: 'absolute',
-                        right: 8 * scale,
-                        top: 8 * scale ,
-                    }}
-                >
-                    <Typography variant="body2">
-                        {formatTime(secondsLeft)}
-                    </Typography>
-                    <IconButton onClick={onConfirm}>
-                        <Close />
-                    </IconButton>
-                </Box>
-
-                {/* Texto centrado */}
-                <DialogTitle>
-                    Apertura de casillero
-                </DialogTitle>
-            </Box>
-
-
-            <DialogContent
+            {/* Encabezado */}
+            <Box
                 sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',   // centra horizontalmente
-                    justifyContent: 'center', // centra verticalmente
-                    textAlign: 'center',
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    gap: 1 * scale,
+                    position: "absolute",
+                    right: 3 * scale,
+                    top: 3 * scale,
                 }}
             >
-                <Typography variant="h3" sx={{ textAlign: 'center', mt: 2 * scale, mb: 3 * scale, fontWeight: 'bold' }}>
+                <Typography variant="body2">
+                    {formatTime(secondsLeft)}
+                </Typography>
+                <IconButton onClick={onConfirm}>
+                    <Close />
+                </IconButton>
+            </Box>
+
+            <DialogTitle sx={{ textAlign: "center" }}>
+                Apertura de casillero
+            </DialogTitle>
+
+            {/* Contenido */}
+            <DialogContent
+                sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    alignContent: "center",
+                    overflow: "hidden",
+                    p: 0,
+                }}
+            >
+                <Typography variant="h3" sx={{ textAlign: "center", mt: 2 * scale, fontWeight: "bold" }}>
                     Tu casillero es el:
                 </Typography>
-                <Box textAlign="center" sx={{ mb: 3 * scale }}>
-                    <Paper elevation={24 * scale}
-                        sx={{
-                            p: 5 * scale,
-                            height: '30%',
-                            with: '30%',
-                            mx: 'auto',
-                            my: 5 * scale,
-                            backgroundColor: backColor || 'primary.main',
-                            color: 'error.contrastText',
-                            // border: '5px solid', // (azul)
-                            // color: 'error.main',
-                            // borderRadius: '50%',
-                        }}>
-                        <Typography variant="h1" sx={{ textAlign: 'center', m: 2 * scale, fontWeight: 'bold' }}>
-                            {locker}
-                        </Typography>
-                    </Paper>
-                </Box>
-                <Typography variant="h4" sx={{ textAlign: 'center', my: 5 * scale }}>
+
+                <Paper
+                    elevation={24}
+                    sx={{
+                        flex: "0 0 40%",
+                        justifyContent: "center",
+                        alignContent: "center",
+                        alignItems: "center",
+                        width: "40%",
+                        backgroundColor: backColor || "primary.main",
+                        color: "error.contrastText",
+                    }}
+                >
+                    <Typography variant="h1" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                        {locker}
+                    </Typography>
+                </Paper>
+
+                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold" }}>
                     {msg}
                 </Typography>
-                <Typography variant="h4" sx={{ textAlign: 'center', my: 2 * scale, fontWeight: 'bold' }}>
+
+                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold" }}>
                     ¡No olvides cerrar el casillero!
                 </Typography>
-                {msg.substring(0, 6) === 'Retira' && (
-                    <Typography variant="h5" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+
+                {msg.substring(0, 6) === "Retira" && (
+                    <Typography variant="h5" sx={{ textAlign: "center", fontWeight: "bold" }}>
                         Disponible para una nueva asignación.
                     </Typography>
                 )}
             </DialogContent>
 
+            {/* Acciones */}
             <DialogActions
                 sx={{
-                    display: 'flex',
-                    alignItems: 'center',   // centra horizontalmente
-                    justifyContent: 'center', // centra verticalmente
-                    textAlign: 'center',
-                    height: '100%', // puedes ajustar esto según lo que necesites
-                    width: '100%',
-                }}>
-                <Button onClick={onConfirm} color="primary" variant="contained" fullWidth sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
+                }}
+            >
+                <Button
+                    onClick={onConfirm}
+                    color="primary"
+                    variant="contained"
+                    fullWidth
+                    sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}
+                >
                     Aceptar
                 </Button>
             </DialogActions>
         </Dialog>
+
     );
 }

@@ -32,10 +32,10 @@ export default function Clock() {
 
     return (
         <Box textAlign="center">
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {formatoHora}
             </Typography>
-            <Typography variant="body2" sx={{ fontSize: 14 * scale }}>
+            <Typography variant="h5">
                 {formatoFecha}
             </Typography>
         </Box>

@@ -1,6 +1,4 @@
 import { useState, useEffect, React } from 'react';
-import dayjs from "dayjs";
-import "dayjs/locale/es";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
@@ -13,6 +11,10 @@ import {
     ListItemButton,
     Typography
 } from "@mui/material";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 
 const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
@@ -136,7 +138,7 @@ const DateTime = ({ label, value, onChange }) => {
                 open={open}
                 onOpen={() => setOpen(true)}
                 onClose={() => setOpen(false)}
-                format='DD/MM/YYYY HH:mm'
+                format='YYYY-MM-DD HH:mm'
                 slots={{
                     layout: (props) => (
                         <Box>

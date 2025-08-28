@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
-import { scaledWidth } from '../utils/scaledWidth';
+import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Dialog,
     DialogTitle,
@@ -36,11 +36,11 @@ export default function ConfirmDialog({ open, onConfirm, onCancel, title, mesg, 
             disableEscapeKeyDown
             PaperProps={{
                 sx: {
-                    width: scaledWidth(
+                    width: scaledDimension(
                         {
-                            xs: { base: 60, min: 55, max: 55 }, // en % para mobile
-                            sm: { base: 50, min: 45, max: 55 }, // tablet
-                            md: { base: 40, min: 35, max: 45 }, // desktop medio
+                            xs: { base: 60, min: 55, max: 60 }, // en % para mobile
+                            sm: { base: 60, min: 55, max: 60 }, // tablet
+                            md: { base: 40, min: 35, max: 40 }, // desktop medio
                             lg: { base: 30, min: 25, max: 35 }, // desktop grande
                         },
                         scale

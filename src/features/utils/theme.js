@@ -44,10 +44,11 @@ export function createScaledTheme(factor = 1) {
           root: {
             color: "#0c315e",
             fontSize: `${20 * factor}px`,
-            transform: "translate(0, 20px) scale(1)",
+            transform: `translate(0, 20px) scale(1)`,
             transition: "all 0.2s ease-out",
+            margin: 0,
             "&.MuiInputLabel-shrink": {
-              transform: "translate(0, -6px) scale(0.75)",
+              transform: `translate(0, 0) scale(0.75)`,
             },
           },
         },
@@ -157,7 +158,7 @@ export function createScaledTheme(factor = 1) {
           root: {
             '& .MuiInputLabel-root': {
               color: '#0c315e',
-              fontSize: `${20 * factor}px`,
+              fontSize: `${28 * factor}px`
             },
             '& .MuiInputBase-input': {
               color: '#009640',
@@ -170,7 +171,7 @@ export function createScaledTheme(factor = 1) {
           autoComplete: 'off',
           fullWidth: true,
           variant: 'standard',
-          size: 'medium', // 👈 evita small por defecto
+          size: 'medium', // evita small por defecto
         },
       },
       MuiPickersSectionList: {
@@ -250,7 +251,7 @@ export function createScaledTheme(factor = 1) {
       MuiMenu: {
         styleOverrides: {
           paper: {
-            borderRadius: 12 * factor,
+            borderRadius: 6 * factor,
             boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
             minWidth: 200 * factor,
             padding: `${4 * factor}px 0`,
@@ -263,10 +264,12 @@ export function createScaledTheme(factor = 1) {
             padding: `${8 * factor}px ${16 * factor}px`,
             display: 'flex',
             alignItems: 'center',
-            gap: `${12 * factor}px`,
+            gap: `${6 * factor}px`,
+            fontSize: `${28 * factor}px`,
             '&:hover': {
               backgroundColor: '#0c315e',
               color: '#fff',
+              transition: 'color 0.2s ease',
               '& .MuiSvgIcon-root': {
                 color: '#fff',
               },
@@ -287,10 +290,9 @@ export function createScaledTheme(factor = 1) {
       MuiListItemIcon: {
         styleOverrides: {
           root: {
-            minWidth: 'unset',
-            color: '#555',
+            color: '#0c315e',
             '& .MuiSvgIcon-root': {
-              fontSize: 20 * factor,
+              fontSize: 40 * factor,
               transition: 'color 0.2s ease',
             },
           },
@@ -299,22 +301,24 @@ export function createScaledTheme(factor = 1) {
       MuiTab: {
         styleOverrides: {
           root: {
-            fontWeight: 'bold',
-            // color del texto normal
-            color: '#0c315e',
-            // background por defecto del tab
-            backgroundColor: '#d0d3d4',
-            // para que no se vean muy juntos
-            minHeight: '48px',
-            // cuando está seleccionado
-            '&.Mui-selected': {
-              color: '#009640',
-              backgroundColor: '#d0d3d4',
-              fontWeight: 'bold',
+            border: "none !important", // quita los bordes
+            fontWeight: "bold",
+            color: "#0c315e",
+            backgroundColor: "#d0d3d4",
+            fontSize: `${24 * factor}px`,
+            "&.Mui-selected": {
+              color: "#009640",
+              backgroundColor: "#d0d3d4",
+              fontWeight: "bold",
             },
-            // al hacer hover
-            '&:hover': {
-              backgroundColor: '#d0d3d4',
+
+            "&:hover": {
+              backgroundColor: "#d0d3d4",
+            },
+
+            // 👇 elimina pseudo-elementos que dibujan líneas
+            "&::before, &::after": {
+              display: "none",
             },
           },
         },
@@ -322,10 +326,16 @@ export function createScaledTheme(factor = 1) {
       MuiTabs: {
         styleOverrides: {
           root: {
-            backgroundColor: '#0c315e', // fondo de la barra que contiene los tabs
+            backgroundColor: "#0c315e", // fondo de la barra
           },
           indicator: {
-            backgroundColor: '#009640', // color del indicador debajo del tab
+            backgroundColor: "#009640", // línea verde de selección
+          },
+          flexContainer: {
+            borderBottom: "none", // elimina borde inferior del contenedor
+            "& .MuiTab-root": {
+              borderRight: "none", // elimina línea vertical entre tabs
+            },
           },
         },
       },
@@ -345,15 +355,15 @@ export function createScaledTheme(factor = 1) {
             color: "#0c315e", // flechas
           },
           displayedRows: {
-            fontSize: `${16 * factor}px`,
+            fontSize: `${24 * factor}px`,
             color: "#0c315e",
           },
           selectLabel: {
-            fontSize: `${16 * factor}px`,
+            fontSize: `${24 * factor}px`,
             color: "#0c315e",
           },
           select: {
-            fontSize: `${16 * factor}px`,
+            fontSize: `${24 * factor}px`,
             color: "#0c315e",
           },
         },
@@ -363,10 +373,10 @@ export function createScaledTheme(factor = 1) {
           head: {
             backgroundColor: "#0c315e", // fondo encabezado
             color: "#fff",              // texto encabezado
-            fontSize: `${15 * factor}px`,
+            fontSize: `${20 * factor}px`,
           },
           body: {
-            fontSize: `${18 * factor}px`,
+            fontSize: `${22 * factor}px`,
             color: "#444",
           },
         },
@@ -386,7 +396,7 @@ export function createScaledTheme(factor = 1) {
       MuiPickersDay: {
         styleOverrides: {
           root: {
-            fontSize: `${18 * factor}px`,   // agranda el número de los días
+            fontSize: `${20 * factor}px`,   // agranda el número de los días
           },
         },
       },
@@ -394,7 +404,7 @@ export function createScaledTheme(factor = 1) {
         styleOverrides: {
           root: {
             '& .MuiMonthCalendar-button': {
-              fontSize: `${18 * factor}px`,
+              fontSize: `${20 * factor}px`,
               textTransform: 'capitalize',
             },
           },
@@ -405,7 +415,7 @@ export function createScaledTheme(factor = 1) {
         styleOverrides: {
           root: {
             '& .MuiYearCalendar-yearButton': {
-              fontSize: `${20 * factor}px`,
+              fontSize: `${22 * factor}px`,
               fontWeight: 'bold',
             },
           },
@@ -414,7 +424,7 @@ export function createScaledTheme(factor = 1) {
       MuiDayCalendar: {
         styleOverrides: {
           weekDayLabel: {
-            fontSize: `${16 * factor}px`,   // agranda las etiquetas (L, M, X, J…)
+            fontSize: `${20 * factor}px`,   // agranda las etiquetas (L, M, X, J…)
           },
         },
       },

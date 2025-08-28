@@ -5,7 +5,7 @@ import SnackBarAlert from '../bar/snackAlert.jsx';
 import logo from '../../assets/Logo.png';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { useWindowSize } from "../hooks/useWindowSize.js";
-import { scaledWidth } from '../utils/scaledWidth';
+import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Box,
     Button,
@@ -113,11 +113,11 @@ export default function Login() {
             // Login
             newSession = {
                 authenticated: true,
-                client: config.client,
+                customer: config.customer,
                 user: remember ? userName.toLowerCase() : '',
                 remember,
-                locationDevice: config.locationDevice,
-                pointDevice: config.pointDevice,
+                pointName: config.pointName,
+                pointId: config.pointId,
                 avatar: config.login.avatarPath,
                 closeSession: false,
                 closeWindow: false,
@@ -133,11 +133,11 @@ export default function Login() {
             // Logout
             newSession = {
                 authenticated: false,
-                client: '',
+                customer: '',
                 user: userAux,
                 remember,
-                locationDevice: '',
-                pointDevice: '',
+                pointName: '',
+                pointId: '',
                 avatar: '',
                 closeSession: false,
                 closeWindow: false,
@@ -253,12 +253,12 @@ export default function Login() {
                 }}
             >
                 <Paper
-                    elevation={24 * scale}
+                    elevation={24}
                     component="form"
                     onSubmit={handleSubmit}
                     sx={{
-                        // height: "95%",
-                        width: scaledWidth(
+                        minHeight: "40%",
+                        width: scaledDimension(
                             {
                                 xs: { base: 90, min: 85, max: 95 }, // en % para mobile
                                 sm: { base: 80, min: 70, max: 85 }, // tablet
@@ -291,7 +291,7 @@ export default function Login() {
                     {/* Título */}
                     <Box
                         sx={{
-                            flex: `0 0 10%%`,
+                            flex: '0 0 10%',
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
@@ -304,6 +304,7 @@ export default function Login() {
                             sx={{
                                 fontWeight: "bold",
                                 fontSize: `${2 * scale}rem`,
+                                pb: 5 * scale,
                             }}
                         >
                             {(userInit?.adminWindowInto || userInit?.adminWindow)
@@ -320,10 +321,10 @@ export default function Login() {
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "center",
-                            gap: 3 * scale, // separación dinámica
+                            gap: 2 * scale, // separación dinámica
                         }}
                     >
-                        <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <Person sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
                             <TextField
                                 variant="standard"
@@ -337,7 +338,7 @@ export default function Login() {
                             />
                         </Box>
 
-                        <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <LockOpen sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
                             <TextField
                                 variant="standard"
@@ -350,7 +351,13 @@ export default function Login() {
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
-                                            <IconButton onClick={handleTogglePassword} edge="end">
+                                            <IconButton onClick={handleTogglePassword} edge="end"
+                                                sx={{
+                                                    '& .MuiSvgIcon-root': {
+                                                        fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
+                                                    },
+                                                }}
+                                            >
                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                             </IconButton>
                                         </InputAdornment>
@@ -380,10 +387,15 @@ export default function Login() {
                                     checked={remember}
                                     onChange={(e) => setRemember(e.target.checked)}
                                     color="primary"
-                                    sx={{ transform: `scale(${scale})` }} // checkbox escalado
+                                    sx={{
+                                        '& .MuiSvgIcon-root': {
+                                            fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
+                                        },
+                                    }} // checkbox escalado
                                 />
                             }
-                            label={<Typography fontSize={20 * scale}>Recordar usuario</Typography>}
+                            sx={{ my: 2 * scale }}
+                            label={<Typography variant='h5'>Recordar usuario</Typography>}
                         />
 
                         <Button variant="contained" color="success" type="submit" fullWidth>

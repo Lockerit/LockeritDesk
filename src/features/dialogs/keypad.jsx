@@ -41,7 +41,7 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import { speak } from '../utils/speak.js'
 import { cancelObservable } from '../utils/cancelObservable.js';
 import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
-import { scaledWidth } from '../utils/scaledWidth';
+import { scaledDimension } from '../utils/scaledDimension.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -122,7 +122,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   useEffect(() => {
     if (!isConfigReady) return;
 
-    const rawAmount = config?.paramsHtml?.currency?.amountService;
+    const rawAmount = config?.paramsHtml?.currency?.coinBoxRequiredAmount;
 
     if (rawAmount != null && !isNaN(Number(rawAmount))) {
       setAmountService(formatCurrency(rawAmount));
@@ -336,7 +336,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
             setShowErrorAPIOpen(true);
           }
         } else {
-          setMessageErrorAPI(result?.data?.message || 'Error en el proceso de retiro');
+          if (result?.status === 500) {
+            setMessageErrorAPI('No se pudo realizar el retiro del casillero, ¡Inténtalo nuevamente!');
+          } else {
+            setMessageErrorAPI(result?.data?.message || 'No se pudo realizar el retiro del casillero, ¡Inténtalo nuevamente!');
+          }
           setShowErrorAPIOpen(true);
         }
 
@@ -412,8 +416,10 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       } else {
         if (result?.http?.status === 499) {
           setMessageErrorAPI('Operación cancelada');
+        } else if (result?.status === null || result?.status === 500 || result?.http?.status === 500) {
+          setMessageErrorAPI('No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!');
         } else {
-          setMessageErrorAPI(result?.error || 'Error en el proceso de asignación');
+          setMessageErrorAPI(result?.http?.data?.message || 'No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!');
         }
         setShowErrorAPIOpen(true);
       }
@@ -529,17 +535,18 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         }}
         PaperProps={{
           sx: {
-            width: scaledWidth(
+            width: scaledDimension(
               {
                 xs: { base: 90, min: 80, max: 90 }, // en % para mobile
-                sm: { base: 80, min: 70, max: 80 }, // tablet
-                md: { base: 70, min: 60, max: 70 }, // desktop medio
-                lg: { base: 60, min: 50, max: 60 }, // desktop grande
+                sm: { base: 90, min: 80, max: 90 }, // tablet
+                md: { base: 60, min: 50, max: 70 }, // desktop medio
+                lg: { base: 50, min: 40, max: 50 }, // desktop grande
               },
               scale
             ),
             maxWidth: 'none', // Lo dejas libre, sin límite de MUI
             height: '100%',
+            minHeight: '80%',
             borderRadius: `${Math.max(8, 16 * scale)}px`, // Opcional: esquinas redondeadas escaladas
             p: 2 * scale // Opcional: padding escalado
           }
@@ -551,9 +558,20 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         disableAutoFocus
         disableEscapeKeyDown
         disableRestoreFocus
+        sx={{ zIndex: 1300, height: '100%' }} // Asegura que el diálogo esté por encima de otros elementos
       >
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2 * scale,
+            position: 'relative',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '5%'
+          }}
+        >
           {/* Encabezado superior: tiempo y botón cerrar */}
           <Box
             sx={{
@@ -562,88 +580,125 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
               alignItems: 'center',
               gap: 1 * scale,
               position: 'absolute',
-              right: 8 * scale,
-              top: 8 * scale,
+              right: 3 * scale,
+              top: 3 * scale,
             }}
           >
-            <Typography variant="body2">
+            <Typography variant="h5">
               {formatTime(secondsLeft)}
             </Typography>
             <IconButton onClick={cancel}>
-              <Close />
+              <Close sx={{ fontSize: 40 * scale }} />
             </IconButton>
           </Box>
 
-          {/* Texto centrado */}
-          <Typography
-            variant="h3"
-            sx={{ fontWeight: 'bold', textAlign: 'center', mt: 6 * scale }} // mt para evitar superposición
-          >
-            {operation}
-          </Typography>
+          <Box sx={{ mt: 2 * scale }}>
+            {/* Texto centrado */}
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 'bold', textAlign: 'center', p: 2 * scale }}
+            >
+              {operation}
+            </Typography>
+          </Box>
         </Box>
 
 
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, height: '25vh' }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <MobileFriendly sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
-              <TextField
-                label="Número Celular"
-                value={phone}
-                variant="standard"
-                fullWidth
-                inputRef={phoneRef}
-                onFocus={() => setActiveInput('phone')}
-                InputProps={{ readOnly: true }}
-                error={errorsEmpty.phone}
-                helperText={errorsEmpty.phone ? msgPhone : ''}
-              />
+        <DialogContent>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "center",
+              height: "100%",
+              width: "100%",
+              px: 4 * scale,
+            }}
+          >
+            {/* Sección Inputs - 25% */}
+            <Box
+              sx={{
+                flex: "0 0 25%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between", // distribuye de arriba a abajo
+                alignItems: "stretch",           // que ocupen 100% horizontal
+                width: "100%",
+                height: "100%",
+                gap: 2, // espacio entre inputs si quieres
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "flex-end", flex: 1 }}>
+                <MobileFriendly sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
+                <TextField
+                  label="Número Celular"
+                  value={phone}
+                  variant="standard"
+                  fullWidth
+                  inputRef={phoneRef}
+                  onFocus={() => setActiveInput("phone")}
+                  InputProps={{ readOnly: true }}
+                  error={errorsEmpty.phone}
+                  helperText={errorsEmpty.phone ? msgPhone : ""}
+                />
+              </Box>
+
+              <Box sx={{ display: "flex", alignItems: "flex-end", flex: 1 }}>
+                <Password sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
+                <TextField
+                  label={`Contraseña (${config?.paramsHtml?.lenMaxInputPass} dígitos)`}
+                  value={password}
+                  variant="standard"
+                  fullWidth
+                  type="password"
+                  inputMode="numeric"
+                  inputRef={passRef}
+                  onFocus={() => setActiveInput("password")}
+                  InputProps={{ readOnly: true }}
+                  error={errorsEmpty.password}
+                  helperText={errorsEmpty.password ? msgPass : ""}
+                />
+              </Box>
+
+              {!operationRet && (
+                <Box sx={{ display: "flex", alignItems: "flex-end", flex: 1 }}>
+                  <Refresh sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
+                  <TextField
+                    label="Confirmar Contraseña"
+                    value={confirmPassword}
+                    variant="standard"
+                    fullWidth
+                    type="password"
+                    inputMode="numeric"
+                    inputRef={confirmRef}
+                    onFocus={() => setActiveInput("confirmPassword")}
+                    InputProps={{ readOnly: true }}
+                    error={errorsEmpty.confirmPassword}
+                    helperText={errorsEmpty.confirmPassword ? msgConfPass : ""}
+                  />
+                </Box>
+              )}
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Password sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
-              <TextField
-                label={`Contraseña (${config?.paramsHtml?.lenMaxInputPass} dígitos)`}
-                value={password}
-                variant="standard"
-                fullWidth
-                type='password'
-                inputMode='numeric'
-                inputRef={passRef}
-                onFocus={() => setActiveInput('password')}
-                InputProps={{ readOnly: true }}
-                error={errorsEmpty.password}
-                helperText={errorsEmpty.password ? msgPass : ''}
-              />
+            {/* Sección Botones - 75% */}
+            <Box
+              sx={{
+                flex: "0 0 65%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Grid
+                container
+                spacing={1 * scale}
+                sx={{ mt: 4 * scale, height: "100%" }}
+              >
+                {keys().map(renderButton)}
+              </Grid>
             </Box>
-
-            {!operationRet && (<Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Refresh sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
-              <TextField
-                label="Confirmar Contraseña"
-                value={confirmPassword}
-                variant="standard"
-                fullWidth
-                type='password'
-                inputMode='numeric'
-                inputRef={confirmRef}
-                onFocus={() => setActiveInput('confirmPassword')}
-                InputProps={{ readOnly: true }}
-                error={errorsEmpty.confirmPassword}
-                helperText={errorsEmpty.confirmPassword ? msgConfPass : ''}
-              />
-            </Box>
-            )}
           </Box>
-
-          <Box sx={{ height: '50vh' }}>
-            <Grid container spacing={2 * scale} sx={{ mt: 4 * scale, height: '100%' }}>
-              {keys().map(renderButton)}
-            </Grid>
-          </Box>
-
-
         </DialogContent>
       </Dialog>
 

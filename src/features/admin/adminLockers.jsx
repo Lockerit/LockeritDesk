@@ -316,7 +316,7 @@ const AdminLockers = () => {
                         Estado de Casilleros
                     </Typography> */}
                     <Typography
-                        variant="h5"
+                        variant="h4"
                         component="span"
                         onClick={handleCantidadClick}
                         sx={{
@@ -324,13 +324,14 @@ const AdminLockers = () => {
                             alignItems: 'center',
                             fontWeight: 'bold',
                             cursor: 'pointer',
+                            pb: 5 * scale,
                             '&:hover': {
                                 color: 'primary.main',
                             }
                         }}
                     >
                         {'Cantidad: '} {totalLockers}
-                        <Sync sx={{ fontSize: 24 * scale, ml: 1 * scale }} />
+                        <Sync sx={{ fontSize: 32 * scale, ml: 1 * scale }} />
                     </Typography>
                 </Box>
                 {/* Datos generales */}
@@ -347,15 +348,15 @@ const AdminLockers = () => {
                     }}
                 >
                     {data?.general?.map((item, idx) => (
-                        <Box key={item.status}>
-                            <Typography variant="h5" component="span"
+                        <Box key={item.status} sx={{ pb: 5 * scale}}>
+                            <Typography variant="h4" component="span"
                                 sx={{
                                     fontWeight: 'bold',
                                     color: getColorByStatus(item.status.toUpperCase())
                                 }}>
                                 {item.status.toUpperCase()}{': '}
                             </Typography>
-                            <Typography variant="h5" component="span"
+                            <Typography variant="h4" component="span"
                                 sx={{
                                     fontWeight: 'bold',
                                     color: getColorByStatus(item.status.toUpperCase())
@@ -367,7 +368,7 @@ const AdminLockers = () => {
                 </Box>
 
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: "100%", flex: "0 0 10%" }}>
-                    <FormControl variant="standard" sx={{ width: '80%', mr: 5 * scale }}>
+                    <FormControl variant="standard" sx={{ width: '75%', mr: 5 * scale }}>
                         <InputLabel id="select-module-label">Selecciona un módulo</InputLabel>
                         <Select
                             labelId="select-module-label"
@@ -389,7 +390,7 @@ const AdminLockers = () => {
                                 <Checkbox
                                     sx={{
                                         '& .MuiSvgIcon-root': {
-                                            fontSize: `${45 * scale}px` // Aquí sí afecta el tamaño del ícono
+                                            fontSize: `${48 * scale}px`, // Aquí sí afecta el tamaño del ícono
                                         }
                                     }}
                                     checked={
@@ -400,7 +401,7 @@ const AdminLockers = () => {
                                 />
                             }
                             label="Seleccionar todos"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: `${24 * scale}px` } }}
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: `${32 * scale}px` } }}
                         />
                     )}
                 </Stack>
