@@ -1,5 +1,5 @@
 import { useState, forwardRef, useEffect } from 'react';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Dialog,
@@ -31,8 +31,8 @@ const fileName = 'InsertMoney';
 export default function InsertMoney({ open, onCancel, amountService, amountPay, timeout = 600 }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     useEffect(() => {
 

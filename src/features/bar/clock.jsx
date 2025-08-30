@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Box } from '@mui/material';
-import { useWindowSize } from "../hooks/useWindowSize.js";
+import { useWindowSizeContext } from '../context/windowSizeContext';
 
 const fileName = 'clock';
 
 export default function Clock() {
     const [horaActual, setHoraActual] = useState(new Date());
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     useEffect(() => {
         const intervalo = setInterval(() => {
@@ -32,10 +32,10 @@ export default function Clock() {
 
     return (
         <Box textAlign="center">
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                 {formatoHora}
             </Typography>
-            <Typography variant="h5">
+            <Typography variant="h6">
                 {formatoFecha}
             </Typography>
         </Box>

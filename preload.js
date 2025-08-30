@@ -68,8 +68,12 @@ try {
     getAppVersion: () => packageJson.version,
     onUpdateCSP: (callback) => ipcRenderer.on('update-csp', (_event, csp) => callback(csp)),
     reloadApp: () => ipcRenderer.send('reload-app'),
-    onScreenData: (callback) => ipcRenderer.on('screen-data', (_, data) => callback(data)),
-    requestScreenData: () => ipcRenderer.send('request-screen-data')
+    getScreenDataOnce: () => ipcRenderer.invoke('get-screen-data-once'), // promesa de tamaño inicial
+    onScreenData: (callback) => {
+      const listener = (_, data) => callback(data);
+      ipcRenderer.on("screen-data", listener);
+      return () => ipcRenderer.removeListener("screen-data", listener);
+    },
   });
 
   logger.info(`[${fileName}] API expuesta en window.electronAPI`);

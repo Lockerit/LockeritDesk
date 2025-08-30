@@ -3,7 +3,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import {
     Box,
     List,
@@ -19,8 +19,8 @@ dayjs.extend(utc);
 
 const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
 
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     return (
         <Box
@@ -75,8 +75,8 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
 
 const NumberColumn = ({ label, values, selected, onSelect }) => {
 
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     return (
         <Box
@@ -126,8 +126,8 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
 const DateTime = ({ label, value, onChange }) => {
 
     const [open, setOpen] = useState(false);
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='es'>

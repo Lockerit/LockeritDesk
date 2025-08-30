@@ -40,7 +40,7 @@ import {
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { speak } from '../utils/speak.js'
 import { cancelObservable } from '../utils/cancelObservable.js';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
@@ -78,8 +78,8 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
-  const { width, height, factor } = useWindowSize();
-  const scale = factor || 1;
+  const size = useWindowSizeContext();
+  const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
   // Refs para cambiar el foco
   const phoneRef = useRef(null);

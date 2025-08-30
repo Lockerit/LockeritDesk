@@ -24,7 +24,7 @@ export function createScaledTheme(factor = 1) {
     },
     typography: {
       fontFamily: 'Nunito, sans-serif',
-      fontSize: 14 * factor, // tamaño base escalado
+      fontSize: 12 * factor, // tamaño base escalado
     },
     spacing: 8 * factor, // escala global de espaciado
     components: {
@@ -265,7 +265,7 @@ export function createScaledTheme(factor = 1) {
             display: 'flex',
             alignItems: 'center',
             gap: `${6 * factor}px`,
-            fontSize: `${28 * factor}px`,
+            fontSize: `${24 * factor}px`,
             '&:hover': {
               backgroundColor: '#0c315e',
               color: '#fff',
@@ -305,7 +305,7 @@ export function createScaledTheme(factor = 1) {
             fontWeight: "bold",
             color: "#0c315e",
             backgroundColor: "#d0d3d4",
-            fontSize: `${24 * factor}px`,
+            fontSize: `${20 * factor}px`,
             "&.Mui-selected": {
               color: "#009640",
               backgroundColor: "#d0d3d4",
@@ -355,15 +355,15 @@ export function createScaledTheme(factor = 1) {
             color: "#0c315e", // flechas
           },
           displayedRows: {
-            fontSize: `${24 * factor}px`,
+            fontSize: `${20 * factor}px`,
             color: "#0c315e",
           },
           selectLabel: {
-            fontSize: `${24 * factor}px`,
+            fontSize: `${20 * factor}px`,
             color: "#0c315e",
           },
           select: {
-            fontSize: `${24 * factor}px`,
+            fontSize: `${20 * factor}px`,
             color: "#0c315e",
           },
         },
@@ -373,10 +373,10 @@ export function createScaledTheme(factor = 1) {
           head: {
             backgroundColor: "#0c315e", // fondo encabezado
             color: "#fff",              // texto encabezado
-            fontSize: `${20 * factor}px`,
+            fontSize: `${18 * factor}px`,
           },
           body: {
-            fontSize: `${22 * factor}px`,
+            fontSize: `${20 * factor}px`,
             color: "#444",
           },
         },
@@ -444,7 +444,7 @@ export function createScaledTheme(factor = 1) {
     }
   });
 
-  theme = responsiveFontSizes(theme);
+  // theme = responsiveFontSizes(theme);
 
   return theme;
 }

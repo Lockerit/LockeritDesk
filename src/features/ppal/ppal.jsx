@@ -7,7 +7,7 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Typography,
@@ -21,6 +21,13 @@ import {
 } from '@mui/icons-material';
 
 const fileName = 'ppal';
+
+// Logging centralizado
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
 
 export default function Ppal() {
 
@@ -36,9 +43,11 @@ export default function Ppal() {
     const [disabledButton, setDisabledButton] = useState(false);
     // const [availableLockers, setAvailableLockers] = useState();
     // const [unavailableLockers, setUnavailableLockers] = useState();
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
 
+    log('info', `size ${JSON.stringify(size)}`)
+
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     const navigate = useNavigate();
     const config = useElectronConfig();

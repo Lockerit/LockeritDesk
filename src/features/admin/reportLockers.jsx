@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DateTime from "../utils/dateTime"; // tu componente personalizado
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import GetReportLockers from "../apis/report.js";
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
@@ -30,8 +30,8 @@ const log = (level, message) => {
 const ReportLockers = () => {
     const [endDate, setEndDate] = useState(dayjs());
     const [startDate, setStartDate] = useState(dayjs().hour(0).minute(0).second(0));
-    const { factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
 
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
     const [isErrorMsj, setIsErrorMsj] = useState(true);
@@ -145,14 +145,14 @@ const ReportLockers = () => {
                         variant="outlined"
                         color="primary"
                         sx={{
-                            height: `${80 * scale}px`,
+                            height: `${60 * scale}px`,
                             fontSize: `${24 * scale}px`,
                             fontWeight: 'normal',
                         }}
                         onClick={() => fetchDataReportLocker(true)}
                     >
                         Generar reporte
-                        <Summarize sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
+                        <Summarize sx={{ fontSize: 28 * scale, ml: 3 * scale }} />
                     </Button>
                 </Box>
             </Box>

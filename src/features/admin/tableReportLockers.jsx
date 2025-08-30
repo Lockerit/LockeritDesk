@@ -5,7 +5,7 @@ import {
     TextField, Box, Button,
     Typography, IconButton, InputAdornment
 } from "@mui/material";
-import { useWindowSize } from '../hooks/useWindowSize.js';
+import { useWindowSizeContext } from '../context/windowSizeContext';
 import { formatCurrency } from "../utils/utils.js";
 import GetReportLockers from "../apis/report.js";
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
@@ -35,8 +35,8 @@ const ReportTable = ({ data, startDate, endDate }) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [search, setSearch] = useState("");
-    const { factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const config = useElectronConfig();
     const [isErrorMsj, setIsErrorMsj] = useState(true);
@@ -194,7 +194,7 @@ const ReportTable = ({ data, startDate, endDate }) => {
                             variant="outlined"
                             color="secondary"
                             sx={{
-                                height: `${80 * scale}px`,
+                                height: `${60 * scale}px`,
                                 fontSize: `${24 * scale}px`,
                                 fontWeight: 'normal',
                             }}
@@ -202,7 +202,7 @@ const ReportTable = ({ data, startDate, endDate }) => {
                             disabled={disabledButton}
                         >
                             Enviar reporte
-                            <ForwardToInbox sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
+                            <ForwardToInbox sx={{ fontSize: 28 * scale, ml: 3 * scale }} />
                         </Button>
                     </Box>
                 </Box>

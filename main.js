@@ -65,24 +65,31 @@ function sendCSPIfChanged(win, newCsp) {
 
 function getScaleFactor() {
   const display = screen.getPrimaryDisplay();
-  const { width } = display.workAreaSize;
-  const scaleFactor = display.scaleFactor || 1;
+  const { width, height } = display.workAreaSize;
 
-  // Base: 1920px ancho con scaleFactor 1
-  let resolutionScale = width / 1920;
-  let finalScale = resolutionScale * scaleFactor;
+  // Detectar orientación
+  const isPortrait = height > width;
 
-  return parseFloat(finalScale.toFixed(2));
+  // Base de referencia (tu diseño base)
+  const baseWidth = isPortrait ? 1080 : 1920;
+  const baseHeight = isPortrait ? 1920 : 1080;
+
+  // Calcular escalas
+  const scaleW = width / baseWidth;
+  const scaleH = height / baseHeight;
+
+  // Escogemos el menor para mantener proporciones
+  const resolutionScale = Math.min(scaleW, scaleH);
+
+  return parseFloat(resolutionScale.toFixed(2));
 }
 
 function sendScreenData() {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
   const factor = getScaleFactor();
-
-  if (win) {
-    win.webContents.send('screen-data', { width, height, factor });
-  }
+  logger.info(`[${fileName}] Enviando tamaño ${width} ${height} ${factor}`);
+  win.webContents.send("screen-data", getScreenData());
 }
 
 let isRecreating = false;
@@ -121,17 +128,22 @@ function createWindow() {
 
   const preloadPath = path.join(__dirname, 'preload.js');
 
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.workAreaSize;
+
   win = new BrowserWindow({
-    fullscreen: true,
     frame: false,
-    width: 1920,
-    height: 1080,
+    width: width,
+    height: height,
+    show: false,
     icon: path.join(__dirname, 'assets', 'icon.ico'),
     webPreferences: {
       preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false
+      sandbox: false,
+      backgroundThrottling: false,
+      zoomFactor: factor
     }
   });
 
@@ -151,17 +163,48 @@ function createWindow() {
   win.loadURL(loadUrl);
   logger.info(`[${fileName}] Cargando URL: ${loadUrl}`);
 
-  if (!isProd) win.webContents.openDevTools();
+  // if (!isProd) win.webContents.openDevTools();
+
+  // Cuando ya está listo para mostrarse, ajusta y muestra
+  win.once('ready-to-show', () => {
+    try {
+      // Asegura bounds correctos (si no usas fullscreen)
+      const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+      win.setBounds({ x: 0, y: 0, width, height });
+      win.show();
+
+      // Red de seguridad: fuerza un resize para refrescar layout
+      setTimeout(() => {
+        win.webContents.executeJavaScript('window.dispatchEvent(new Event("resize"))').catch(() => { });
+      }, 0);
+
+      // Envía datos iniciales ya con ventana visible
+      const factor = getScaleFactor();
+      win.webContents.send('screen-data', { width, height });
+    } catch (e) {
+      logger.warn(`[${fileName}] ready-to-show error: ${e.message}`);
+    }
+  });
+
+  win.webContents.on("dom-ready", () => {
+    sendScreenData();
+  });
 
   win.webContents.on('did-finish-load', () => {
     const initialCSP = buildCSP(currentEnv);
     sendCSPIfChanged(win, initialCSP);
-    win.webContents.setZoomFactor(factor);
+    // win.webContents.setZoomFactor(factor);
     sendScreenData();
   });
 
-  // Detectar cambio de pantalla o resolución
-  screen.on('display-metrics-changed', sendScreenData);
+  // opcional: escuchar cambios en el display (rotación, resolución)
+  screen.on('display-metrics-changed', () => {
+    const display = screen.getPrimaryDisplay();
+    const { width, height } = display.workAreaSize;
+    const factor = getScaleFactor();
+    win.webContents.send('screen-data', getScreenData);
+  });
+
   screen.on('display-added', sendScreenData);
   screen.on('display-removed', sendScreenData);
 }
@@ -353,13 +396,28 @@ ipcMain.on('log-message', (event, { level, message }) => {
   }
 });
 
-ipcMain.on('request-screen-data', (event) => {
+function getScreenData() {
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.workAreaSize;
+  // const factor = getScaleFactor();
+  return { width, height };
+}
+
+ipcMain.handle("get-screen-data", async () => {
+  return getScreenData();
+});
+
+ipcMain.handle('get-screen-data-once', async () => {
+  if (!win) throw new Error('Window no creada aún');
+  if (!win.isVisible()) {
+    await new Promise(resolve => win.once('ready-to-show', resolve));
+  }
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
   const factor = getScaleFactor();
-  event.reply('screen-data', { width, height, factor });
+  logger.info(`[${fileName}] get-screen-data-once -> ${width}x${height} factor=${factor}`);
+  return { width, height };
 });
-
 
 ipcMain.on('app:exit', async () => {
   logger.info(`[${fileName}] Cerrando aplicación...`);

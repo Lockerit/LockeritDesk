@@ -5,12 +5,13 @@ import DenseAppBar from '../bar/appbar.jsx';
 import Copyright from '../bar/copyright.jsx';
 import AppRoutes from '../router/router.jsx';
 import { useUser } from '../context/userContext.jsx';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { useSchedulerReport } from '../hooks/useScheduleReport.js';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import dayjs from "dayjs";
 import GetReportLockers from '../apis/report.js';
 import utc from "dayjs/plugin/utc";
+import LoadingScreen from '../dialogs/loading.jsx';
 dayjs.extend(utc);
 
 
@@ -58,9 +59,10 @@ export default function App() {
     // Comentario cambio para subir a GitHub
     const { userInit, setUserInit } = useUser();
     const [version, setVersion] = useState('');
-    const { factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
     const config = useElectronConfig();
+    const [loading, setLoading] = useState(true);
 
     // Alturas base en px
     const appBarBase = 100;   // alto típico del AppBar
@@ -71,11 +73,15 @@ export default function App() {
     const footerHeight = footerBase * scale;
 
     useEffect(() => {
+
         if (!userInit) return;
+
+        setLoading(false);
 
         localStorage.setItem('isCancelInsertMoney', false);
 
         const lsUserInit = localStorage.getItem(USER_STORAGE_KEY);
+
         if (!lsUserInit)
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit));
 
@@ -92,7 +98,7 @@ export default function App() {
         } catch (err) {
             log('error', `Error al obtener la versión: ${err.message}`);
         }
-    }, []);
+    }, [userInit]);
 
     useResetLocalStorageOnConfigChange(config);
 
@@ -182,6 +188,9 @@ export default function App() {
                     <Copyright />
                 </Box>
             </Container>
+
+            {loading && (<LoadingScreen />)}
+
         </HashRouter>
     );
 }

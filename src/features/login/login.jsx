@@ -4,7 +4,7 @@ import { useUser } from '../context/userContext.jsx';
 import SnackBarAlert from '../bar/snackAlert.jsx';
 import logo from '../../assets/Logo.png';
 import { useElectronConfig } from '../hooks/useConfig.js';
-import { useWindowSize } from "../hooks/useWindowSize.js";
+import { useWindowSizeContext } from '../context/windowSizeContext';
 import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Box,
@@ -53,8 +53,8 @@ export default function Login() {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
     const [buttonName, setButtonName] = useState('Iniciar Sesión');
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     const navigate = useNavigate();
     const config = useElectronConfig();

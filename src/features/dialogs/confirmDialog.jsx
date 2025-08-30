@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Dialog,
@@ -23,8 +23,8 @@ const fileName = 'confirmDialog';
 
 export default function ConfirmDialog({ open, onConfirm, onCancel, title, mesg, phone, isPhone }) {
 
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     return (
         <Dialog open={open} onClose={(event, reason) => {

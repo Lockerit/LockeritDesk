@@ -6,7 +6,7 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import SetStatusLocker from '../apis/setStatusLocker.js';
 import SnackBarAlert from '../bar/snackAlert.jsx';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import {
     Box,
     Typography,
@@ -48,8 +48,8 @@ const AdminLockers = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
 
     const config = useElectronConfig();
 
@@ -349,14 +349,14 @@ const AdminLockers = () => {
                 >
                     {data?.general?.map((item, idx) => (
                         <Box key={item.status} sx={{ pb: 5 * scale}}>
-                            <Typography variant="h4" component="span"
+                            <Typography variant="h5" component="span"
                                 sx={{
                                     fontWeight: 'bold',
                                     color: getColorByStatus(item.status.toUpperCase())
                                 }}>
                                 {item.status.toUpperCase()}{': '}
                             </Typography>
-                            <Typography variant="h4" component="span"
+                            <Typography variant="h5" component="span"
                                 sx={{
                                     fontWeight: 'bold',
                                     color: getColorByStatus(item.status.toUpperCase())
@@ -390,7 +390,7 @@ const AdminLockers = () => {
                                 <Checkbox
                                     sx={{
                                         '& .MuiSvgIcon-root': {
-                                            fontSize: `${48 * scale}px`, // Aquí sí afecta el tamaño del ícono
+                                            fontSize: `${40 * scale}px`, // Aquí sí afecta el tamaño del ícono
                                         }
                                     }}
                                     checked={
@@ -401,7 +401,7 @@ const AdminLockers = () => {
                                 />
                             }
                             label="Seleccionar todos"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: `${32 * scale}px` } }}
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: `${30 * scale}px` } }}
                         />
                     )}
                 </Stack>

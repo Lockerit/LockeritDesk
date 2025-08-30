@@ -1,5 +1,5 @@
 import { useState, forwardRef, useEffect } from 'react';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Dialog,
@@ -28,8 +28,8 @@ const fileName = 'assignLocker';
 
 export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 15, backColor }) {
 
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
 
@@ -72,23 +72,23 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                 sx: {
                     width: scaledDimension(
                         {
-                            xs: { base: 70, min: 65, max: 75 },
-                            sm: { base: 70, min: 65, max: 75 },
+                            xs: { base: 60, min: 55, max: 65 },
+                            sm: { base: 60, min: 55, max: 65 },
                             md: { base: 50, min: 45, max: 55 },
                             lg: { base: 40, min: 35, max: 45 },
                         },
                         scale
                     ),
-                    height: scaledDimension(
-                        {
-                            xs: { base: 40, min: 35, max: 45 },
-                            sm: { base: 40, min: 35, max: 45 },
-                            md: { base: 80, min: 75, max: 85 },
-                            lg: { base: 80, min: 75, max: 85 },
-                        },
-                        scale
-                    ),
-                    maxHeight: '90vh',
+                    // height: scaledDimension(
+                    //     {
+                    //         xs: { base: 40, min: 35, max: 45 },
+                    //         sm: { base: 40, min: 35, max: 45 },
+                    //         md: { base: 80, min: 75, max: 85 },
+                    //         lg: { base: 80, min: 75, max: 85 },
+                    //     },
+                    //     scale
+                    // ),
+                    height: '60%',
                     overflow: "hidden",   // ✅ scroll si se pasa
                     borderRadius: `${Math.max(8, 16 * scale)}px`,
                     display: "flex",
