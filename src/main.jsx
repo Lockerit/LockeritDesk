@@ -25,14 +25,6 @@ function RootApp() {
   // hook con valor inicial
   const size = useWindowSizeContext();
 
-  log('info', `RootApp size ${JSON.stringify(size)}`);
-
-  if (!size.width || !size.height || !size.factor) {
-    return <LoadingScreen open message="Cargando aplicación..." />;
-  }
-
-  const theme = useMemo(() => createScaledTheme(size.factor), [size.factor]);
-
   useEffect(() => {
     const currentMetaCSP =
       document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || null;
@@ -71,6 +63,14 @@ function RootApp() {
     window.electronAPI.reloadApp();
   };
 
+  log('debug', `RootApp size ${JSON.stringify(size)}`);
+
+  if (!size?.factor || size.factor <= 0) {
+    return <LoadingScreen open message="Cargando aplicación..." />;
+  }
+
+  const theme = useMemo(() => createScaledTheme(size.factor), [size.factor]);
+
   return (
     <>
       {pendingCSP && (
@@ -91,7 +91,7 @@ function RootApp() {
       )}
 
       <UserProvider>
-        <ThemeProvider key={size.factor} theme={theme}>
+        <ThemeProvider key={`theme-${size.factor}`} theme={theme}>
           <CssBaseline />
           <App />
         </ThemeProvider>
@@ -102,12 +102,10 @@ function RootApp() {
 
 async function bootstrap() {
   const initialSize = await window.electronAPI.getScreenDataOnce();
-  // 👇 aseguramos que no venga factor desde preload
-  const cleanSize = { width: initialSize.width, height: initialSize.height };
 
   createRoot(document.getElementById("root")).render(
     <StrictMode>
-      <WindowSizeProvider initialSize={cleanSize}>
+      <WindowSizeProvider initialSize={initialSize}>
         <RootApp />
       </WindowSizeProvider>
     </StrictMode>

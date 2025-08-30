@@ -18,9 +18,12 @@ function calcFactor(width, height) {
     };
 }
 
-export const WindowSizeProvider = ({ children }) => {
+export const WindowSizeProvider = ({ children, initialSize }) => {
+    // ⚡ usamos SOLO el initialSize al inicio
     const [size, setSize] = useState(() =>
-        calcFactor(window.innerWidth, window.innerHeight)
+        initialSize
+            ? calcFactor(initialSize.width, initialSize.height)
+            : calcFactor(window.innerWidth, window.innerHeight)
     );
 
     useEffect(() => {
@@ -28,10 +31,8 @@ export const WindowSizeProvider = ({ children }) => {
             setSize(calcFactor(window.innerWidth, window.innerHeight));
         };
 
-        // 📌 1) escuchamos resize del navegador
         window.addEventListener("resize", handleResize);
 
-        // 📌 2) escuchamos también eventos de Electron (si existen)
         if (window.electronAPI?.onScreenData) {
             const unsubscribe = window.electronAPI.onScreenData((newSize) => {
                 setSize(calcFactor(newSize.width, newSize.height));
@@ -45,7 +46,7 @@ export const WindowSizeProvider = ({ children }) => {
         return () => {
             window.removeEventListener("resize", handleResize);
         };
-    }, []);
+    }, []); // 👈 este efecto ya NO recalcula al inicio
 
     return (
         <WindowSizeContext.Provider value={size}>

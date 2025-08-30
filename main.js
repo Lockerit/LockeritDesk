@@ -35,6 +35,24 @@ let currentEnv = {
   wsBasePort: process.env.REACT_APP_WS_PORT || '8080'
 };
 
+function createCacheDirs() {
+  // 👇 ruta raíz del proyecto donde está el main.js
+  const projectRoot = path.resolve(__dirname, "..");
+  const cacheDir = path.join(projectRoot, "electron_cache");
+  const gpuCacheDir = path.join(cacheDir, "GPUCache");
+
+  // crear carpetas si no existen
+  [cacheDir, gpuCacheDir].forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+
+  // forzar Electron/Chromium a usar esas carpetas
+  app.setPath("userData", cacheDir);
+  app.setPath("cache", cacheDir);
+}
+
 
 function buildCSP(env) {
   const apiBaseUrl = `${env.apiBaseUrl}:${env.apiBasePort}`;
@@ -85,11 +103,9 @@ function getScaleFactor() {
 }
 
 function sendScreenData() {
-  const display = screen.getPrimaryDisplay();
-  const { width, height } = display.workAreaSize;
-  const factor = getScaleFactor();
-  logger.info(`[${fileName}] Enviando tamaño ${width} ${height} ${factor}`);
-  win.webContents.send("screen-data", getScreenData());
+  const data = getScreenData();
+  logger.debug(`[${fileName}] Enviando tamaño ${data.width} ${data.height} ${data.factor}`);
+  win.webContents.send("screen-data", data);
 }
 
 let isRecreating = false;
@@ -125,9 +141,7 @@ function createWindow() {
   logger.info(`[${fileName}] Creando ventana principal...`);
 
   const factor = getScaleFactor();
-
   const preloadPath = path.join(__dirname, 'preload.js');
-
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
 
@@ -143,7 +157,7 @@ function createWindow() {
       contextIsolation: true,
       sandbox: false,
       backgroundThrottling: false,
-      zoomFactor: factor
+      zoomFactor: 1
     }
   });
 
@@ -163,48 +177,28 @@ function createWindow() {
   win.loadURL(loadUrl);
   logger.info(`[${fileName}] Cargando URL: ${loadUrl}`);
 
-  // if (!isProd) win.webContents.openDevTools();
-
-  // Cuando ya está listo para mostrarse, ajusta y muestra
+  // Mostrar ventana cuando esté lista
   win.once('ready-to-show', () => {
     try {
-      // Asegura bounds correctos (si no usas fullscreen)
       const { width, height } = screen.getPrimaryDisplay().workAreaSize;
       win.setBounds({ x: 0, y: 0, width, height });
       win.show();
-
-      // Red de seguridad: fuerza un resize para refrescar layout
-      setTimeout(() => {
-        win.webContents.executeJavaScript('window.dispatchEvent(new Event("resize"))').catch(() => { });
-      }, 0);
-
-      // Envía datos iniciales ya con ventana visible
-      const factor = getScaleFactor();
-      win.webContents.send('screen-data', { width, height });
     } catch (e) {
       logger.warn(`[${fileName}] ready-to-show error: ${e.message}`);
     }
   });
 
-  win.webContents.on("dom-ready", () => {
-    sendScreenData();
-  });
-
+  // ✅ Solo aquí se envían datos iniciales (ya todo cargado)
   win.webContents.on('did-finish-load', () => {
     const initialCSP = buildCSP(currentEnv);
     sendCSPIfChanged(win, initialCSP);
-    // win.webContents.setZoomFactor(factor);
+
+    // 🔥 Manda tamaño + factor una sola vez
     sendScreenData();
   });
 
   // opcional: escuchar cambios en el display (rotación, resolución)
-  screen.on('display-metrics-changed', () => {
-    const display = screen.getPrimaryDisplay();
-    const { width, height } = display.workAreaSize;
-    const factor = getScaleFactor();
-    win.webContents.send('screen-data', getScreenData);
-  });
-
+  screen.on('display-metrics-changed', sendScreenData);
   screen.on('display-added', sendScreenData);
   screen.on('display-removed', sendScreenData);
 }
@@ -399,8 +393,8 @@ ipcMain.on('log-message', (event, { level, message }) => {
 function getScreenData() {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
-  // const factor = getScaleFactor();
-  return { width, height };
+  const factor = getScaleFactor();
+  return { width, height, factor };
 }
 
 ipcMain.handle("get-screen-data", async () => {
@@ -416,7 +410,7 @@ ipcMain.handle('get-screen-data-once', async () => {
   const { width, height } = display.workAreaSize;
   const factor = getScaleFactor();
   logger.info(`[${fileName}] get-screen-data-once -> ${width}x${height} factor=${factor}`);
-  return { width, height };
+  return { width, height, factor };
 });
 
 ipcMain.on('app:exit', async () => {
@@ -430,6 +424,7 @@ ipcMain.on('app:exit', async () => {
 
 app.whenReady().then(() => {
   logger.info(`[${fileName}] App lista, creando ventana...`);
+  createCacheDirs(); // crear y forzar cache en raiz
   createWindow();
 });
 

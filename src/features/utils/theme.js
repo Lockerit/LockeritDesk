@@ -1,7 +1,17 @@
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 import '@fontsource/nunito';
 
+const fileName = 'theme';
+
+// Función auxiliar de log
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
 export function createScaledTheme(factor = 1) {
+  log('debug', `factor theme:  ${factor}`);
   let theme = createTheme({
     palette: {
       mode: 'light',
@@ -24,7 +34,72 @@ export function createScaledTheme(factor = 1) {
     },
     typography: {
       fontFamily: 'Nunito, sans-serif',
-      fontSize: 12 * factor, // tamaño base escalado
+      fontSize: 12 * factor, // base para body
+
+      h1: {
+        fontSize: `${96 * factor}px`,
+        fontWeight: 700,
+        lineHeight: 1.2,
+      },
+      h2: {
+        fontSize: `${60 * factor}px`,
+        fontWeight: 600,
+        lineHeight: 1.3,
+      },
+      h3: {
+        fontSize: `${48 * factor}px`,
+        fontWeight: 600,
+        lineHeight: 1.3,
+      },
+      h4: {
+        fontSize: `${34 * factor}px`,
+        fontWeight: 500,
+        lineHeight: 1.4,
+      },
+      h5: {
+        fontSize: `${24 * factor}px`,
+        fontWeight: 500,
+        lineHeight: 1.4,
+      },
+      h6: {
+        fontSize: `${20 * factor}px`,
+        fontWeight: 500,
+        lineHeight: 1.5,
+      },
+      subtitle1: {
+        fontSize: `${16 * factor}px`,
+        fontWeight: 400,
+        lineHeight: 1.5,
+      },
+      subtitle2: {
+        fontSize: `${14 * factor}px`,
+        fontWeight: 400,
+        lineHeight: 1.5,
+      },
+      body1: {
+        fontSize: `${16 * factor}px`,
+        fontWeight: 400,
+        lineHeight: 1.5,
+      },
+      body2: {
+        fontSize: `${14 * factor}px`,
+        fontWeight: 400,
+        lineHeight: 1.4,
+      },
+      button: {
+        fontSize: `${14 * factor}px`,
+        fontWeight: 600,
+        textTransform: 'none',
+      },
+      caption: {
+        fontSize: `${12 * factor}px`,
+        lineHeight: 1.4,
+      },
+      overline: {
+        fontSize: `${12 * factor}px`,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+      },
     },
     spacing: 8 * factor, // escala global de espaciado
     components: {
@@ -34,7 +109,7 @@ export function createScaledTheme(factor = 1) {
             textField: {
               variant: 'standard',
               fullWidth: true,
-              size: 'medium',        // 👈 evita que se aplique .MuiInputBase-inputSizeSmall
+              size: 'medium',
             },
           },
         },
@@ -215,9 +290,12 @@ export function createScaledTheme(factor = 1) {
         styleOverrides: {
           root: {
             borderRadius: 16 * factor,
-            boxShadow: '0 12px 24px rgba(0,0,0,1)',
+            boxShadow: `0 ${12 * factor}px ${24 * factor}px rgba(0,0,0,0.5)`,
           },
         },
+        defaultProps: {
+          elevation: 3, // aplica tu sombra escalada
+        }
       },
       MuiButton: {
         styleOverrides: {
@@ -225,14 +303,14 @@ export function createScaledTheme(factor = 1) {
             fontSize: `${32 * factor}px`,
             borderRadius: `${16 * factor}px`,
             backdropFilter: 'blur(8px)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+            boxShadow: `0 ${8 * factor}px ${24 * factor}px rgba(0,0,0,0.2)`,
             padding: `${12 * factor}px ${24 * factor}px`,
             textTransform: 'none',
             fontWeight: 'bold',
             '&:hover': {
-              border: '3px solid #0c315e',
+              border: `${3 * factor}px solid #0c315e`,
               background: 'rgba(12,49,94,0.1)',
-              boxShadow: '0 12px 32px rgba(0,0,0,0.25)',
+              boxShadow: `0 ${12 * factor}px ${32 * factor}px rgba(0,0,0,0.25)`,
               color: '#1b2631'
             },
           },
@@ -252,7 +330,7 @@ export function createScaledTheme(factor = 1) {
         styleOverrides: {
           paper: {
             borderRadius: 6 * factor,
-            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+            boxShadow: `0 ${4 * factor}px ${20 * factor}px rgba(0, 0, 0, 0.1)`,
             minWidth: 200 * factor,
             padding: `${4 * factor}px 0`,
           },

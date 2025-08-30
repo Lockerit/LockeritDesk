@@ -45,7 +45,7 @@ export default function Ppal() {
     // const [unavailableLockers, setUnavailableLockers] = useState();
     const size = useWindowSizeContext();
 
-    log('info', `size ${JSON.stringify(size)}`)
+    log('debug', `size ${JSON.stringify(size)}`)
 
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
