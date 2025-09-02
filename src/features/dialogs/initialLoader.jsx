@@ -1,14 +1,7 @@
-// src/components/LoadingScreen.jsx
-import React from 'react';
+// src/components/InitialLoader.jsx
 import { Box, CircularProgress, Typography, Backdrop } from '@mui/material';
-import { useWindowSizeContext } from '../context/windowSizeContext';
 
-const fileName = 'loading';
-
-const LoadingScreen = ({ open = true, message = 'Cargando...' }) => {
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
-
+const InitialLoader = ({ open = true, message = 'Cargando...' }) => {
     return (
         <Backdrop
             sx={{
@@ -23,8 +16,8 @@ const LoadingScreen = ({ open = true, message = 'Cargando...' }) => {
             open={open}
         >
             <Box display="flex" flexDirection="column" alignItems="center">
-                <CircularProgress color="inherit" size={100 * scale} />
-                <Typography variant="h3" mt={2 * scale}>
+                <CircularProgress color="inherit" size={100} />
+                <Typography variant="h5" mt={2}>
                     {message}
                 </Typography>
             </Box>
@@ -32,4 +25,4 @@ const LoadingScreen = ({ open = true, message = 'Cargando...' }) => {
     );
 };
 
-export default LoadingScreen;
+export default InitialLoader;

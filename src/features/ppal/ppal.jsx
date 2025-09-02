@@ -7,7 +7,8 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
+import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Typography,
     Box,
@@ -21,6 +22,13 @@ import {
 
 const fileName = 'ppal';
 
+// Logging centralizado
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
 export default function Ppal() {
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -33,11 +41,13 @@ export default function Ppal() {
     const [timeoutKeypad, setTimeoutKeypad] = useState();
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const [disabledButton, setDisabledButton] = useState(false);
-    const [availableLockers, setAvailableLockers] = useState();
-    const [unavailableLockers, setUnavailableLockers] = useState();
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    // const [availableLockers, setAvailableLockers] = useState();
+    // const [unavailableLockers, setUnavailableLockers] = useState();
+    const size = useWindowSizeContext();
 
+    log('debug', `size ${JSON.stringify(size)}`)
+
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     const navigate = useNavigate();
     const config = useElectronConfig();
@@ -47,7 +57,8 @@ export default function Ppal() {
         if (!config) return;
 
         fetchDataStatusLocker();
-        calculateLockerAvailables();
+        setDisabledButton(available === 0 ? true : false);
+        // calculateLockerAvailables();
     }, [config, available]);
 
     useEffect(() => {
@@ -117,14 +128,14 @@ export default function Ppal() {
             } else {
                 const msg = typeof result?.data === 'string'
                     ? result.data
-                    : result?.data?.message || 'Error al obtener casilleros';
+                    : 'No se puedo obtener estado de casilleros';
 
                 setMessageErrorAPI(msg);
                 setShowErrorAPIOpen(true);
             }
 
         } catch (err) {
-            setMessageErrorAPI(err.message || 'Error al obtener casilleros');
+            setMessageErrorAPI('No se puedo obtener estado de casilleros');
             setShowErrorAPIOpen(true);
         } finally {
             setLoading(false);
@@ -147,18 +158,18 @@ export default function Ppal() {
         fetchDataStatusLocker();
     }
 
-    const calculateLockerAvailables = () => {
+    // const calculateLockerAvailables = () => {
 
-        setAvailableLockers(Number.isFinite(config?.totalLockers) && Number.isFinite(available)
-            ? available
-            : 0);
+    //     setAvailableLockers(Number.isFinite(config?.totalLockers) && Number.isFinite(available)
+    //         ? available
+    //         : 0);
 
-        setUnavailableLockers(Number.isFinite(config?.totalLockers) && Number.isFinite(available)
-            ? config.totalLockers - available
-            : 0);
+    //     setUnavailableLockers(Number.isFinite(config?.totalLockers) && Number.isFinite(available)
+    //         ? config.totalLockers - available
+    //         : 0);
 
-        setDisabledButton(available === 0 ? true : false);
-    }
+    //     setDisabledButton(available === 0 ? true : false);
+    // }
 
     return (
         <>
@@ -167,12 +178,11 @@ export default function Ppal() {
                     flex: 1, // ocupa todo el espacio disponible del contenedor padre
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'space-between',
+                    alignContent: 'center',
+                    alignItems: 'center',
                     px: 4 * scale,
-                    py: 2 * scale,
                     width: '100%',
                     height: '100%',
-                    alignItems: 'center',
                     overflow: 'hidden', // evita que genere scroll
                 }}
             >
@@ -186,7 +196,27 @@ export default function Ppal() {
                 </Box>
 
                 {/* Botones */}
-                <Grid container spacing={2 * scale} sx={{ minHeight: '60%', width: '60%' }}>
+                <Grid container spacing={5 * scale}
+                    sx={{
+                        height: scaledDimension(
+                            {
+                                xs: { base: 70, min: 65, max: 75 }, // en % para mobile
+                                sm: { base: 70, min: 65, max: 75 }, // tablet
+                                md: { base: 60, min: 55, max: 70 }, // desktop medio
+                                lg: { base: 60, min: 55, max: 70 }, // desktop grande
+                            },
+                            scale
+                        ),
+                        width: scaledDimension(
+                            {
+                                xs: { base: 80, min: 75, max: 85 }, // en % para mobile
+                                sm: { base: 80, min: 75, max: 85 }, // tablet
+                                md: { base: 60, min: 55, max: 70 }, // desktop medio
+                                lg: { base: 45, min: 40, max: 50 }, // desktop grande
+                            },
+                            scale
+                        ),
+                    }}>
                     <Grid size={6}>
                         <ActionButton
                             text="Guardar"
@@ -213,7 +243,8 @@ export default function Ppal() {
                         display: 'flex',
                         alignItems: 'center',
                         width: '100%',
-                        maxHeight: '100%'
+                        maxHeight: '100%',
+                        mt: 'auto',
                     }}
                 >
                     {/* Contenido de texto (a la izquierda) */}
@@ -224,7 +255,7 @@ export default function Ppal() {
                                     Casilleros disponibles:{' '}
                                 </Typography>
                                 <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                                    {availableLockers}
+                                    {available || 0}
                                 </Typography>
                             </>
                         )}
@@ -239,19 +270,34 @@ export default function Ppal() {
 
                     {/* Imagen (alineada completamente a la derecha) */}
                     {config?.login?.QRPath && (
-                        <Box sx={{ ml: 'auto' }}>
+                        <Box
+                            sx={{
+                                ml: 'auto',
+                                mt: 2 * scale,
+                                height: scaledDimension(
+                                    {
+                                        xs: { base: 140, min: 135, max: 145 }, // en % para mobile
+                                        sm: { base: 140, min: 135, max: 145 }, // tablet
+                                        md: { base: 160, min: 155, max: 165 }, // desktop medio
+                                        lg: { base: 180, min: 175, max: 185 }, // desktop grande
+                                    },
+                                    scale,
+                                    "px"
+                                ),
+                            }}>
                             <img
                                 src={config.login.QRPath}
                                 alt="QR"
                                 style={{
-                                    height: 180 * scale,
+                                    width: 'auto',
+                                    height: '100%',
                                     objectFit: 'contain',
                                 }}
                             />
                         </Box>
                     )}
                 </Box>
-            </Box>
+            </Box >
 
             <KeyPadModal
                 open={modalOpen}

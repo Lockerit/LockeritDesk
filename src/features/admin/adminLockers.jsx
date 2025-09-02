@@ -6,7 +6,7 @@ import { useElectronConfig } from '../hooks/useConfig.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import SetStatusLocker from '../apis/setStatusLocker.js';
 import SnackBarAlert from '../bar/snackAlert.jsx';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import {
     Box,
     Typography,
@@ -48,8 +48,8 @@ const AdminLockers = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
 
     const config = useElectronConfig();
 
@@ -316,7 +316,7 @@ const AdminLockers = () => {
                         Estado de Casilleros
                     </Typography> */}
                     <Typography
-                        variant="h5"
+                        variant="h4"
                         component="span"
                         onClick={handleCantidadClick}
                         sx={{
@@ -324,13 +324,14 @@ const AdminLockers = () => {
                             alignItems: 'center',
                             fontWeight: 'bold',
                             cursor: 'pointer',
+                            pb: 5 * scale,
                             '&:hover': {
                                 color: 'primary.main',
                             }
                         }}
                     >
                         {'Cantidad: '} {totalLockers}
-                        <Sync sx={{ fontSize: 24 * scale, ml: 1 * scale }} />
+                        <Sync sx={{ fontSize: 32 * scale, ml: 1 * scale }} />
                     </Typography>
                 </Box>
                 {/* Datos generales */}
@@ -347,7 +348,7 @@ const AdminLockers = () => {
                     }}
                 >
                     {data?.general?.map((item, idx) => (
-                        <Box key={item.status}>
+                        <Box key={item.status} sx={{ pb: 5 * scale }}>
                             <Typography variant="h5" component="span"
                                 sx={{
                                     fontWeight: 'bold',
@@ -367,7 +368,7 @@ const AdminLockers = () => {
                 </Box>
 
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: "100%", flex: "0 0 10%" }}>
-                    <FormControl variant="standard" sx={{ width: '80%', mr: 5 * scale }}>
+                    <FormControl variant="standard" sx={{ width: '75%', mr: 5 * scale }}>
                         <InputLabel id="select-module-label">Selecciona un módulo</InputLabel>
                         <Select
                             labelId="select-module-label"
@@ -389,7 +390,7 @@ const AdminLockers = () => {
                                 <Checkbox
                                     sx={{
                                         '& .MuiSvgIcon-root': {
-                                            fontSize: `${45 * scale}px` // Aquí sí afecta el tamaño del ícono
+                                            fontSize: `${40 * scale}px`, // Aquí sí afecta el tamaño del ícono
                                         }
                                     }}
                                     checked={
@@ -400,7 +401,7 @@ const AdminLockers = () => {
                                 />
                             }
                             label="Seleccionar todos"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: `${24 * scale}px` } }}
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: `${30 * scale}px` } }}
                         />
                     )}
                 </Stack>
@@ -462,16 +463,21 @@ const AdminLockers = () => {
                                         minHeight: Math.max(32, Math.min(60, 40 * scale)),    // escala, mínimo 32px, máximo 60px
                                         overflowY: 'auto',
                                         width: '100%',
-                                        px: 2 * scale,     // padding horizontal proporcional
-                                        py: 1 * scale,     // padding vertical proporcional
-                                        borderRadius: 2 * scale, // bordes redondeados proporcionales
+                                        px: 2 * scale,
+                                        py: 1 * scale,
+                                        borderRadius: 2 * scale,
                                         display: 'flex',
                                         flexWrap: 'wrap',
-                                        gap: 1 * scale,    // espacio entre elementos proporcional
+                                        gap: 1 * scale,
                                     }}
                                 >
                                     {selectedLockers.map((l) => (
-                                        <Chip key={l.lockerCode} label={l.lockerCode} />
+                                        <Chip key={l.lockerCode} label={l.lockerCode} sx={{
+                                            height: 48 * scale,
+                                            fontSize: 20 * scale,
+                                            px: 2 * scale,
+                                            borderRadius: 2 * scale, 
+                                        }} />
                                     ))}
                                 </Box>
                                 <Stack direction="row" spacing={1 * scale} sx={{ width: '100%', maxHeight: '100%', padding: 2 * scale }}>

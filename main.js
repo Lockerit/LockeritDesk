@@ -35,6 +35,24 @@ let currentEnv = {
   wsBasePort: process.env.REACT_APP_WS_PORT || '8080'
 };
 
+function createCacheDirs() {
+  // 👇 ruta raíz del proyecto donde está el main.js
+  const projectRoot = path.resolve(__dirname, "..");
+  const cacheDir = path.join(projectRoot, "electron_cache");
+  const gpuCacheDir = path.join(cacheDir, "GPUCache");
+
+  // crear carpetas si no existen
+  [cacheDir, gpuCacheDir].forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+
+  // forzar Electron/Chromium a usar esas carpetas
+  app.setPath("userData", cacheDir);
+  app.setPath("cache", cacheDir);
+}
+
 
 function buildCSP(env) {
   const apiBaseUrl = `${env.apiBaseUrl}:${env.apiBasePort}`;
@@ -65,24 +83,29 @@ function sendCSPIfChanged(win, newCsp) {
 
 function getScaleFactor() {
   const display = screen.getPrimaryDisplay();
-  const { width } = display.workAreaSize;
-  const scaleFactor = display.scaleFactor || 1;
+  const { width, height } = display.workAreaSize;
 
-  // Base: 1920px ancho con scaleFactor 1
-  let resolutionScale = width / 1920;
-  let finalScale = resolutionScale * scaleFactor;
+  // Detectar orientación
+  const isPortrait = height > width;
 
-  return parseFloat(finalScale.toFixed(2));
+  // Base de referencia (tu diseño base)
+  const baseWidth = isPortrait ? 1080 : 1920;
+  const baseHeight = isPortrait ? 1920 : 1080;
+
+  // Calcular escalas
+  const scaleW = width / baseWidth;
+  const scaleH = height / baseHeight;
+
+  // Escogemos el menor para mantener proporciones
+  const resolutionScale = Math.min(scaleW, scaleH);
+
+  return parseFloat(resolutionScale.toFixed(2));
 }
 
 function sendScreenData() {
-  const display = screen.getPrimaryDisplay();
-  const { width, height } = display.workAreaSize;
-  const factor = getScaleFactor();
-
-  if (win) {
-    win.webContents.send('screen-data', { width, height, factor });
-  }
+  const data = getScreenData();
+  logger.debug(`[${fileName}] Enviando tamaño ${data.width} ${data.height} ${data.factor}`);
+  win.webContents.send("screen-data", data);
 }
 
 let isRecreating = false;
@@ -118,20 +141,24 @@ function createWindow() {
   logger.info(`[${fileName}] Creando ventana principal...`);
 
   const factor = getScaleFactor();
-
   const preloadPath = path.join(__dirname, 'preload.js');
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.workAreaSize;
 
   win = new BrowserWindow({
-    fullscreen: true,
     frame: false,
-    width: 1920,
-    height: 1080,
+    fullscreen: true,
+    width: width,
+    height: height,
+    show: false,
     icon: path.join(__dirname, 'assets', 'icon.ico'),
     webPreferences: {
       preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false
+      sandbox: false,
+      backgroundThrottling: false,
+      zoomFactor: 1
     }
   });
 
@@ -151,16 +178,27 @@ function createWindow() {
   win.loadURL(loadUrl);
   logger.info(`[${fileName}] Cargando URL: ${loadUrl}`);
 
-  if (!isProd) win.webContents.openDevTools();
+  // Mostrar ventana cuando esté lista
+  win.once('ready-to-show', () => {
+    try {
+      const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+      win.setBounds({ x: 0, y: 0, width, height });
+      win.show();
+    } catch (e) {
+      logger.warn(`[${fileName}] ready-to-show error: ${e.message}`);
+    }
+  });
 
+  // ✅ Solo aquí se envían datos iniciales (ya todo cargado)
   win.webContents.on('did-finish-load', () => {
     const initialCSP = buildCSP(currentEnv);
     sendCSPIfChanged(win, initialCSP);
-    win.webContents.setZoomFactor(factor);
+
+    // 🔥 Manda tamaño + factor una sola vez
     sendScreenData();
   });
 
-  // Detectar cambio de pantalla o resolución
+  // opcional: escuchar cambios en el display (rotación, resolución)
   screen.on('display-metrics-changed', sendScreenData);
   screen.on('display-added', sendScreenData);
   screen.on('display-removed', sendScreenData);
@@ -353,13 +391,28 @@ ipcMain.on('log-message', (event, { level, message }) => {
   }
 });
 
-ipcMain.on('request-screen-data', (event) => {
+function getScreenData() {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
   const factor = getScaleFactor();
-  event.reply('screen-data', { width, height, factor });
+  return { width, height, factor };
+}
+
+ipcMain.handle("get-screen-data", async () => {
+  return getScreenData();
 });
 
+ipcMain.handle('get-screen-data-once', async () => {
+  if (!win) throw new Error('Window no creada aún');
+  if (!win.isVisible()) {
+    await new Promise(resolve => win.once('ready-to-show', resolve));
+  }
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.workAreaSize;
+  const factor = getScaleFactor();
+  logger.info(`[${fileName}] get-screen-data-once -> ${width}x${height} factor=${factor}`);
+  return { width, height, factor };
+});
 
 ipcMain.on('app:exit', async () => {
   logger.info(`[${fileName}] Cerrando aplicación...`);
@@ -372,6 +425,7 @@ ipcMain.on('app:exit', async () => {
 
 app.whenReady().then(() => {
   logger.info(`[${fileName}] App lista, creando ventana...`);
+  createCacheDirs(); // crear y forzar cache en raiz
   createWindow();
 });
 

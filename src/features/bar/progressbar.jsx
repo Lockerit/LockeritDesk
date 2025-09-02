@@ -1,11 +1,11 @@
 import { LinearProgress, Box, Typography } from '@mui/material';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 
 const fileName = 'progessbar';
 
 export default function LoadingBar({ msg, amountPay }) {
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     return (
         <Box sx={{ width: '100%', textAlign: 'center', mt: 2 * scale }}>

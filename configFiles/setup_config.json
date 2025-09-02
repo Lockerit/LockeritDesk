@@ -1,8 +1,7 @@
 {
-    "client": "Tulocker",
-    "locationDevice": "CC Outlet Factory",
-    "pointDevice": "Sótano 1",
-    "totalLockers": 60,
+    "customer": "Tulocker",
+    "pointName": "CC Outlet Factory",
+    "pointId": "Sótano 1",
     "login": {
         "user": "Administrador",
         "pass": "070125",
@@ -14,7 +13,7 @@
         "lenMaxInputPass": 4,
         "lenMinInputPass": 4,
         "currency": {
-            "amountService": "1500",
+            "coinBoxRequiredAmount": 1500,
             "currency": "COP",
             "decinmal": 0
         },

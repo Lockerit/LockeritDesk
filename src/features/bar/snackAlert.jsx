@@ -2,13 +2,13 @@
 import React from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 
 const fileName = 'snackAlert';
 
 export default function SnackBarAlert({ open, message, severity, onClose }) {
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     return (
         <Snackbar
@@ -18,7 +18,7 @@ export default function SnackBarAlert({ open, message, severity, onClose }) {
             anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
             <MuiAlert
-                elevation={6 * scale}
+                elevation={6}
                 variant="filled"
                 severity={severity}
                 onClose={onClose}

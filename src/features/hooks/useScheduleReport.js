@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { getDateRange } from "../utils/getDateRange.js";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 const fileName = "scheduleReport";
 
@@ -120,7 +122,7 @@ export function useSchedulerReport({
             }
         }
 
-        log("info", `Iniciando scheduler [${frequency}] con hora ${hour}:${minute}`);
+        log("debug", `Iniciando scheduler [${frequency}] con hora ${hour}:${minute}`);
 
         if (shouldRunNow()) {
             runTask();

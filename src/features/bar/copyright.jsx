@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import { useWindowSize } from "../hooks/useWindowSize.js";
+import { useWindowSizeContext } from '../context/windowSizeContext';
 
 const fileName = 'copyright';
 
 export default function Copyright() {
 
   const [version, setVersion] = useState('');
-  const { width, height, factor } = useWindowSize();
-  const scale = factor || 1; // de tu hook useElectronScreenData()
-  const size = Math.max(30, 50 * scale); // mínimo 40px, escala hasta 80px o más
+  const size = useWindowSizeContext();
+  const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
   useEffect(() => {
     const log = window?.electronAPI?.log;
@@ -36,7 +35,7 @@ export default function Copyright() {
         mt: 'auto',
         textAlign: 'center',
         bgcolor: 'transparent',
-        height: `${Math.max(40, Math.min(80, 64 * scale))}px`, // entre 40px y 72px
+        height: `${Math.max(50, Math.min(80, 60 * scale))}px`, // entre 40px y 72px
         justifyContent: 'center', // centra el contenido verticalmente
       }}
     >

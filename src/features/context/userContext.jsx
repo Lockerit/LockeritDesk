@@ -12,11 +12,11 @@ export const UserProvider = ({ children }) => {
         if (init == null || init == undefined) {
             return {
                 authenticated: false,
-                client: '',
+                customer: '',
                 user: '',
                 remember: false,
-                locationDevice: '',
-                pointDevice: '',
+                pointName: '',
+                pointId: '',
                 avatar: '',
                 closeSession: false,
                 closeWIndow: false,

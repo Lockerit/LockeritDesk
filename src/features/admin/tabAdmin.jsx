@@ -4,7 +4,7 @@ import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { useWindowSize } from "../hooks/useWindowSize.js";
+import { useWindowSizeContext } from '../context/windowSizeContext';
 import AdminLockers from './adminLockers.jsx';
 import ReportLockers from './reportLockers.jsx';
 
@@ -17,12 +17,12 @@ const log = (level, message) => {
 
 const Tabadmin = () => {
     const [value, setValue] = useState('1');
-    const { factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
 
     // Altura base de la barra de tabs
-    const tabBarBase = 48 * scale; // altura típica MUI Tabs
-    const tabBarHeight = Math.max(30, Math.min(80, tabBarBase * scale));
+    const tabBarBase = 70 * scale; // altura típica MUI Tabs
+    const tabBarHeight = Math.max(40, Math.min(70, tabBarBase * scale));
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -44,8 +44,7 @@ const Tabadmin = () => {
                         aria-label="tabs Administrativo"
                         sx={{
                             minHeight: `${tabBarHeight}px`,
-                            '& .MuiTab-root': {
-                                fontSize: `${Math.max(12, Math.min(18, 14 * scale))}px`,
+                            '& .MuiTab-root': { 
                                 minHeight: `${tabBarHeight}px`,
                             },
                         }}

@@ -8,13 +8,14 @@ import {
     Box,
     Menu,
     MenuItem,
+    ListItemIcon
 } from '@mui/material';
 import avatarImg from '../../assets/Icono.jpg';
 import Clock from './clock.jsx';
 import { useUser } from '../context/userContext.jsx';
 import ConfirmDialog from '../dialogs/confirmDialog.jsx';
 import { useElectronConfig } from '../hooks/useConfig.js';
-import { useWindowSize } from "../hooks/useWindowSize.js";
+import { useWindowSizeContext } from '../context/windowSizeContext';
 import {
     Logout,
     SupervisorAccount,
@@ -32,9 +33,9 @@ export default function DenseAppBar() {
     const [showAdmin, setShowAdmin] = useState(true);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
-    const size = Math.max(30, 50 * scale); // mínimo 40px, escala hasta 80px o más
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const sizeAvatar = Math.max(30, 50 * scale); // mínimo 40px, escala hasta 80px o más
 
     const config = useElectronConfig();
     const avatarBoxRef = useRef(null);
@@ -130,7 +131,7 @@ export default function DenseAppBar() {
             position="fixed"
             elevation={0}
             sx={{
-                height: `${Math.max(30, Math.min(80, 62 * scale))}px`, // entre 30px y 80px
+                height: `${Math.max(50, Math.min(100, 70 * scale))}px`, // entre 30px y 80px
                 justifyContent: 'center', // centra el contenido verticalmente
             }}
         >
@@ -145,16 +146,16 @@ export default function DenseAppBar() {
                     >
                         <Avatar alt="Avatar" src={avatarSelect}
                             sx={{
-                                width: size,
-                                height: size
+                                width: sizeAvatar,
+                                height: sizeAvatar
                             }}
                         />
                         {showData && (
                             <>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                    {(config?.client || '')}{' | '}
+                                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                                    {(config?.customer || '')}{' | '}
                                 </Typography>
-                                <Typography variant="h6">
+                                <Typography variant="h5">
                                     {(config?.login?.user || '')}
                                 </Typography>
                             </>
@@ -171,11 +172,11 @@ export default function DenseAppBar() {
                 <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 * scale }}>
                     {showData && (
                         <>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                {(config?.locationDevice || '')} {' | '}
+                            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                                {(config?.pointName || '')} {' | '}
                             </Typography>
-                            <Typography variant="h6">
-                                {(config?.pointDevice || '')}
+                            <Typography variant="h5">
+                                {(config?.pointId || '')}
                             </Typography>
                         </>
                     )}
@@ -192,20 +193,33 @@ export default function DenseAppBar() {
             >
                 {showData && (
                     <MenuItem onClick={handleLogout}>
-                        <Logout />
+                        <ListItemIcon>
+                            <Logout />
+                        </ListItemIcon>
                         Cerrar sesión
                     </MenuItem>
                 )}
-                {showAdmin && (<MenuItem onClick={openAdmin}>
-                    <SupervisorAccount />
-                    Administración
-                </MenuItem>)}
+
+                {showAdmin && (
+                    <MenuItem onClick={openAdmin}>
+                        <ListItemIcon>
+                            <SupervisorAccount />
+                        </ListItemIcon>
+                        Administración
+                    </MenuItem>
+                )}
+
                 <MenuItem onClick={openKeyBoard}>
-                    <Keyboard />
+                    <ListItemIcon>
+                        <Keyboard />
+                    </ListItemIcon>
                     Teclado
                 </MenuItem>
+
                 <MenuItem onClick={openConfirmClose}>
-                    <CancelPresentation />
+                    <ListItemIcon>
+                        <CancelPresentation />
+                    </ListItemIcon>
                     Salir
                 </MenuItem>
             </Menu>

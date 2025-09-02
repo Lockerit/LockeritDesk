@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import { StrictMode } from 'react';
+import { StrictMode, useMemo, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './features/app/app.jsx';
 import { createScaledTheme } from './features/utils/theme.js';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { UserProvider } from './features/context/userContext.jsx';
-import { useWindowSize } from './features/hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext, WindowSizeProvider } from './features/context/windowSizeContext.jsx';
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
 import './fonts.css';
+import LoadingScreen from './features/dialogs/loading.jsx';
 
 const fileName = 'main-renderer';
 
@@ -23,8 +22,8 @@ const log = (level, message) => {
 function RootApp() {
   const [pendingCSP, setPendingCSP] = useState(null);
 
-  const { factor } = useWindowSize();
-  const theme = createScaledTheme(factor);
+  // hook con valor inicial
+  const size = useWindowSizeContext();
 
   useEffect(() => {
     const currentMetaCSP =
@@ -64,25 +63,35 @@ function RootApp() {
     window.electronAPI.reloadApp();
   };
 
+  log('debug', `RootApp size ${JSON.stringify(size)}`);
+
+  if (!size?.factor || size.factor <= 0) {
+    return <LoadingScreen open message="Cargando aplicación..." />;
+  }
+
+  const theme = useMemo(() => createScaledTheme(size.factor), [size.factor]);
+
   return (
     <>
       {pendingCSP && (
-        <Stack sx={{ position: 'fixed', top: '10%', width: '100%', zIndex: 9999 }}>
-          <Alert
-            severity="warning"
-          // action={
-          //   <Button color="inherit" size="small" onClick={handleReload}>
-          //     Reiniciar
-          //   </Button>
-          // }
-          >
-            La configuración de seguridad cambió. Por favor cierre la aplicación y vuelva a abrirla.
+        <Stack
+          sx={{
+            position: 'fixed',
+            top: '30%',
+            transform: 'translateY(-50%)',
+            width: '100%',
+            zIndex: 9999,
+            alignItems: 'center',
+          }}
+        >
+          <Alert severity="warning">
+            La configuración de seguridad cambió. Por favor cierra la aplicación y vuelve a abrirla.
           </Alert>
         </Stack>
       )}
 
       <UserProvider>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider key={`theme-${size.factor}`} theme={theme}>
           <CssBaseline />
           <App />
         </ThemeProvider>
@@ -91,9 +100,16 @@ function RootApp() {
   );
 }
 
-log('info', 'React App renderizando en <div id="root">');
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <RootApp />
-  </StrictMode>
-);
+async function bootstrap() {
+  const initialSize = await window.electronAPI.getScreenDataOnce();
+
+  createRoot(document.getElementById("root")).render(
+    <StrictMode>
+      <WindowSizeProvider initialSize={initialSize}>
+        <RootApp />
+      </WindowSizeProvider>
+    </StrictMode>
+  );
+}
+
+bootstrap();

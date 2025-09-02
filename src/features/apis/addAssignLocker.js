@@ -166,7 +166,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                     const err = res.data?.message || 'Error HTTP en servidor (002)';
                     log('error', err);
                     closeWebSocket();
-                    throw new Error(err);
+                    // return res;
                 }
 
                 wsComplete = true;

@@ -5,11 +5,15 @@ import DenseAppBar from '../bar/appbar.jsx';
 import Copyright from '../bar/copyright.jsx';
 import AppRoutes from '../router/router.jsx';
 import { useUser } from '../context/userContext.jsx';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { useSchedulerReport } from '../hooks/useScheduleReport.js';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import dayjs from "dayjs";
 import GetReportLockers from '../apis/report.js';
+import utc from "dayjs/plugin/utc";
+import LoadingScreen from '../dialogs/loading.jsx';
+dayjs.extend(utc);
+
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'app';
@@ -55,24 +59,29 @@ export default function App() {
     // Comentario cambio para subir a GitHub
     const { userInit, setUserInit } = useUser();
     const [version, setVersion] = useState('');
-    const { factor } = useWindowSize();
-    const scale = factor || 1; // de tu hook useElectronScreenData()
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
     const config = useElectronConfig();
+    const [loading, setLoading] = useState(true);
 
     // Alturas base en px
-    const appBarBase = 64;   // alto típico del AppBar
-    const footerBase = 64;   // alto footer
+    const appBarBase = 100;   // alto típico del AppBar
+    const footerBase = 80;   // alto footer
 
     // Ajustados con scale
     const appBarHeight = appBarBase * scale;
     const footerHeight = footerBase * scale;
 
     useEffect(() => {
+
         if (!userInit) return;
+
+        setLoading(false);
 
         localStorage.setItem('isCancelInsertMoney', false);
 
         const lsUserInit = localStorage.getItem(USER_STORAGE_KEY);
+
         if (!lsUserInit)
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit));
 
@@ -89,7 +98,7 @@ export default function App() {
         } catch (err) {
             log('error', `Error al obtener la versión: ${err.message}`);
         }
-    }, []);
+    }, [userInit]);
 
     useResetLocalStorageOnConfigChange(config);
 
@@ -104,14 +113,12 @@ export default function App() {
             const timezoneMode = config.report?.timezoneMode || "local";
             log("info", `Generando payload en modo [${timezoneMode}]`);
 
-            const formatter = timezoneMode === "utc"
-                ? (d) => d.utc()
-                : (d) => d;
+            const formatUTC = (d) => dayjs(d).utc().format("YYYY-MM-DD HH:mm:ss");
 
             const payload = {
-                startDate: formatter(startDate).format("YYYY-MM-DD HH:mm:ss"),
-                endDate: formatter(endDate).format("YYYY-MM-DD HH:mm:ss"),
-                sendMail: true
+                startDate: formatUTC(startDate),
+                endDate: formatUTC(endDate),
+                sendEmail: true
             };
 
             log("info", `Payload generado: ${JSON.stringify(payload)}`);
@@ -161,6 +168,8 @@ export default function App() {
                         flex: 1,
                         marginTop: `${appBarHeight}px`, // deja espacio bajo AppBar
                         overflow: "hidden",
+                        width: "95%",
+                        alignSelf: "center",
                     }}
                 >
                     <AppRoutes />
@@ -173,12 +182,15 @@ export default function App() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        flexShrink: 0, // evita que se encoja
+                        flexShrink: 0,
                     }}
                 >
                     <Copyright />
                 </Box>
             </Container>
+
+            {loading && (<LoadingScreen />)}
+
         </HashRouter>
     );
 }

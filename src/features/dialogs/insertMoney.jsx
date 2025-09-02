@@ -1,6 +1,6 @@
 import { useState, forwardRef, useEffect } from 'react';
-import { useWindowSize } from '../hooks/useWindowSize.js'; // Hook para tamaño pantalla
-import { scaledWidth } from '../utils/scaledWidth';
+import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
+import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Dialog,
     DialogTitle,
@@ -31,8 +31,8 @@ const fileName = 'InsertMoney';
 export default function InsertMoney({ open, onCancel, amountService, amountPay, timeout = 600 }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
-    const { width, height, factor } = useWindowSize();
-    const scale = factor || 1;
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     useEffect(() => {
 
@@ -80,10 +80,10 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
             disableEscapeKeyDown
             PaperProps={{
                 sx: {
-                    width: scaledWidth(
+                    width: scaledDimension(
                         {
                             xs: { base: 70, min: 65, max: 75 }, // en % para mobile
-                            sm: { base: 60, min: 55, max: 65 }, // tablet
+                            sm: { base: 70, min: 65, max: 75 }, // tablet
                             md: { base: 50, min: 45, max: 55 }, // desktop medio
                             lg: { base: 40, min: 35, max: 45 }, // desktop grande
                         },
