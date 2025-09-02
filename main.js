@@ -147,6 +147,7 @@ function createWindow() {
 
   win = new BrowserWindow({
     frame: false,
+    fullscreen: true,
     width: width,
     height: height,
     show: false,

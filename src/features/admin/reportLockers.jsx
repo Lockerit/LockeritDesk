@@ -65,12 +65,16 @@ const ReportLockers = () => {
         setIsErrorMsj(true);
         setLoading(true);
 
-        const formatUTC = (d) => dayjs(d).utc().format("YYYY-MM-DD HH:mm:ss");
+        const formatUTC = (d, isEnd = false) =>
+            dayjs(d)
+                .utc()
+                .set("second", isEnd ? 59 : 0)
+                .format("YYYY-MM-DD HH:mm:ss");
 
         const payload = {
-            startDate: formatUTC(startDate),
-            endDate: formatUTC(endDate),
-            sendEmail: false
+            startDate: formatUTC(startDate),        // segundos en 00
+            endDate: formatUTC(endDate, true),      // segundos en 59
+            sendEmail: false,
         };
 
         try {

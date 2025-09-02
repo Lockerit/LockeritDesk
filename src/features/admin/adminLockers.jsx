@@ -348,7 +348,7 @@ const AdminLockers = () => {
                     }}
                 >
                     {data?.general?.map((item, idx) => (
-                        <Box key={item.status} sx={{ pb: 5 * scale}}>
+                        <Box key={item.status} sx={{ pb: 5 * scale }}>
                             <Typography variant="h5" component="span"
                                 sx={{
                                     fontWeight: 'bold',
@@ -463,16 +463,21 @@ const AdminLockers = () => {
                                         minHeight: Math.max(32, Math.min(60, 40 * scale)),    // escala, mínimo 32px, máximo 60px
                                         overflowY: 'auto',
                                         width: '100%',
-                                        px: 2 * scale,     // padding horizontal proporcional
-                                        py: 1 * scale,     // padding vertical proporcional
-                                        borderRadius: 2 * scale, // bordes redondeados proporcionales
+                                        px: 2 * scale,
+                                        py: 1 * scale,
+                                        borderRadius: 2 * scale,
                                         display: 'flex',
                                         flexWrap: 'wrap',
-                                        gap: 1 * scale,    // espacio entre elementos proporcional
+                                        gap: 1 * scale,
                                     }}
                                 >
                                     {selectedLockers.map((l) => (
-                                        <Chip key={l.lockerCode} label={l.lockerCode} />
+                                        <Chip key={l.lockerCode} label={l.lockerCode} sx={{
+                                            height: 48 * scale,
+                                            fontSize: 20 * scale,
+                                            px: 2 * scale,
+                                            borderRadius: 2 * scale, 
+                                        }} />
                                     ))}
                                 </Box>
                                 <Stack direction="row" spacing={1 * scale} sx={{ width: '100%', maxHeight: '100%', padding: 2 * scale }}>

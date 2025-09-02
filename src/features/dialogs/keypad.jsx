@@ -626,7 +626,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
                 alignItems: "stretch",           // que ocupen 100% horizontal
                 width: "100%",
                 height: "100%",
-                gap: 2, // espacio entre inputs si quieres
+                gap: 2 * scale, // espacio entre inputs si quieres
               }}
             >
               <Box sx={{ display: "flex", alignItems: "flex-end", flex: 1 }}>
@@ -641,6 +641,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
                   InputProps={{ readOnly: true }}
                   error={errorsEmpty.phone}
                   helperText={errorsEmpty.phone ? msgPhone : ""}
+                  sx={{
+                    backgroundColor: activeInput === "phone" ? "#dce1f5ff" : "transparent",
+                    borderRadius: 2 * scale,
+                    transition: "background-color 0.3s ease",
+                  }}
                 />
               </Box>
 
@@ -658,6 +663,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
                   InputProps={{ readOnly: true }}
                   error={errorsEmpty.password}
                   helperText={errorsEmpty.password ? msgPass : ""}
+                  sx={{
+                    backgroundColor: activeInput === "password" ? "#dce1f5ff" : "transparent",
+                    borderRadius: 2 * scale,
+                    transition: "background-color 0.3s ease",
+                  }}
                 />
               </Box>
 
@@ -676,6 +686,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
                     InputProps={{ readOnly: true }}
                     error={errorsEmpty.confirmPassword}
                     helperText={errorsEmpty.confirmPassword ? msgConfPass : ""}
+                    sx={{
+                      backgroundColor: activeInput === "confirmPassword" ? "#dce1f5ff" : "transparent",
+                      borderRadius: 2 * scale,
+                      transition: "background-color 0.3s ease",
+                    }}
                   />
                 </Box>
               )}

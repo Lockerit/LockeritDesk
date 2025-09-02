@@ -106,12 +106,16 @@ const ReportTable = ({ data, startDate, endDate }) => {
         setIsErrorMsj(true);
         setLoading(true);
 
-        const formatUTC = (d) => dayjs(d).utc().format("YYYY-MM-DD HH:mm:ss");
+        const formatUTC = (d, isEnd = false) =>
+            dayjs(d)
+                .utc()
+                .set("second", isEnd ? 59 : 0)
+                .format("YYYY-MM-DD HH:mm:ss");
 
         const payload = {
-            startDate: formatUTC(startDate),
-            endDate: formatUTC(endDate),
-            sendEmail: true
+            startDate: formatUTC(startDate),        // segundos en 00
+            endDate: formatUTC(endDate, true),      // segundos en 59
+            sendEmail: true,
         };
 
         try {
