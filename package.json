@@ -84,6 +84,14 @@
     "win": {
       "target": "nsis",
       "icon": "./src/assets/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "./src/assets/icons"
     }
   }
 }
