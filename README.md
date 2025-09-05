@@ -79,6 +79,7 @@ Para construir y distribuir la aplicación, utiliza el siguiente comando:
 
 ```sh
 npm run build
+npm run build:all / para construir Windows y Linux
 ```
 
 Esto generará una versión optimizada de la aplicación en la carpeta `dist`, lista para ser distribuida.

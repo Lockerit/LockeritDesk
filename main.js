@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const dotenv = require('dotenv');
 const { logger } = require('./electron/logger/logger');
 const { exec } = require('child_process');
+const os = require('os');
 
 const fileName = path.parse(__filename).name;
 
@@ -189,12 +190,12 @@ function createWindow() {
     }
   });
 
-  // ✅ Solo aquí se envían datos iniciales (ya todo cargado)
+  // Solo aquí se envían datos iniciales (ya todo cargado)
   win.webContents.on('did-finish-load', () => {
     const initialCSP = buildCSP(currentEnv);
     sendCSPIfChanged(win, initialCSP);
 
-    // 🔥 Manda tamaño + factor una sola vez
+    // Manda tamaño + factor una sola vez
     sendScreenData();
   });
 
@@ -205,69 +206,6 @@ function createWindow() {
 }
 
 // ------------------- IPC HANDLERS -------------------
-
-ipcMain.handle('open-os-keyboard', async () => {
-  return new Promise((resolve, reject) => {
-    exec('start osk', { shell: true }, (error, stdout, stderr) => {
-      if (error) {
-        logger.error(`[${fileName}] Error al abrir osk: ${error.message}`);
-        return reject(error);
-      }
-      logger.info(`[${fileName}] Teclado en pantalla abierto.`);
-      resolve();
-    });
-  });
-});
-
-
-ipcMain.handle('close-os-keyboard', async () => {
-  return new Promise((resolve) => {
-    const powershellCommand = `
-      $osk = Get-Process osk -ErrorAction SilentlyContinue;
-      if ($osk) {
-        Stop-Process -Name "osk" -Force
-      }
-    `;
-
-    exec(`powershell -Command "${powershellCommand}"`, (err) => {
-      if (err) {
-        logger.warn(`[${fileName}] (No fatal) Error cerrando osk.exe: ${err.message}`);
-      } else {
-        logger.info(`[${fileName}] Teclado en pantalla cerrado correctamente`);
-      }
-
-      // Siempre limpiamos el puntero, incluso si ya estaba cerrado
-      keyboardProcess = null;
-      resolve(); // Nunca rechazamos
-    });
-  });
-});
-
-
-// Fuera del ipcMain.handle, una sola vez:
-const closeOSK = () => {
-  return new Promise((resolve, reject) => {
-    const powershellCommand = `
-      $osk = Get-Process osk -ErrorAction SilentlyContinue;
-      if ($osk) {
-        Stop-Process -Name "osk" -Force
-      }
-    `;
-
-    exec(`powershell -Command "${powershellCommand}"`, (err) => {
-      if (err) {
-        logger.warn(`[${fileName}] (No fatal) Error cerrando osk.exe: ${err.message}`);
-      } else {
-        logger.info(`[${fileName}] Teclado en pantalla cerrado correctamente`);
-      }
-
-      // Siempre limpiamos el puntero, incluso si ya estaba cerrado
-      keyboardProcess = null;
-      resolve(); // Nunca rechazamos
-    });
-  });
-};
-
 
 ipcMain.handle('get-config', async () => {
   try {

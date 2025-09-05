@@ -45,6 +45,10 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
+    "react-simple-keyboard": "^3.8.120",
+    "say": "^0.16.0",
+    "simple-keyboard": "^3.8.82",
+    "simple-keyboard-layouts": "^3.4.128",
     "styled-components": "^6.1.19",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"

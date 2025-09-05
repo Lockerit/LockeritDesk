@@ -54,7 +54,7 @@ try {
   contextBridge.exposeInMainWorld('electronAPI', {
     exitApp: () => ipcRenderer?.send?.('app:exit'),
     openKeyboard: () => ipcRenderer.invoke('open-os-keyboard'),
-    closeKeyboard: () => ipcRenderer.invoke('close-os-keyboard'),
+    onFocusKeyboard: (callback) => ipcRenderer.on("focus-input-for-keyboard", callback),
     requestExit: () => ipcRenderer.send('app:request-exit'),
     getEnv: () => ipcRenderer?.invoke?.('get-env'),
     onEnvUpdate: (callback) => ipcRenderer.on('env-updated', (_, data) => callback(data)),

@@ -5,9 +5,9 @@ const fileName = 'theme';
 
 // Función auxiliar de log
 const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
+  if (typeof window !== 'undefined' && window.electronAPI?.log) {
+    window.electronAPI.log(level, `[${fileName}] ${message}`);
+  }
 };
 
 export function createScaledTheme(factor = 1) {
@@ -517,6 +517,11 @@ export function createScaledTheme(factor = 1) {
             maxWidth: '100%',
             overflow: 'hidden',
           },
+          ".hg-button": {       // todos los botones de react-simple-keyboard
+            fontSize: `${28 * factor}px`,   // tamaño de letra que quieras
+            fontWeight: 'bold',
+            minHeight: `${70 * factor}px`
+          }
         },
       },
     }

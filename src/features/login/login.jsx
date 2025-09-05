@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/userContext.jsx';
 import SnackBarAlert from '../bar/snackAlert.jsx';
@@ -6,6 +6,7 @@ import logo from '../../assets/Logo.png';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { useWindowSizeContext } from '../context/windowSizeContext';
 import { scaledDimension } from '../utils/scaledDimension.js';
+import LoginField from './loginField.jsx';
 import {
     Box,
     Button,
@@ -55,6 +56,9 @@ export default function Login() {
     const [buttonName, setButtonName] = useState('Iniciar Sesión');
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const inputRef = useRef();
+    const keyboardContainerRef = useRef();
+    const [showKeyboard, setShowKeyboard] = useState(false);
 
     const navigate = useNavigate();
     const config = useElectronConfig();
@@ -326,13 +330,10 @@ export default function Login() {
                     >
                         <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <Person sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
-                            <TextField
-                                variant="standard"
-                                fullWidth
+                            <LoginField
                                 label="Usuario"
                                 value={userName}
-                                onChange={(e) => setUserName(e.target.value)}
-                                onFocus={() => window.electronAPI?.openKeyboard()}
+                                setValue={setUserName}
                                 error={errorsEmpty.username}
                                 helperText={errorsEmpty.username ? msgUser : ""}
                             />
@@ -340,31 +341,23 @@ export default function Login() {
 
                         <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <LockOpen sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
-                            <TextField
-                                variant="standard"
-                                fullWidth
+                            <LoginField
                                 label="Contraseña"
-                                type={showPassword ? "text" : "password"}
                                 value={pass}
-                                onChange={(e) => setPass(e.target.value)}
-                                onFocus={() => window.electronAPI?.openKeyboard()}
+                                setValue={setPass}
+                                type={showPassword ? "text" : "password"}
+                                error={errorsEmpty.password}
+                                helperText={errorsEmpty.password ? msgPass : ""}
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton onClick={handleTogglePassword} edge="end"
-                                                sx={{
-                                                    '& .MuiSvgIcon-root': {
-                                                        fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
-                                                    },
-                                                }}
-                                            >
+                                                sx={{ "& .MuiSvgIcon-root": { fontSize: `${32 * scale}px` } }}>
                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                             </IconButton>
                                         </InputAdornment>
-                                    ),
+                                    )
                                 }}
-                                error={errorsEmpty.password}
-                                helperText={errorsEmpty.password ? msgPass : ""}
                             />
                         </Box>
                     </Box>
@@ -412,6 +405,16 @@ export default function Login() {
                     </Box>
                 </Paper>
             </Box>
+
+            {showKeyboard && (
+                <Paper
+                    elevation={3}
+                    sx={{ position: "absolute", top: "100%", mt: 1, zIndex: 1000, p: 1 }}
+                    ref={keyboardContainerRef}
+                >
+                    <VirtualKeyboard inputValue={userName} onChange={setUserName} />
+                </Paper>
+            )}
 
             <SnackBarAlert
                 open={snackbarOpen}
