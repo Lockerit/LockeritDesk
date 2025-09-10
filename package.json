@@ -74,6 +74,7 @@
   "build": {
     "appId": "com.lockerit.desk",
     "productName": "Lockerit",
+    "copyright": "© 2025 Lockerit. All rights reserved.",
     "directories": {
       "buildResources": "assets",
       "output": "release"
