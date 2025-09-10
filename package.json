@@ -90,7 +90,8 @@
       "configFiles/.env",
       "configFiles/setup_config.json",
       "configFiles/auth_key.json",
-      "configFiles/logger_config.json"
+      "configFiles/logger_config.json",
+      "configFiles/docker-compose.yml"
     ],
     "win": {
       "target": "nsis",

@@ -88,7 +88,8 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                     //     },
                     //     scale
                     // ),
-                    height: '60%',
+                    minHeight: '60%',
+                    maxHeight: '80%',
                     overflow: "hidden",   // ✅ scroll si se pasa
                     borderRadius: `${Math.max(8, 16 * scale)}px`,
                     display: "flex",
@@ -151,21 +152,21 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                         color: "error.contrastText",
                     }}
                 >
-                    <Typography variant="h1" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                    <Typography variant="h1" sx={{ textAlign: "center", fontWeight: "bold"}}>
                         {locker}
                     </Typography>
                 </Paper>
 
-                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                <Typography variant="h4" sx={{ textAlign: "center", py: 2 *scale }}>
                     {msg}
                 </Typography>
 
-                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold", py: 2 *scale }}>
                     ¡No olvides cerrar el casillero!
                 </Typography>
 
                 {msg.substring(0, 6) === "Retira" && (
-                    <Typography variant="h5" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                    <Typography variant="h5" sx={{ textAlign: "center"}}>
                         Disponible para una nueva asignación.
                     </Typography>
                 )}

@@ -38,7 +38,7 @@ import {
   closeWebSocket
 } from '../apis/websocket.js'
 import { useElectronConfig } from '../hooks/useConfig.js';
-import { speak } from '../utils/speak.js'
+import { getVoices, speak } from '../utils/speak.js'
 import { cancelObservable } from '../utils/cancelObservable.js';
 import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
@@ -78,10 +78,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
-  const size = useWindowSizeContext();
-  const scale = size.factor || 1; // de tu hook useElectronScreenData()
+  const [voices, setVoices] = useState([]);
 
   // Refs para cambiar el foco
+  const size = useWindowSizeContext();
+  const scale = size.factor || 1; // de tu hook useElectronScreenData()
   const phoneRef = useRef(null);
   const passRef = useRef(null);
   const confirmRef = useRef(null);
@@ -326,7 +327,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         const result = await OpenSessionLocker(payload);
 
         if (result?.success) {
-          speak(`Tu casillero es el: ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio, ¡No olvides cerrar el casillero!, disponible para una nueva asignación`);
+          speak(`tu casillero es el ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio, no olvides cerrar el casillero, disponible para una nueva asignacion`);
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
           if (lockerCode) {
             setLocker(lockerCode);
@@ -407,7 +408,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       const result = await paymentService(payload, (timeoutInsert * 1000 * 3), handleTotalUpdate, handleLoadingChange);
 
       if (result?.http?.success) {
-        speak(`Tu casillero es el: ${result.http.data.lockerCode}, guarda tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
+        speak(`tu casillero es el ${result.http.data.lockerCode}, guarda tus pertenencias, gracias por utilizar nuestro servicio', no olvides cerrar el casillero`);
         const lockerCode = result?.http?.data?.lockerCode;
         if (lockerCode) {
           setLocker(lockerCode);
@@ -743,6 +744,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         onCancel={cancelInsertMoney}
         amountService={amountService}
         amountPay={formatCurrency(amountPay)}
+        phone={formatNumberPhone(phone)}
         timeout={timeoutInsert}
         disableEnforceFocus
         disableAutoFocus

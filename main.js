@@ -3,14 +3,23 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const dotenv = require('dotenv');
 const { logger } = require('./electron/logger/logger');
-const { exec } = require('child_process');
-const os = require('os');
+const { exec, execFile, spawn } = require("child_process");
+const say = require('say');
 
 const fileName = path.parse(__filename).name;
 
 let win = null;
 let lastCSP = null;
 const isProd = app.isPackaged;
+
+// ===============================
+// CONFIGURACIÓN DE VOCES POR OS
+// ===============================
+const DEFAULT_VOICES = {
+  win32: "MSTTS_V110_esMX_SabinaM", // Windows → Sabina
+  linux: "mb-es3",                  // Linux → MBROLA femenina
+  darwin: "Microsoft Sabina - Spanish (Mexico)" // macOS (puede variar)
+};
 
 logger.info(`[${fileName}] Iniciando aplicación Electron`);
 
@@ -352,6 +361,79 @@ ipcMain.handle('get-screen-data-once', async () => {
   return { width, height, factor };
 });
 
+// ===============================
+// HANDLER TTS
+// ===============================
+ipcMain.handle("tts-speak", (event, text, options = {}) => {
+  const { voiceName, rate = 1 } = options;
+  const platform = process.platform;
+
+  if (platform === "linux") {
+    // 🐧 Linux → Coqui TTS vía servidor HTTP
+    (async () => {
+      try {
+        const res = await fetch("http://localhost:5002/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text,
+            voice: "tts_models/es/css10/vits"
+          })
+        });
+
+        const arrayBuffer = await res.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const outputPath = path.join(app.getPath("temp"), "tts-output.wav");
+        fs.writeFileSync(outputPath, buffer);
+
+        // Reproducir con aplay
+        exec(`aplay "${outputPath}"`);
+      } catch (err) {
+        console.error("Error con Coqui TTS:", err);
+      }
+    })();
+  } else if (platform === "win32" || platform === "darwin") {
+    // 🪟 Windows / 🍏 macOS → say
+    say.speak(
+      text,
+      voiceName || DEFAULT_VOICES[platform],
+      rate,
+      (err) => {
+        if (err) console.error("Error con say:", err);
+      }
+    );
+  }
+});
+
+// ===============================
+// HANDLER LISTA DE VOCES
+// ===============================
+ipcMain.handle("tts-get-voices", async () => {
+  const platform = process.platform;
+
+  if (platform === "linux") {
+    // 🔊 Ahora solo mostramos la voz de Coqui TTS en español (femenina)
+    return [
+      { name: "Coqui-es-female", lang: "es-ES (female)" }
+    ];
+  } else if (platform === "win32") {
+    // 🔹 Voces de Windows (Sabina y Raúl si existen)
+    return [
+      { name: "MSTTS_V110_esMX_SabinaM", lang: "es-MX (female)" },
+      { name: "MSTTS_V110_esMX_RaulMM", lang: "es-MX (male)" }
+    ];
+  } else if (platform === "darwin") {
+    // 🔹 macOS (ajusta según las voces disponibles en tu sistema)
+    return [
+      { name: "Microsoft Sabina - Spanish (Mexico)", lang: "es-MX (female)" }
+    ];
+  } else {
+    return [];
+  }
+});
+
+// ------------------- EVENTOS APP -------------------
 ipcMain.on('app:exit', async () => {
   logger.info(`[${fileName}] Cerrando aplicación...`);
   setTimeout(() => {
@@ -359,10 +441,25 @@ ipcMain.on('app:exit', async () => {
   }, 300);
 });
 
-// ------------------- EVENTOS APP -------------------
-
 app.whenReady().then(() => {
   logger.info(`[${fileName}] App lista, creando ventana...`);
+
+  if (process.platform === "linux") {
+
+    const basePath = isProd ? process.resourcesPath : __dirname;
+    const composePath = path.join(basePath, 'configFiles/docker-compose.yml');
+
+    // Usar SIEMPRE docker compose (plugin nuevo)
+    const command = `docker compose -f ${composePath} up -d coqui-tts`;
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        console.error("Error levantando Coqui TTS:", err, stderr);
+      } else {
+        logger.info(`[${fileName}] Coqui TTS levantado en Docker`);
+      }
+    });
+  }
+
   createCacheDirs(); // crear y forzar cache en raiz
   createWindow();
 });

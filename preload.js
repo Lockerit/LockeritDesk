@@ -74,6 +74,9 @@ try {
       ipcRenderer.on("screen-data", listener);
       return () => ipcRenderer.removeListener("screen-data", listener);
     },
+    speak: (text, options) => ipcRenderer.invoke('tts-speak', text, options),
+    stop: () => ipcRenderer.invoke('tts-stop'),
+    getVoices: () => ipcRenderer.invoke("tts-get-voices")
   });
 
   logger.info(`[${fileName}] API expuesta en window.electronAPI`);

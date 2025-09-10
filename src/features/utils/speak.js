@@ -1,35 +1,47 @@
 // voiceService.js
-import { exec } from 'child_process';
 
 let voices = [];
 
-// Cargar voces disponibles
+// Cargar voces disponibles de speechSynthesis (Chromium/Windows/macOS)
 const loadVoices = () => {
     if (window.speechSynthesis) {
         voices = window.speechSynthesis.getVoices();
     }
 };
+
 if (window.speechSynthesis) {
     window.speechSynthesis.onvoiceschanged = loadVoices;
     loadVoices();
 }
 
 /**
- * Hablar un texto con opciones
+ * Hablar un texto
  * @param {string} text 
- * @param {Object} options
- * @param {string} [options.voiceName] Nombre exacto de la voz
- * @param {number} [options.rate=1] Velocidad
- * @param {number} [options.pitch=1] Tono
- * @param {number} [options.volume=1] Volumen
+ * @param {Object} options 
+ * @param {string} [options.voiceName] - nombre de la voz
+ * @param {number} [options.rate=1]   - velocidad
+ * @param {number} [options.pitch=1]  - tono
+ * @param {number} [options.volume=1] - volumen
  */
-export const speak = (text, { voiceName, rate = 1.5, pitch = 2, volume = 1 } = {}) => {
-    if (window.speechSynthesis && voices.length > 0) {
-        // Usar API web si hay voces
+export const speak = (text, { voiceName, rate = 1, pitch = 1, volume = 1 } = {}) => {
+    const isWindows = navigator.userAgent.includes("Windows");
+    const hasVoices = window.speechSynthesis && voices.length > 0;
+
+    // 🔹 Mapear alias a tokens reales
+    const VOICE_ALIASES = {
+        "Microsoft Sabina - Spanish (Mexico)": "MSTTS_V110_esMX_SabinaM",
+        "Microsoft Raul - Spanish (Mexico)": "MSTTS_V110_esMX_RaulMM",
+        "Sabina (Linux)": "mb-es3",
+        "Raul (Linux)": "mb-es2"
+    };
+    const mappedVoiceName = VOICE_ALIASES[voiceName] || voiceName;
+
+    if (hasVoices && !isWindows) {
+        // ✅ speechSynthesis solo en macOS/Linux con Chromium
         const utterance = new SpeechSynthesisUtterance(text);
 
-        if (voiceName) {
-            const voice = voices.find(v => v.name === voiceName);
+        if (mappedVoiceName) {
+            const voice = voices.find(v => v.name === mappedVoiceName);
             if (voice) utterance.voice = voice;
         }
 
@@ -38,22 +50,36 @@ export const speak = (text, { voiceName, rate = 1.5, pitch = 2, volume = 1 } = {
         utterance.volume = volume;
 
         window.speechSynthesis.speak(utterance);
+    } else if (window.electronAPI?.speak) {
+        // ✅ Windows siempre pasa por IPC con say
+        window.electronAPI.speak(text, { voiceName: mappedVoiceName, rate });
     } else {
-        // Fallback por sistema (Linux o macOS)
-        let command;
-        if (process.platform === 'linux') {
-            // espeak: velocidad en palabras/min, -p pitch (0-99), -v voz
-            command = `espeak -s ${Math.round(rate * 150)} -p ${Math.round(pitch * 50)} "${text.replace(/"/g, '\\"')}"`;
-        } else if (process.platform === 'darwin') {
-            // say: macOS
-            command = `say "${text.replace(/"/g, '\\"')}"`;
-        } else {
-            console.warn('No hay síntesis de voz disponible en este sistema.');
-            return;
-        }
-
-        exec(command, (err) => {
-            if (err) console.error('Error al ejecutar TTS de sistema:', err);
-        });
+        console.warn("No hay TTS disponible (ni speechSynthesis ni electronAPI)");
     }
+};
+
+/**
+ * Detener cualquier lectura en curso
+ */
+export const stopSpeaking = () => {
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+    if (window.electronAPI?.stop) {
+        window.electronAPI.stop();
+    }
+};
+
+export const getVoices = async () => {
+    if (window.speechSynthesis) {
+        // Voces de speechSynthesis (Windows/macOS con Chromium)
+        return window.speechSynthesis.getVoices().map(v => ({
+            name: v.name,
+            lang: v.lang
+        }));
+    } else if (window.electronAPI?.getVoices) {
+        // Voces de espeak (Linux)
+        return await window.electronAPI.getVoices();
+    }
+    return [];
 };

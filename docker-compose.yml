@@ -1,9 +1,0 @@
-version: "3.8"
-services:
-  electron-builder:
-    build: .
-    container_name: lockerit-builder
-    volumes:
-      - .:/project
-      - /project/node_modules
-    command: npm run build:all
