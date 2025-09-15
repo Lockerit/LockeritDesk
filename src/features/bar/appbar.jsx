@@ -30,7 +30,7 @@ export default function DenseAppBar() {
     const { userInit, setUserInit } = useUser();
     const [closeSession, setCloseSession] = useState(false);
     const [showData, setShowData] = useState(false);
-    const [showAdmin, setShowAdmin] = useState(true);
+    // const [showAdmin, setShowAdmin] = useState(true);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
     const size = useWindowSizeContext();
@@ -44,18 +44,16 @@ export default function DenseAppBar() {
     useEffect(() => {
         if (!userInit || !config) return;
 
-        const { authenticated, closeSession, adminWindowInto } = userInit;
-
-        if (authenticated || adminWindowInto) {
+        if (userInit?.authenticatedOpera || userInit?.authenticatedAdmin) {
             setShowData(true);
             const avatarPath = config?.login?.avatarPath ?? '';
             setAvatarSelect(getValidAvatar(avatarPath));
-            setShowAdmin(false);
+            // setShowAdmin(false);
         } else {
-            setShowAdmin(true);
+            // setShowAdmin(true);
             setShowData(false);
             setAvatarSelect(avatarImg);
-            if (closeSession) setCloseSession(false);
+            if (userInit?.closeSession) setCloseSession(false);
         }
     }, [config, userInit]);
 
@@ -98,14 +96,14 @@ export default function DenseAppBar() {
         navigate('/', { replace: true });
     };
 
-    const acceptConfirmation = () => {
-        setConfirmDialogOpen(false);
-        // Aquí iría la lógica para cerrar la ventana si es necesario
-    };
+    // const acceptConfirmation = () => {
+    //     setConfirmDialogOpen(false);
+    //     // Aquí iría la lógica para cerrar la ventana si es necesario
+    // };
 
-    const cancelConfirmation = () => {
-        setConfirmDialogOpen(false);
-    };
+    // const cancelConfirmation = () => {
+    //     setConfirmDialogOpen(false);
+    // };
 
     const openConfirmClose = () => {
         const updatedUser = { ...userInit, closeWindow: true };
@@ -114,17 +112,12 @@ export default function DenseAppBar() {
         navigate('/', { replace: true });
     };
 
-    const openKeyBoard = () => {
-        setAnchorEl(null);
-        window.electronAPI?.openKeyboard();
-    };
-
-    const openAdmin = () => {
-        const updatedUser = { ...userInit, adminWindow: true };
-        persistUser(updatedUser);
-        setAnchorEl(null);
-        navigate('/', { replace: true });
-    };
+    // const openAdmin = () => {
+    //     const updatedUser = { ...userInit, adminWindow: true };
+    //     persistUser(updatedUser);
+    //     setAnchorEl(null);
+    //     navigate('/', { replace: true });
+    // };
 
     return (
         <AppBar
@@ -156,7 +149,7 @@ export default function DenseAppBar() {
                                     {(config?.customer || '')}{' | '}
                                 </Typography>
                                 <Typography variant="h5">
-                                    {(config?.login?.user || '')}
+                                    {(userInit?.authenticatedOpera ? (config?.login?.userOpera || '') : userInit?.authenticatedAdmin ? (config?.login?.userAdmin || '') : '' )}
                                 </Typography>
                             </>
                         )}
@@ -199,7 +192,7 @@ export default function DenseAppBar() {
                         Cerrar sesión
                     </MenuItem>
                 )}
-
+{/* 
                 {showAdmin && (
                     <MenuItem onClick={openAdmin}>
                         <ListItemIcon>
@@ -207,14 +200,7 @@ export default function DenseAppBar() {
                         </ListItemIcon>
                         Administración
                     </MenuItem>
-                )}
-
-                <MenuItem onClick={openKeyBoard}>
-                    <ListItemIcon>
-                        <Keyboard />
-                    </ListItemIcon>
-                    Teclado
-                </MenuItem>
+                )} */}
 
                 <MenuItem onClick={openConfirmClose}>
                     <ListItemIcon>

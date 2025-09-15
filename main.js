@@ -147,7 +147,7 @@ function recreateWindow() {
   }
 }
 
-function createWindow() {
+function createWindow({ fullscreen = true, frame = false } = {}) {
   logger.info(`[${fileName}] Creando ventana principal...`);
 
   const factor = getScaleFactor();
@@ -156,8 +156,8 @@ function createWindow() {
   const { width, height } = display.workAreaSize;
 
   win = new BrowserWindow({
-    frame: false,
-    fullscreen: true,
+    frame,
+    fullscreen,
     width: width,
     height: height,
     show: false,
@@ -394,7 +394,7 @@ ipcMain.handle("tts-speak", (event, text, options = {}) => {
       }
     })();
   } else if (platform === "win32" || platform === "darwin") {
-    // 🪟 Windows / 🍏 macOS → say
+    // Windows / macOS → say
     say.speak(
       text,
       voiceName || DEFAULT_VOICES[platform],
@@ -430,6 +430,32 @@ ipcMain.handle("tts-get-voices", async () => {
     ];
   } else {
     return [];
+  }
+});
+
+// Manejo de fullscreen dinámico
+ipcMain.on("set-fullscreen", (event, value) => {
+  if (win) {
+    win.setFullScreen(value);
+    logger.info(`[${fileName}] set-fullscreen: ${value}`);
+  }
+});
+
+// Manejo de frame dinámico (requiere recrear ventana)
+ipcMain.on("set-frame", (event, value) => {
+  if (win) {
+    const bounds = win.getBounds(); // guarda tamaño/posición
+    const isFullScreen = win.isFullScreen(); // guarda estado fullscreen
+
+    win.close();
+
+    createWindow({
+      frame: !!value,
+      fullscreen: isFullScreen
+    });
+
+    win.setBounds(bounds); // restaura posición/tamaño
+    logger.info(`[${fileName}] set-frame: ${value}`);
   }
 });
 

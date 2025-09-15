@@ -53,7 +53,6 @@ try {
   // Exponer API al renderer
   contextBridge.exposeInMainWorld('electronAPI', {
     exitApp: () => ipcRenderer?.send?.('app:exit'),
-    openKeyboard: () => ipcRenderer.invoke('open-os-keyboard'),
     onFocusKeyboard: (callback) => ipcRenderer.on("focus-input-for-keyboard", callback),
     requestExit: () => ipcRenderer.send('app:request-exit'),
     getEnv: () => ipcRenderer?.invoke?.('get-env'),
@@ -76,7 +75,9 @@ try {
     },
     speak: (text, options) => ipcRenderer.invoke('tts-speak', text, options),
     stop: () => ipcRenderer.invoke('tts-stop'),
-    getVoices: () => ipcRenderer.invoke("tts-get-voices")
+    getVoices: () => ipcRenderer.invoke("tts-get-voices"),
+    setFullScreen: (value) => ipcRenderer.send("set-fullscreen", value),
+    setFrame: (value) => ipcRenderer.send("set-frame", value),
   });
 
   logger.info(`[${fileName}] API expuesta en window.electronAPI`);

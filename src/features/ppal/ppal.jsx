@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import DenseAppBar from '../bar/appbar.jsx';
 import KeyPadModal from '../dialogs/keypad.jsx'
 import { useUser } from '../context/userContext.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
@@ -51,6 +50,7 @@ export default function Ppal() {
 
     const navigate = useNavigate();
     const config = useElectronConfig();
+    const location = useLocation();
 
     useEffect(() => {
 
@@ -61,19 +61,29 @@ export default function Ppal() {
         // calculateLockerAvailables();
     }, [config, available]);
 
+
     useEffect(() => {
         if (!userInit || !config) return;
 
-        const { authenticated, closeSession, remember, user } = userInit;
+        // DEBUG: escribe en logs para ver por qué redirige
+        log('debug', `ppal useEffect -> userInit: ${JSON.stringify(userInit)}`);
 
-        if (!authenticated) {
+        const isAuthenticated = Boolean(userInit?.authenticatedOpera || userInit?.authenticatedAdmin);
+        const isSessionClosed = Boolean(userInit?.closeSession || userInit?.closeWindow);
+
+        // Redirigir solo si NO está autenticado o la sesión está marcada como cerrada
+        // y además sólo si no estamos ya en la ruta raíz para evitar loops.
+        if ((!isAuthenticated || isSessionClosed) && location.pathname !== '/') {
+            log('info', `Redirigiendo a / — authenticated=${isAuthenticated}, closeSession=${userInit?.closeSession}, closeWindow=${userInit?.closeWindow}`);
             navigate('/', { replace: true });
+            return;
         }
 
+        // Mantén la lógica que setea el timeout del keypad
         if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
             setTimeoutKeypad(config?.paramsHtml?.modalTimeouts?.timeoutKeypad);
         }
-    }, [config, userInit, navigate]);
+    }, [config, userInit, navigate, location]);
 
     useEffect(() => {
         if (!config) return;
