@@ -74,7 +74,7 @@ export default function ConfirmDialog({ open, onConfirm, onCancel, title, mesg, 
                         {mesg}
                     </Typography>
                 </Box>
-                {isPhone && (<Typography variant="h4" sx={{ textAlign: 'center', mt: 2 * scale, fontWeight: 'bold' }}>
+                {isPhone && (<Typography variant="h2" sx={{ textAlign: 'center', mt: 2 * scale, fontWeight: 'bold' }}>
                     {phone}
                 </Typography>)}
             </DialogContent>

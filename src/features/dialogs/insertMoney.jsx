@@ -28,7 +28,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const fileName = 'InsertMoney';
 
-export default function InsertMoney({ open, onCancel, amountService, amountPay, timeout = 600 }) {
+export default function InsertMoney({ open, onCancel, amountService, amountPay, phone, timeout = 600 }) {
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const size = useWindowSizeContext();
@@ -137,6 +137,9 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
             >
                 <Typography variant="h4" sx={{ textAlign: 'center', mt: 2 * scale, mb: 3 * scale }}>
                     Por favor deposite el dinero:
+                </Typography>
+                <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mt: 2 * scale, mb: 3 * scale }}>
+                    {phone}
                 </Typography>
                 <Box textAlign="center">
                     <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>

@@ -1,3 +1,4 @@
+import { Fullscreen } from '@mui/icons-material';
 import React, { createContext, useState, useContext } from 'react';
 
 export const UserContext = createContext();
@@ -11,17 +12,17 @@ export const UserProvider = ({ children }) => {
         const init = localStorage.getItem(USER_STORAGE_KEY);
         if (init == null || init == undefined) {
             return {
-                authenticated: false,
+                authenticatedOpera: false,
+                authenticatedAdmin: false,
                 customer: '',
                 user: '',
                 remember: false,
+                fullScreen: true,
                 pointName: '',
                 pointId: '',
                 avatar: '',
                 closeSession: false,
                 closeWIndow: false,
-                adminWindow: false,
-                adminWindowInto: false
             };
         }
 

@@ -38,7 +38,7 @@ import {
   closeWebSocket
 } from '../apis/websocket.js'
 import { useElectronConfig } from '../hooks/useConfig.js';
-import { speak } from '../utils/speak.js'
+import { getVoices, speak } from '../utils/speak.js'
 import { cancelObservable } from '../utils/cancelObservable.js';
 import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
@@ -78,10 +78,11 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
-  const size = useWindowSizeContext();
-  const scale = size.factor || 1; // de tu hook useElectronScreenData()
+  const [voices, setVoices] = useState([]);
 
   // Refs para cambiar el foco
+  const size = useWindowSizeContext();
+  const scale = size.factor || 1; // de tu hook useElectronScreenData()
   const phoneRef = useRef(null);
   const passRef = useRef(null);
   const confirmRef = useRef(null);
@@ -326,7 +327,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         const result = await OpenSessionLocker(payload);
 
         if (result?.success) {
-          speak(`Tu casillero es el: ${result.data.lockerCode}, retira tus pertenencias, gracias por utilizar nuestro servicio, ¡No olvides cerrar el casillero!, disponible para una nueva asignación`);
+          speak(`tu casillero es el ${result.data.lockerCode}, no olvides cerrar el casillero`);
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
           if (lockerCode) {
             setLocker(lockerCode);
@@ -407,7 +408,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       const result = await paymentService(payload, (timeoutInsert * 1000 * 3), handleTotalUpdate, handleLoadingChange);
 
       if (result?.http?.success) {
-        speak(`Tu casillero es el: ${result.http.data.lockerCode}, guarda tus pertenencias, gracias por utilizar nuestro servicio', ¡No olvides cerrar el casillero!`);
+        speak(`tu casillero es el ${result.http.data.lockerCode}, no olvides cerrar el casillero`);
         const lockerCode = result?.http?.data?.lockerCode;
         if (lockerCode) {
           setLocker(lockerCode);
@@ -473,56 +474,82 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   };
 
   const renderButton = (value) => {
+    
     const commonProps = {
-      variant: 'contained',
-      // size: 'large',
-      sx: { width: '100%', height: '100%', fontSize: `${32 * scale}px` }
+      variant: "contained",
+      disableRipple: true,
+      tabIndex: -1,
+      sx: {
+        width: "100%",
+        height: "100%",
+        fontSize: `${32 * scale}px`,
+      },
     };
-    const gridSize = value === 'Aceptar' ? 12 : 4;
 
-    if (value === 'Aceptar') {
-      const isFinalStep = (!operationRet && (activeInput === 'confirmPassword')) || (operationRet && (activeInput === 'password'));
+    const gridSize = value === "Aceptar" ? 12 : 4;
+
+    if (value === "Aceptar") {
+      const isFinalStep =
+        (!operationRet && activeInput === "confirmPassword") ||
+        (operationRet && activeInput === "password");
+
       return (
-        <Grid size={gridSize} key={value} >
+        <Grid size={gridSize} key={value}>
           <Button
             {...commonProps}
             color="success"
-            onClick={handleNextOrAccept}
             id="confirmar-keypad"
+            onClick={(e) => {
+              handleNextOrAccept();
+              const btn = e.currentTarget; // ✅ guardamos referencia
+              setTimeout(() => btn.blur(), 0);
+            }}
           >
-            {isFinalStep ? 'Aceptar' : 'Siguiente'}
-            {isFinalStep
-              ? <DoneAll sx={{ fontSize: 40 * scale, ml: 1 * scale }} />
-              : <ArrowForwardIos sx={{ fontSize: 40 * scale, ml: 1 * scale }} />}
+            {isFinalStep ? "Aceptar" : "Siguiente"}
+            {isFinalStep ? (
+              <DoneAll sx={{ fontSize: 40 * scale, ml: 1 * scale }} />
+            ) : (
+              <ArrowForwardIos sx={{ fontSize: 40 * scale, ml: 1 * scale }} />
+            )}
           </Button>
         </Grid>
       );
     }
 
     const icon = {
-      'Borrar': <Backspace sx={{ fontSize: 32 * scale, ml: 1 * scale }} />,
-      'Cancelar': <Close sx={{ fontSize: 32 * scale, ml: 1 * scale }} />,
+      Borrar: <Backspace sx={{ fontSize: 32 * scale, ml: 1 * scale }} />,
+      Cancelar: <Close sx={{ fontSize: 32 * scale, ml: 1 * scale }} />,
     }[value];
 
-    const handler = {
-      'Borrar': removeDigit,
-      'Cancelar': cancel,
-    }[value] || (() => addDigit(value));
+    const handler =
+      {
+        Borrar: removeDigit,
+        Cancelar: cancel,
+      }[value] || (() => addDigit(value));
 
-    const color = {
-      'Borrar': 'warning',
-      'Cancelar': 'error',
-    }[value] || 'secondary';
+    const color =
+      {
+        Borrar: "warning",
+        Cancelar: "error",
+      }[value] || "secondary";
 
     return (
       <Grid size={gridSize} key={value}>
-        <Button {...commonProps} color={color} onClick={handler}>
-          {value}{icon}
+        <Button
+          {...commonProps}
+          color={color}
+          onClick={(e) => {
+            handler();
+            const btn = e.currentTarget; // ✅ guardamos referencia
+            setTimeout(() => btn.blur(), 0);
+          }}
+        >
+          {value}
+          {icon}
         </Button>
       </Grid>
     );
   };
-
 
   return (
     <>
@@ -743,6 +770,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         onCancel={cancelInsertMoney}
         amountService={amountService}
         amountPay={formatCurrency(amountPay)}
+        phone={formatNumberPhone(phone)}
         timeout={timeoutInsert}
         disableEnforceFocus
         disableAutoFocus

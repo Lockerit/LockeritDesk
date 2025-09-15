@@ -17,7 +17,14 @@
     "clean": "rimraf dist release",
     "build:web": "vite build",
     "build:electron": "electron-builder",
+    "build:linux": "npm run clean && npm run build:web && electron-builder --linux",
+    "build:win": "npm run clean && npm run build:web && electron-builder --win",
+    "build:all": "npm run clean && npm run build:web && electron-builder -w -l",
     "build": "npm run clean && npm run build:web && npm run build:electron",
+    "docker:build": "docker-compose build",
+    "docker:linux": "docker-compose run --rm electron-builder npm run build:linux",
+    "docker:win": "docker-compose run --rm electron-builder npm run build:win",
+    "docker:all": "docker-compose run --rm electron-builder npm run build:all",
     "lint": "eslint .",
     "preview": "vite preview",
     "test:range": "node ./src/features/utils/testGetDateRange.js"
@@ -38,6 +45,10 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
+    "react-simple-keyboard": "^3.8.120",
+    "say": "^0.16.0",
+    "simple-keyboard": "^3.8.82",
+    "simple-keyboard-layouts": "^3.4.128",
     "styled-components": "^6.1.19",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
@@ -63,6 +74,7 @@
   "build": {
     "appId": "com.lockerit.desk",
     "productName": "Lockerit",
+    "copyright": "© 2025 Lockerit. All rights reserved.",
     "directories": {
       "buildResources": "assets",
       "output": "release"
@@ -79,11 +91,20 @@
       "configFiles/.env",
       "configFiles/setup_config.json",
       "configFiles/auth_key.json",
-      "configFiles/logger_config.json"
+      "configFiles/logger_config.json",
+      "configFiles/docker-compose.yml"
     ],
     "win": {
       "target": "nsis",
       "icon": "./src/assets/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "./src/assets/icons"
     }
   }
 }

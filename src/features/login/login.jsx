@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../context/userContext.jsx';
 import SnackBarAlert from '../bar/snackAlert.jsx';
 import logo from '../../assets/Logo.png';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { useWindowSizeContext } from '../context/windowSizeContext';
 import { scaledDimension } from '../utils/scaledDimension.js';
+import LoginField from './loginField.jsx';
 import {
     Box,
     Button,
@@ -41,6 +42,8 @@ export default function Login() {
     const [userName, setUserName] = useState('');
     const [pass, setPass] = useState('');
     const [remember, setRemember] = useState(false);
+    const [fullScreen, setFullScreen] = useState(false);
+    const [screenLogin, setScreenLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [errorsEmpty, setErrorsEmpty] = useState({
         username: false,
@@ -55,10 +58,15 @@ export default function Login() {
     const [buttonName, setButtonName] = useState('Iniciar Sesión');
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const keyboardContainerRef = useRef();
+    const [showKeyboard] = useState(false);
 
     const navigate = useNavigate();
     const config = useElectronConfig();
+    const location = useLocation();
+    const redirected = useRef(false);
 
+    // Solo inicializar usuario
     useEffect(() => {
         if (!userInit) return;
 
@@ -67,20 +75,46 @@ export default function Login() {
             setRemember(true);
         }
 
-        nameButton();
-
-        if (userInit?.authenticated && !userInit?.closeSession && !userInit?.closeWindow) {
-            log('info', 'Usuario autenticado en sesión principal, redirigiendo a /ppal');
-            navigate('/ppal', { replace: true });
-        } else if (userInit?.adminWindowInto && !userInit?.closeSession && !userInit?.closeWindow) {
-            log('info', 'Usuario autenticado en sesión administrativa, redirigiendo a /adminlockers');
-            navigate('/adminlockers', { replace: true });
+        if (userInit?.fullScreen) {
+            setFullScreen(true);
         }
 
-    }, [config, userInit, navigate]);
+        nameButton();
+    }, [userInit]);
+
+    // Solo redirección
+    useEffect(() => {
+        if (!userInit || redirected.current) return;
+
+        if (userInit?.authenticatedOpera || userInit?.authenticatedAdmin) {
+            setScreenLogin(false);
+        }
+        else {
+            setScreenLogin(true);
+        }
+
+        if (userInit?.authenticatedOpera && !userInit?.closeSession && !userInit?.closeWindow) {
+            if (location.pathname !== "/ppal") {
+                redirected.current = true;
+                log('info', 'Usuario autenticado en sesión principal, redirigiendo a /ppal');
+                navigate("/ppal", { replace: true });
+            }
+        } else if (userInit?.authenticatedAdmin && !userInit?.closeSession && !userInit?.closeWindow) {
+            if (location.pathname !== "/adminlockers") {
+                redirected.current = true;
+                log('info', 'Usuario autenticado en sesión principal, redirigiendo a /adminlockers');
+                navigate("/adminlockers", { replace: true });
+            }
+        }
+    }, [userInit, location, navigate]);
 
     const handleTogglePassword = () => {
         setShowPassword((prev) => !prev);
+    };
+
+    const handleChangeFullScreen = () => {
+        window.electronAPI.setFullScreen(fullScreen);
+        window.electronAPI.setFrame(!fullScreen);
     };
 
     const closeWindows = async () => {
@@ -101,6 +135,7 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+
         const successSession = await validateInitSession(e);
         if (!successSession) {
             log('warn', `Intento de inicio de sesión fallido para usuario: ${userName}`);
@@ -109,40 +144,60 @@ export default function Login() {
 
         let newSession = null;
 
-        if (!userInit?.authenticated && !userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow && !userInit?.adminWindowInto) {
+        if (!userInit?.authenticatedOpera && !userInit?.authenticatedAdmin && !userInit?.closeSession && !userInit?.closeWindow) {
+
             // Login
             newSession = {
-                authenticated: true,
+                authenticatedOpera: successSession === 1 ? true : false,
+                authenticatedAdmin: successSession === 2 ? true : false,
                 customer: config.customer,
                 user: remember ? userName.toLowerCase() : '',
                 remember,
+                fullScreen,
                 pointName: config.pointName,
                 pointId: config.pointId,
                 avatar: config.login.avatarPath,
                 closeSession: false,
                 closeWindow: false,
-                adminWindow: false
             };
             setUserInit(newSession);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newSession));
             log('info', `Inicio de sesión exitoso para usuario: ${newSession.user}`);
-            navigate('/ppal', { replace: true });
-        } else if ((userInit?.authenticated || userInit?.adminWindowInto) && userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow) {
+
+            if (successSession === 1) {
+                navigate('/ppal', { replace: true });
+            }
+
+            if (successSession === 2) {
+                navigate('/adminlockers', { replace: true });
+            }
+            handleChangeFullScreen();
+        } else if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
+
+            let isCloseAllowed = true;
+
+            isCloseAllowed = successSession === 1 && userInit?.authenticatedOpera ? true : successSession === 2 && userInit?.authenticatedAdmin ? true : false;
+
+            if (!isCloseAllowed) {
+                log('warn', `Intento de cierre de sesión fallido para usuario: ${userName}`);
+                return showAlert(`No se pudo cerrar sesión, usuario: ${userInit?.user}`, 'error');
+            }
+
             const userAux = remember ? userName.toLowerCase() : '';
 
             // Logout
             newSession = {
-                authenticated: false,
+                authenticatedOpera: false,
+                authenticatedAdmin: false,
                 customer: '',
                 user: userAux,
                 remember,
+                fullScreen,
                 pointName: '',
                 pointId: '',
                 avatar: '',
                 closeSession: false,
                 closeWindow: false,
-                adminWindow: false,
-                adminWindowInto: false
             };
             setUserInit(newSession);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newSession));
@@ -150,22 +205,15 @@ export default function Login() {
             setPass('');
             showAlert('Sesión cerrada exitosamente.', 'success');
             log('info', `Cierre de sesión para usuario: ${userAux}`);
-        } else if (!userInit?.closeSession && !userInit?.closeWindow && userInit?.adminWindow && !userInit?.adminWindowInto) {
-            const userAux = remember ? userName.toLowerCase() : '';
-            log('info', `Ir a la ventana de administración: ${userAux}`);
-            const updatedUser = { ...userInit, adminWindow: false, adminWindowInto: true };
-            setUserInit(updatedUser);
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-            navigate('/adminlockers', { replace: true });
         } else if (userInit?.closeWindow) {
             const userAux = remember ? userName.toLowerCase() : '';
             log('info', `Cierre de la aplicación para usuario: ${userAux}`);
             const updatedUser = { ...userInit, closeWindow: false };
             setUserInit(updatedUser);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-            if (userInit?.authenticated) {
+            if (userInit?.authenticatedOpera) {
                 navigate('/ppal', { replace: true });
-            } else if (userInit?.adminWindowInto) {
+            } else if (userInit?.authenticatedAdmin) {
                 navigate('/adminlockers', { replace: true });
             }
             setTimeout(() => {
@@ -176,6 +224,8 @@ export default function Login() {
 
     const validateInitSession = async (e) => {
         e.preventDefault();
+
+        let isValid = 0;
 
         const usernameError = userName.trim() === '';
         const passwordError = pass.trim() === '';
@@ -199,7 +249,13 @@ export default function Login() {
             return false;
         }
 
-        const isValid = userName.toLowerCase() === config?.login?.user.toLowerCase() && pass === config.login.pass;
+        if (userName.toLowerCase() === config?.login?.userOpera.toLowerCase() && pass === config?.login?.passOpera) {
+            isValid = 1;
+        }
+
+        if (userName.toLowerCase() === config?.login?.userAdmin.toLowerCase() && pass === config?.login?.passAdmin) {
+            isValid = 2;
+        }
 
         if (!isValid) {
             log('warn', `Credenciales inválidas: usuario=${userName}`);
@@ -209,14 +265,14 @@ export default function Login() {
     };
 
     const backPage = () => {
-        const updatedUser = { ...userInit, closeSession: false, closeWindow: false, adminWindow: false };
+        const updatedUser = { ...userInit, closeSession: false, closeWindow: false };
         setUserInit(updatedUser);
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
 
-        if (userInit?.adminWindowInto) {
+        if (userInit?.authenticatedAdmin) {
             navigate('/adminlockers', { replace: true });
             log('info', 'Redirigiendo a /adminlokers desde Login');
-        } else {
+        } else if (userInit?.authenticatedOpera) {
             navigate('/ppal', { replace: true });
             log('info', 'Redirigiendo a /ppal desde Login');
         }
@@ -230,12 +286,10 @@ export default function Login() {
 
     const nameButton = () => {
 
-        if (!userInit?.authenticated && !userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow && !userInit?.adminWindowInto) {
+        if ((!userInit?.authenticatedOpera || !userInit?.authenticatedAdmin) && !userInit?.closeSession && !userInit?.closeWindow) {
             setButtonName('Iniciar Sesión');
-        } else if ((userInit?.authenticated || userInit?.adminWindowInto) && userInit?.closeSession && !userInit?.closeWindow && !userInit?.adminWindow) {
+        } else if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
             setButtonName('Cerrar Sesión');
-        } else if (!userInit?.closeSession && !userInit?.closeWindow && userInit?.adminWindow && !userInit?.adminWindowInto) {
-            setButtonName('Iniciar Sesión');
         } else if (userInit?.closeWindow) {
             setButtonName('Salir');
         }
@@ -299,7 +353,7 @@ export default function Login() {
                             width: "100%",
                         }}
                     >
-                        <Typography
+                        {/* <Typography
                             variant="h4"
                             sx={{
                                 fontWeight: "bold",
@@ -310,7 +364,7 @@ export default function Login() {
                             {(userInit?.adminWindowInto || userInit?.adminWindow)
                                 ? "Administración"
                                 : "Aplicación"}
-                        </Typography>
+                        </Typography> */}
                     </Box>
 
                     {/* Inputs */}
@@ -326,13 +380,10 @@ export default function Login() {
                     >
                         <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <Person sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
-                            <TextField
-                                variant="standard"
-                                fullWidth
+                            <LoginField
                                 label="Usuario"
                                 value={userName}
-                                onChange={(e) => setUserName(e.target.value)}
-                                onFocus={() => window.electronAPI?.openKeyboard()}
+                                setValue={setUserName}
                                 error={errorsEmpty.username}
                                 helperText={errorsEmpty.username ? msgUser : ""}
                             />
@@ -340,31 +391,23 @@ export default function Login() {
 
                         <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <LockOpen sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
-                            <TextField
-                                variant="standard"
-                                fullWidth
+                            <LoginField
                                 label="Contraseña"
-                                type={showPassword ? "text" : "password"}
                                 value={pass}
-                                onChange={(e) => setPass(e.target.value)}
-                                onFocus={() => window.electronAPI?.openKeyboard()}
+                                setValue={setPass}
+                                type={showPassword ? "text" : "password"}
+                                error={errorsEmpty.password}
+                                helperText={errorsEmpty.password ? msgPass : ""}
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton onClick={handleTogglePassword} edge="end"
-                                                sx={{
-                                                    '& .MuiSvgIcon-root': {
-                                                        fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
-                                                    },
-                                                }}
-                                            >
+                                                sx={{ "& .MuiSvgIcon-root": { fontSize: `${32 * scale}px` } }}>
                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                             </IconButton>
                                         </InputAdornment>
-                                    ),
+                                    )
                                 }}
-                                error={errorsEmpty.password}
-                                helperText={errorsEmpty.password ? msgPass : ""}
                             />
                         </Box>
                     </Box>
@@ -381,37 +424,75 @@ export default function Login() {
                             mt: 5 * scale,
                         }}
                     >
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={remember}
-                                    onChange={(e) => setRemember(e.target.checked)}
-                                    color="primary"
-                                    sx={{
-                                        '& .MuiSvgIcon-root': {
-                                            fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
-                                        },
-                                    }} // checkbox escalado
-                                />
-                            }
-                            sx={{ my: 2 * scale }}
-                            label={<Typography variant='h5'>Recordar usuario</Typography>}
-                        />
+
+                        {screenLogin && (<Box sx={{
+                            width: "100%",
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }} >
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={remember}
+                                        onChange={(e) => setRemember(e.target.checked)}
+                                        color="primary"
+                                        sx={{
+                                            '& .MuiSvgIcon-root': {
+                                                fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
+                                            },
+                                        }} // checkbox escalado
+                                    />
+                                }
+                                sx={{ mb: 2 * scale }}
+                                label={<Typography variant='h5'>Recordar usuario</Typography>}
+                            />
+
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={fullScreen}
+                                        onChange={(e) => setFullScreen(e.target.checked)}
+                                        color="primary"
+                                        sx={{
+                                            '& .MuiSvgIcon-root': {
+                                                fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
+                                            },
+                                        }} // checkbox escalado
+                                    />
+                                }
+                                sx={{ mb: 2 * scale }}
+                                label={<Typography variant='h5'>Pantalla completa</Typography>}
+                            />
+                        </Box>
+                        )}
 
                         <Button variant="contained" color="success" type="submit" fullWidth>
                             {buttonName}
                             <Send sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
                         </Button>
 
-                        {(userInit?.closeSession || userInit?.closeWindow || userInit?.adminWindow) && (
+                        {(userInit?.closeSession || userInit?.closeWindow) && (
                             <Button variant="contained" color="secondary" onClick={backPage} fullWidth>
                                 Atrás
                                 <Undo sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
                             </Button>
                         )}
                     </Box>
+                </Paper >
+            </Box >
+
+            {showKeyboard && (
+                <Paper
+                    elevation={3}
+                    sx={{ position: "absolute", top: "100%", mt: 1, zIndex: 1000, p: 1 }}
+                    ref={keyboardContainerRef}
+                >
+                    <VirtualKeyboard inputValue={userName} onChange={setUserName} />
                 </Paper>
-            </Box>
+            )
+            }
 
             <SnackBarAlert
                 open={snackbarOpen}
