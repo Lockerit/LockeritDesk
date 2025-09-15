@@ -79,17 +79,18 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                         },
                         scale
                     ),
-                    // height: scaledDimension(
-                    //     {
-                    //         xs: { base: 40, min: 35, max: 45 },
-                    //         sm: { base: 40, min: 35, max: 45 },
-                    //         md: { base: 80, min: 75, max: 85 },
-                    //         lg: { base: 80, min: 75, max: 85 },
-                    //     },
-                    //     scale
-                    // ),
-                    minHeight: '60%',
-                    maxHeight: '80%',
+                    height: scaledDimension(
+                        {
+                            xs: { base: 60, min: 55, max: 65 },
+                            sm: { base: 60, min: 55, max: 65 },
+                            md: { base: 80, min: 75, max: 85 },
+                            lg: { base: 80, min: 75, max: 85 },
+                        },
+                        scale
+                    ),
+                    // minHeight: '60%',
+                    // maxHeight: '80%',
+                    // height: '60%',
                     overflow: "hidden",   // ✅ scroll si se pasa
                     borderRadius: `${Math.max(8, 16 * scale)}px`,
                     display: "flex",
@@ -143,30 +144,30 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                 <Paper
                     elevation={24}
                     sx={{
-                        flex: "0 0 40%",
-                        justifyContent: "center",
-                        alignContent: "center",
-                        alignItems: "center",
                         width: "40%",
+                        height: "40%",   // fuerza 40% del alto disponible
+                        display: "flex", // para que los children puedan centrarse
+                        justifyContent: "center",
+                        alignItems: "center",
                         backgroundColor: backColor || "primary.main",
                         color: "error.contrastText",
                     }}
                 >
-                    <Typography variant="h1" sx={{ textAlign: "center", fontWeight: "bold"}}>
+                    <Typography variant="h1" sx={{ textAlign: "center", fontWeight: "bold" }}>
                         {locker}
                     </Typography>
                 </Paper>
 
-                <Typography variant="h4" sx={{ textAlign: "center", py: 2 *scale }}>
+                <Typography variant="h4" sx={{ textAlign: "center", py: 2 * scale }}>
                     {msg}
                 </Typography>
 
-                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold", py: 2 *scale }}>
+                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold", py: 2 * scale }}>
                     ¡No olvides cerrar el casillero!
                 </Typography>
 
                 {msg.substring(0, 6) === "Retira" && (
-                    <Typography variant="h5" sx={{ textAlign: "center"}}>
+                    <Typography variant="h5" sx={{ textAlign: "center" }}>
                         Disponible para una nueva asignación.
                     </Typography>
                 )}

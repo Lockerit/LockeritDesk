@@ -308,10 +308,7 @@ export function createScaledTheme(factor = 1) {
             textTransform: 'none',
             fontWeight: 'bold',
             '&:hover': {
-              border: `${3 * factor}px solid #0c315e`,
-              background: 'rgba(12,49,94,0.1)',
-              boxShadow: `0 ${12 * factor}px ${32 * factor}px rgba(0,0,0,0.25)`,
-              color: '#1b2631'
+              border: `${5 * factor}px solid #d0d3d4`,
             },
           },
         },
