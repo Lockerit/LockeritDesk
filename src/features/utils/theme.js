@@ -468,6 +468,22 @@ export function createScaledTheme(factor = 1) {
           },
         },
       },
+      MuiTableSortLabel: {
+        styleOverrides: {
+          root: {
+            color: "#fff", // color por defecto (inactivo)
+            "&:hover": {
+              color: "#fff", // color al pasar el mouse
+            },
+            "&.Mui-active": {
+              color: "#fff", // color cuando está activo
+            },
+            "& .MuiTableSortLabel-icon": {
+              color: "#fff !important", // color del ícono (flecha)
+            },
+          },
+        },
+      },
       MuiPickersDay: {
         styleOverrides: {
           root: {

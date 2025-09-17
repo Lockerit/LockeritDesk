@@ -395,10 +395,14 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
+    const openBy = 'user';
+
     const payload = {
       phone: phone,
-      pin: password
+      pin: password,
+      openBy: openBy
     }
+
 
     setInsertMoneyOpen(true);
 
@@ -474,7 +478,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   };
 
   const renderButton = (value) => {
-    
+
     const commonProps = {
       variant: "contained",
       disableRipple: true,

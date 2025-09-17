@@ -1,9 +1,21 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
-    Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper, TablePagination, TablePaginationActions,
-    TextField, Box, Button,
-    Typography, IconButton, InputAdornment
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    TablePagination,
+    TablePaginationActions,
+    TextField,
+    Box,
+    Button,
+    Typography,
+    IconButton,
+    InputAdornment,
+    TableSortLabel
 } from "@mui/material";
 import { useWindowSizeContext } from '../context/windowSizeContext';
 import { formatCurrency } from "../utils/utils.js";
@@ -29,6 +41,7 @@ const log = (level, message) => {
 };
 
 const ReportTable = ({ data, startDate, endDate }) => {
+
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
     const [loading, setLoading] = useState(false);
@@ -42,6 +55,8 @@ const ReportTable = ({ data, startDate, endDate }) => {
     const [isErrorMsj, setIsErrorMsj] = useState(true);
     const [disabledButton, setDisabledButton] = useState(true);
     let formatter = (d) => dayjs(d); // por defecto local
+    const [orderBy, setOrderBy] = useState("ID");   // campo por defecto
+    const [order, setOrder] = useState("asc");      // asc | desc
 
 
     useEffect(() => {
@@ -75,26 +90,50 @@ const ReportTable = ({ data, startDate, endDate }) => {
         setPage(0);
     };
 
+    // 🔹 Manejar cambio de orden
+    const handleSort = (field) => {
+        const isAsc = orderBy === field && order === "asc";
+        setOrder(isAsc ? "desc" : "asc");
+        setOrderBy(field);
+    };
+
     // 🔎 Filtrar datos
-    const filteredData = data.filter((row) => {
-        const query = search.toLowerCase();
-        return (
-            String(row.LockerCode).toLowerCase().includes(query) ||
-            String(row.Phone).toLowerCase().includes(query) ||
-            String(row.PIN).toLowerCase().includes(query) ||
-            (row.OpenBy || "").toLowerCase().includes(query)
-        );
-    });
+    const filteredData = useMemo(() => {
+        return data.filter((row) => {
+            const query = search.toLowerCase();
+            return (
+                String(row.LockerCode).toLowerCase().includes(query) ||
+                String(row.Phone).toLowerCase().includes(query) ||
+                String(row.PIN).toLowerCase().includes(query) ||
+                (row.OpenBy || "").toLowerCase().includes(query)
+            );
+        });
+    }, [data, search]);
+
+    // 🔹 Ordenar datos filtrados
+    const sortedData = useMemo(() => {
+        return [...filteredData].sort((a, b) => {
+            let valA = a[orderBy];
+            let valB = b[orderBy];
+
+            if (typeof valA === "string") valA = valA.toLowerCase();
+            if (typeof valB === "string") valB = valB.toLowerCase();
+
+            if (valA < valB) return order === "asc" ? -1 : 1;
+            if (valA > valB) return order === "asc" ? 1 : -1;
+            return 0;
+        });
+    }, [filteredData, orderBy, order]);
+
+    // 🔹 Datos de la página actual (ya ordenados)
+    const currentPageData = useMemo(() => {
+        return sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    }, [sortedData, page, rowsPerPage]);
 
     // Total de todos los datos filtrados
     const totalAmount = useMemo(() => {
         return data.reduce((acc, row) => acc + (Number(row.AmountPaid) || 0), 0);
     }, [data]);
-
-    // Datos de la página actual
-    const currentPageData = useMemo(() => {
-        return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    }, [filteredData, page, rowsPerPage]);
 
     // Total de la página actual
     const totalAmountCurrentPage = useMemo(() => {
@@ -226,41 +265,126 @@ const ReportTable = ({ data, startDate, endDate }) => {
                         <Table stickyHeader size="small" sx={{ minWidth: 900 * scale }}>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Registro</TableCell>
-                                    <TableCell>Id Casillero</TableCell>
-                                    <TableCell>Casillero</TableCell>
-                                    <TableCell>Teléfono</TableCell>
-                                    <TableCell>PIN</TableCell>
-                                    <TableCell>Activo</TableCell>
-                                    <TableCell>Fecha Asignación</TableCell>
-                                    <TableCell>Fecha Retiro</TableCell>
-                                    <TableCell>Valor Pagado</TableCell>
-                                    <TableCell>Abierto por</TableCell>
+                                    <TableCell sortDirection={orderBy === "ID" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "ID"}
+                                            direction={orderBy === "ID" ? order : "asc"}
+                                            onClick={() => handleSort("ID")}
+                                        >
+                                            Registro
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "LockerID" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "LockerID"}
+                                            direction={orderBy === "LockerID" ? order : "asc"}
+                                            onClick={() => handleSort("LockerID")}
+                                        >
+                                            Id Casillero
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "LockerCode" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "LockerCode"}
+                                            direction={orderBy === "LockerCode" ? order : "asc"}
+                                            onClick={() => handleSort("LockerCode")}
+                                        >
+                                            Casillero
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "Phone" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "Phone"}
+                                            direction={orderBy === "Phone" ? order : "asc"}
+                                            onClick={() => handleSort("Phone")}
+                                        >
+                                            Teléfono
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "PIN" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "PIN"}
+                                            direction={orderBy === "PIN" ? order : "asc"}
+                                            onClick={() => handleSort("PIN")}
+                                        >
+                                            PIN
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "Active" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "Active"}
+                                            direction={orderBy === "Active" ? order : "asc"}
+                                            onClick={() => handleSort("Active")}
+                                        >
+                                            Activo
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "StartTime" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "StartTime"}
+                                            direction={orderBy === "StartTime" ? order : "asc"}
+                                            onClick={() => handleSort("StartTime")}
+                                        >
+                                            Fecha Asignación
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "EndTime" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "EndTime"}
+                                            direction={orderBy === "EndTime" ? order : "asc"}
+                                            onClick={() => handleSort("EndTime")}
+                                        >
+                                            Fecha Retiro
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "AmountPaid" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "AmountPaid"}
+                                            direction={orderBy === "AmountPaid" ? order : "asc"}
+                                            onClick={() => handleSort("AmountPaid")}
+                                        >
+                                            Valor Pagado
+                                        </TableSortLabel>
+                                    </TableCell>
+
+                                    <TableCell sortDirection={orderBy === "OpenBy" ? order : false}>
+                                        <TableSortLabel
+                                            active={orderBy === "OpenBy"}
+                                            direction={orderBy === "OpenBy" ? order : "asc"}
+                                            onClick={() => handleSort("OpenBy")}
+                                        >
+                                            Abierto por
+                                        </TableSortLabel>
+                                    </TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {filteredData
-                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                    .map((row) => (
-                                        <TableRow key={row.ID}>
-                                            <TableCell>{row.ID}</TableCell>
-                                            <TableCell>{row.LockerID}</TableCell>
-                                            <TableCell>{row.LockerCode}</TableCell>
-                                            <TableCell>{row.Phone}</TableCell>
-                                            <TableCell>{row.PIN}</TableCell>
-                                            <TableCell>{row.Active ? "Sí" : "No"}</TableCell>
-                                            <TableCell>
-                                                {row.StartTime ? formatter(row.StartTime).format("YYYY-MM-DD HH:mm:ss") : ""}
-                                            </TableCell>
-                                            <TableCell>
-                                                {row.EndTime ? formatter(row.EndTime).format("YYYY-MM-DD HH:mm:ss") : ""}
-                                            </TableCell>
-                                            <TableCell>{formatCurrency(row.AmountPaid)}</TableCell>
-                                            <TableCell>
-                                                {row.OpenBy || "-"}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                {currentPageData.map((row) => (
+                                    <TableRow key={row.ID}>
+                                        <TableCell>{row.ID}</TableCell>
+                                        <TableCell>{row.LockerID}</TableCell>
+                                        <TableCell>{row.LockerCode}</TableCell>
+                                        <TableCell>{row.Phone}</TableCell>
+                                        <TableCell>{row.PIN}</TableCell>
+                                        <TableCell>{row.Active ? "Sí" : "No"}</TableCell>
+                                        <TableCell>
+                                            {row.StartTime ? formatter(row.StartTime).format("YYYY-MM-DD HH:mm:ss") : ""}
+                                        </TableCell>
+                                        <TableCell>
+                                            {row.EndTime ? formatter(row.EndTime).format("YYYY-MM-DD HH:mm:ss") : ""}
+                                        </TableCell>
+                                        <TableCell>{formatCurrency(row.AmountPaid)}</TableCell>
+                                        <TableCell>{row.OpenBy || "-"}</TableCell>
+                                    </TableRow>
+                                ))}
                             </TableBody>
                         </Table>
                     </TableContainer>
@@ -277,7 +401,7 @@ const ReportTable = ({ data, startDate, endDate }) => {
 
                         {/* Paginación alineada a la derecha */}
                         <TablePagination
-                            rowsPerPageOptions={[5, 10, 20, 50]}
+                            rowsPerPageOptions={[5, 10, 20, 50, 100, 200, 500]}
                             component="div"
                             count={filteredData.length}
                             rowsPerPage={rowsPerPage}
