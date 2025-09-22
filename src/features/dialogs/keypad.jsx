@@ -38,7 +38,7 @@ import {
   closeWebSocket
 } from '../apis/websocket.js'
 import { useElectronConfig } from '../hooks/useConfig.js';
-import { getVoices, speak } from '../utils/speak.js'
+import { getVoices, speak, stopSpeaking } from '../utils/speak.js'
 import { cancelObservable } from '../utils/cancelObservable.js';
 import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
@@ -78,7 +78,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
-  const [voices, setVoices] = useState([]);
 
   // Refs para cambiar el foco
   const size = useWindowSizeContext();
@@ -92,6 +91,12 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const operationRet = operation === 'Retirar' ? true : false;
   const isConfigReady = config && Object.keys(config).length > 0;
+
+  useEffect(() => {
+    if (open) {
+      stopSpeaking(); // cortar audio cuando se abre
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -323,11 +328,17 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
       try {
         setLoading(true);
+        speak(" ");
 
         const result = await OpenSessionLocker(payload);
 
         if (result?.success) {
-          speak(`tu casillero es el ${result.data.lockerCode}, no olvides cerrar el casillero`);
+          if (config?.voice?.active) {
+            let message = config?.voice?.message?.openSessionLocker || "";
+            // Reemplazo dinámico del placeholder
+            message = message.replace("{{lockerCode}}", result.data.lockerCode || '');
+            speak(message || "");
+          }
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
           if (lockerCode) {
             setLocker(lockerCode);
@@ -408,11 +419,16 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
     try {
       setLoading(true);
+      speak(" ");
 
       const result = await paymentService(payload, (timeoutInsert * 1000 * 3), handleTotalUpdate, handleLoadingChange);
-
       if (result?.http?.success) {
-        speak(`tu casillero es el ${result.http.data.lockerCode}, no olvides cerrar el casillero`);
+        if (config?.voice?.active) {
+          let message = config?.voice?.message?.assignLocker || "";
+          // Reemplazo dinámico del placeholder
+          message = message.replace("{{lockerCode}}", result?.http?.data?.lockerCode || '');
+          speak(message || "");
+        }
         const lockerCode = result?.http?.data?.lockerCode;
         if (lockerCode) {
           setLocker(lockerCode);

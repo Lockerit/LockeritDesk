@@ -1,11 +1,23 @@
 // voiceService.js
 
 let voices = [];
+let defaultOptions = {
+    voiceName: null,
+    rate: 1,
+    pitch: 1,
+    volume: 1
+};
 
-// Cargar voces disponibles de speechSynthesis (Chromium/Windows/macOS)
+let voicesReady = null;
+
+/**
+ * Cargar voces disponibles
+ */
 const loadVoices = () => {
-    if (window.speechSynthesis) {
-        voices = window.speechSynthesis.getVoices();
+    voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0 && voicesReady) {
+        voicesReady(voices);
+        voicesReady = null; // solo resolvemos una vez
     }
 };
 
@@ -15,33 +27,49 @@ if (window.speechSynthesis) {
 }
 
 /**
- * Hablar un texto
- * @param {string} text 
- * @param {Object} options 
- * @param {string} [options.voiceName] - nombre de la voz
- * @param {number} [options.rate=1]   - velocidad
- * @param {number} [options.pitch=1]  - tono
- * @param {number} [options.volume=1] - volumen
+ * Asegura que las voces están listas antes de usarlas
  */
-export const speak = (text, { voiceName, rate = 1, pitch = 1, volume = 1 } = {}) => {
+const waitForVoices = () => {
+    if (voices.length > 0) return Promise.resolve(voices);
+    return new Promise(resolve => {
+        voicesReady = resolve;
+    });
+};
+
+/**
+ * Configurar opciones por defecto de voz
+ */
+export const setVoiceOptions = (options = {}) => {
+    defaultOptions = { ...defaultOptions, ...options };
+};
+
+/**
+ * Precalentar el motor TTS para evitar delay en la primera reproducción
+ */
+export const preloadVoice = () => {
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(" ");
+    utterance.volume = 0; // que no suene
+    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.cancel();
+};
+
+/**
+ * Hablar un texto
+ */
+export const speak = async (text, options = {}) => {
+    const finalOptions = { ...defaultOptions, ...options };
+    const { voiceName, rate, pitch, volume } = finalOptions;
+
     const isWindows = navigator.userAgent.includes("Windows");
-    const hasVoices = window.speechSynthesis && voices.length > 0;
 
-    // 🔹 Mapear alias a tokens reales
-    const VOICE_ALIASES = {
-        "Microsoft Sabina - Spanish (Mexico)": "MSTTS_V110_esMX_SabinaM",
-        "Microsoft Raul - Spanish (Mexico)": "MSTTS_V110_esMX_RaulMM",
-        "Sabina (Linux)": "mb-es3",
-        "Raul (Linux)": "mb-es2"
-    };
-    const mappedVoiceName = VOICE_ALIASES[voiceName] || voiceName;
+    if (window.speechSynthesis && !isWindows) {
+        await waitForVoices(); // 🔥 aseguramos voces listas
 
-    if (hasVoices && !isWindows) {
-        // ✅ speechSynthesis solo en macOS/Linux con Chromium
         const utterance = new SpeechSynthesisUtterance(text);
 
-        if (mappedVoiceName) {
-            const voice = voices.find(v => v.name === mappedVoiceName);
+        if (voiceName) {
+            const voice = voices.find(v => v.name === voiceName);
             if (voice) utterance.voice = voice;
         }
 
@@ -51,8 +79,8 @@ export const speak = (text, { voiceName, rate = 1, pitch = 1, volume = 1 } = {})
 
         window.speechSynthesis.speak(utterance);
     } else if (window.electronAPI?.speak) {
-        // ✅ Windows siempre pasa por IPC con say
-        window.electronAPI.speak(text, { voiceName: mappedVoiceName, rate });
+        // 🪟 Windows o IPC
+        window.electronAPI.speak(text, { voiceName, rate });
     } else {
         console.warn("No hay TTS disponible (ni speechSynthesis ni electronAPI)");
     }
@@ -70,16 +98,21 @@ export const stopSpeaking = () => {
     }
 };
 
+/**
+ * Obtener lista de voces disponibles
+ */
 export const getVoices = async () => {
-    if (window.speechSynthesis) {
-        // Voces de speechSynthesis (Windows/macOS con Chromium)
-        return window.speechSynthesis.getVoices().map(v => ({
+    if (window.speechSynthesis && !navigator.userAgent.includes("Windows")) {
+        await waitForVoices();
+        return voices.map(v => ({
             name: v.name,
             lang: v.lang
         }));
-    } else if (window.electronAPI?.getVoices) {
-        // Voces de espeak (Linux)
+    }
+
+    if (window.electronAPI?.getVoices) {
         return await window.electronAPI.getVoices();
     }
+
     return [];
 };

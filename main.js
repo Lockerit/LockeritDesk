@@ -12,15 +12,6 @@ let win = null;
 let lastCSP = null;
 const isProd = app.isPackaged;
 
-// ===============================
-// CONFIGURACIÓN DE VOCES POR OS
-// ===============================
-const DEFAULT_VOICES = {
-  win32: "MSTTS_V110_esMX_SabinaM", // Windows → Sabina
-  linux: "mb-es3",                  // Linux → MBROLA femenina
-  darwin: "Microsoft Sabina - Spanish (Mexico)" // macOS (puede variar)
-};
-
 logger.info(`[${fileName}] Iniciando aplicación Electron`);
 
 
@@ -361,10 +352,11 @@ ipcMain.handle('get-screen-data-once', async () => {
   return { width, height, factor };
 });
 
+
 // ===============================
 // HANDLER TTS
 // ===============================
-ipcMain.handle("tts-speak", (event, text, options = {}) => {
+ipcMain.handle("tts-speak", async (event, text, options = {}) => {
   const { voiceName, rate = 1 } = options;
   const platform = process.platform;
 
@@ -390,47 +382,111 @@ ipcMain.handle("tts-speak", (event, text, options = {}) => {
         // Reproducir con aplay
         exec(`aplay "${outputPath}"`);
       } catch (err) {
-        console.error("Error con Coqui TTS:", err);
+        logger.error(`Error con Coqui TTS: ${err}`);
       }
     })();
   } else if (platform === "win32" || platform === "darwin") {
-    // Windows / macOS → say
-    say.speak(
-      text,
-      voiceName || DEFAULT_VOICES[platform],
-      rate,
-      (err) => {
-        if (err) console.error("Error con say:", err);
+    // 🪟 Windows / 🍎 macOS → say
+    let finalVoice = voiceName;
+
+    if (!finalVoice) {
+      try {
+        const installedVoices = await new Promise((resolve, reject) => {
+          say.getInstalledVoices((err, voices) => {
+            if (err) reject(err);
+            else resolve(voices);
+          });
+        });
+
+        // Buscar la primera voz en español
+        finalVoice =
+          installedVoices.find(v =>
+            v.toLowerCase().includes("spanish") ||
+            v.toLowerCase().includes("es-")
+          ) || installedVoices[0]; // fallback: la primera disponible
+      } catch (err) {
+        logger.warn(`No se pudieron obtener las voces, usando default: ${err}`);
       }
-    );
+    }
+
+    say.speak(text, finalVoice, rate, (err) => {
+      if (err) logger.error(`Error con say: ${err}`);
+    });
   }
 });
 
 // ===============================
-// HANDLER LISTA DE VOCES
+// HANDLER STOP
+// ===============================
+ipcMain.handle("tts-stop", () => {
+  const platform = process.platform;
+
+  if (platform === "linux") {
+    execFile("pkill", ["aplay"], (error) => {
+      if (error) logger.warn(`No había procesos de aplay para detener: ${error}`);
+    });
+  } else {
+    say.stop();
+  }
+});
+
+// ===============================
+// HANDLER GET (Windows / macOS / Linux)
 // ===============================
 ipcMain.handle("tts-get-voices", async () => {
   const platform = process.platform;
 
-  if (platform === "linux") {
-    // 🔊 Ahora solo mostramos la voz de Coqui TTS en español (femenina)
-    return [
-      { name: "Coqui-es-female", lang: "es-ES (female)" }
-    ];
-  } else if (platform === "win32") {
-    // 🔹 Voces de Windows (Sabina y Raúl si existen)
-    return [
-      { name: "MSTTS_V110_esMX_SabinaM", lang: "es-MX (female)" },
-      { name: "MSTTS_V110_esMX_RaulMM", lang: "es-MX (male)" }
-    ];
-  } else if (platform === "darwin") {
-    // 🔹 macOS (ajusta según las voces disponibles en tu sistema)
-    return [
-      { name: "Microsoft Sabina - Spanish (Mexico)", lang: "es-MX (female)" }
-    ];
-  } else {
-    return [];
+  const psCmd = `$voices = @(); try { $spVoice = New-Object -ComObject SAPI.SpVoice; foreach ($v in $spVoice.GetVoices()) { $voices += [PSCustomObject]@{ Name = $v.GetDescription(); Lang = $v.GetAttribute('Language') } } } catch {} try { $oneCore = Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\Speech_OneCore\\Voices\\Tokens'; foreach ($v in $oneCore) { $token = (New-Object -ComObject SAPI.SpVoice).GetVoices('Name='+$v.PSChildName, $null); if ($token.Count -gt 0) { $voices += [PSCustomObject]@{ Name = $token.Item(0).GetDescription(); Lang = $token.Item(0).GetAttribute('Language') } } } } catch {} if ($voices.Count -eq 0) { $voices = @() }; $voices | ConvertTo-Json -Compress`;
+
+  if (process.platform === "win32") {
+    return new Promise((resolve) => {
+      exec(`powershell -NoProfile -Command "${psCmd}"`, (err, stdout, stderr) => {
+        if (err) {
+          logger.error(`Error obteniendo voces de Windows: ${err}`);
+          resolve([]);
+          return;
+        }
+        try {
+          stdout = (stdout || "").trim();
+          if (!stdout) {
+            logger.warn("No se devolvió ninguna voz desde PowerShell");
+            resolve([]);
+            return;
+          }
+          const voices = JSON.parse(stdout);
+          logger.debug("Voces instaladas:", voices);
+          resolve(voices);
+        } catch (e) {
+          logger.error(`Error parseando JSON: ${e}, stdout: ${stdout}`);
+          resolve([]);
+        }
+      });
+    });
   }
+
+  if (platform === "darwin") {
+    return new Promise((resolve) => {
+      exec("say -v ?", (err, stdout) => {
+        if (err) {
+          logger.error(`Error listando voces macOS: ${err}`);
+          resolve([]);
+        } else {
+          const voices = stdout
+            .split("\n")
+            .map(line => line.trim().split(/\s+/)[0])
+            .filter(Boolean)
+            .map(name => ({ Name: name, Lang: "" }));
+          resolve(voices);
+        }
+      });
+    });
+  }
+
+  if (platform === "linux") {
+    return [{ Name: "Coqui-es-female", Lang: "es-ES (female)" }];
+  }
+
+  return [];
 });
 
 // Manejo de fullscreen dinámico
@@ -479,7 +535,7 @@ app.whenReady().then(() => {
     const command = `docker compose -f ${composePath} up -d coqui-tts`;
     exec(command, (err, stdout, stderr) => {
       if (err) {
-        console.error("Error levantando Coqui TTS:", err, stderr);
+        logger.error(`Error levantando Coqui TTS: ${err}, stderr: ${stderr}`);
       } else {
         logger.info(`[${fileName}] Coqui TTS levantado en Docker`);
       }

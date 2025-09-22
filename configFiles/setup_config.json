@@ -17,6 +17,7 @@
         "currency": {
             "coinBoxRequiredAmount": 1500,
             "currency": "COP",
+            "currencyPesos": "pesos",
             "decinmal": 0
         },
         "modalTimeouts": {
@@ -32,5 +33,18 @@
         "hour": 0,
         "minute": 5,
         "timezoneMode": "local"
+    },
+    "voice": {
+        "active": true,
+        "playInterval": 30,
+        "name": "Sabina",
+        "rate": 1.5,
+        "pitch": 2,
+        "volume": 1,
+        "message" : {
+            "welcome": "Bienvenido... Con TuLocker puedes guardar tus objetos personales de forma segura, para que estes comodo y tranquilo. Por tan solo {{amount}} {{pesos}}.",
+            "assignLocker": "Tu casillero es el {{lockerCode}}, Guarda tus pertenencias, Gracias por utilizar nuestro servicio, Por favor, no olvides cerrar el casillero.",
+            "openSessionLocker": "Tu casillero es el {{lockerCode}}, Retira tus pertenencias, Gracias por utilizar nuestro servicio, Por favor, no olvides cerrar el casillero, Disponible para una nueva asignacion."
+        }
     }
 }

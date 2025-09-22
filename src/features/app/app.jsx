@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import GetReportLockers from '../apis/report.js';
 import utc from "dayjs/plugin/utc";
 import LoadingScreen from '../dialogs/loading.jsx';
+import { setVoiceOptions, getVoices, preloadVoice } from '../utils/speak.js';
 dayjs.extend(utc);
 
 
@@ -71,6 +72,24 @@ export default function App() {
     // Ajustados con scale
     const appBarHeight = appBarBase * scale;
     const footerHeight = footerBase * scale;
+    const [voiceGet, setVoiceGet] = useState(null);
+
+    useEffect(() => {
+
+        if (!config) return;
+
+        preloadVoice();
+
+        loadVoices(config?.voice?.name || "Sabina");
+
+        setVoiceOptions({
+            voiceName: voiceGet?.name,
+            rate: config?.voice?.rate || 1,
+            volume: config?.voice?.volume || 1,
+            pitch: config?.voice?.pitch || 1
+        });
+        log('debug', `Voz configurada: ${voiceGet?.name || 'default'}, rate: ${config?.voice?.rate || 1}, volume: ${config?.voice?.volume || 1}, pitch: ${config?.voice?.pitch || 1}`);
+    }, [config]);
 
     useEffect(() => {
 
@@ -135,6 +154,19 @@ export default function App() {
             }
         }
     });
+
+    const loadVoices = async (voiceName) => {
+        const voices = await getVoices() || [];
+
+        const found = voices.find(v => {
+            const n = v.Name || v.name;   // soporta ambas claves
+            return n && n.toLowerCase().includes(voiceName.toLowerCase());
+        });
+
+        if (found) {
+            setVoiceGet(found);
+        }
+    };
 
     return (
         <HashRouter>

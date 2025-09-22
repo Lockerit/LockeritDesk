@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import KeyPadModal from '../dialogs/keypad.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -8,6 +8,7 @@ import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
 import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
+import { speak, stopSpeaking, getVoices } from '../utils/speak.js';
 import {
     Typography,
     Box,
@@ -51,6 +52,41 @@ export default function Ppal() {
     const navigate = useNavigate();
     const config = useElectronConfig();
     const location = useLocation();
+
+    const intervalRef = useRef(null);
+
+    useEffect(() => {
+        if (!config || !config?.voice?.active) return;
+
+        // Si el modal está abierto, detener audio y limpiar interval
+        if (modalOpen) {
+            stopSpeaking();
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+            return;
+        }
+
+        // Si ya existe un intervalo, no crear otro
+        if (!intervalRef.current) {
+            intervalRef.current = setInterval(() => {
+                let message = config?.voice?.message?.welcome || "";
+                // Reemplazo dinámico del placeholder
+                message = message.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
+                message = message.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
+                speak(message || "");
+            }, (config?.voice?.playInterval || 30) * 1000); // segundos → ms
+        }
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+            stopSpeaking();
+        };
+    }, [modalOpen, config]); // 👈 importante agregar sabina aquí
 
     useEffect(() => {
 
@@ -167,19 +203,6 @@ export default function Ppal() {
         setModalOpen(false);
         fetchDataStatusLocker();
     }
-
-    // const calculateLockerAvailables = () => {
-
-    //     setAvailableLockers(Number.isFinite(config?.totalLockers) && Number.isFinite(available)
-    //         ? available
-    //         : 0);
-
-    //     setUnavailableLockers(Number.isFinite(config?.totalLockers) && Number.isFinite(available)
-    //         ? config.totalLockers - available
-    //         : 0);
-
-    //     setDisabledButton(available === 0 ? true : false);
-    // }
 
     return (
         <>
