@@ -352,10 +352,37 @@ ipcMain.handle('get-screen-data-once', async () => {
   return { width, height, factor };
 });
 
-
 // ===============================
 // HANDLER TTS
 // ===============================
+
+let cachedVoice = null;
+
+async function getDefaultVoice() {
+  if (cachedVoice) return cachedVoice;
+
+  try {
+    const installedVoices = await new Promise((resolve, reject) => {
+      say.getInstalledVoices((err, voices) => {
+        if (err) reject(err);
+        else resolve(voices);
+      });
+    });
+
+    cachedVoice =
+      installedVoices.find(v =>
+        v.toLowerCase().includes("spanish") ||
+        v.toLowerCase().includes("es-")
+      ) || installedVoices[0]; // fallback
+
+    logger.info(`🎤 Voz cacheada por defecto: ${cachedVoice}`);
+    return cachedVoice;
+  } catch (err) {
+    logger.warn(`⚠️ No se pudieron obtener las voces: ${err}`);
+    return null;
+  }
+}
+
 ipcMain.handle("tts-speak", async (event, text, options = {}) => {
   const { voiceName, rate = 1 } = options;
   const platform = process.platform;
@@ -375,11 +402,9 @@ ipcMain.handle("tts-speak", async (event, text, options = {}) => {
 
         const arrayBuffer = await res.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-
         const outputPath = path.join(app.getPath("temp"), "tts-output.wav");
         fs.writeFileSync(outputPath, buffer);
 
-        // Reproducir con aplay
         exec(`aplay "${outputPath}"`);
       } catch (err) {
         logger.error(`Error con Coqui TTS: ${err}`);
@@ -387,31 +412,21 @@ ipcMain.handle("tts-speak", async (event, text, options = {}) => {
     })();
   } else if (platform === "win32" || platform === "darwin") {
     // 🪟 Windows / 🍎 macOS → say
-    let finalVoice = voiceName;
-
-    if (!finalVoice) {
-      try {
-        const installedVoices = await new Promise((resolve, reject) => {
-          say.getInstalledVoices((err, voices) => {
-            if (err) reject(err);
-            else resolve(voices);
-          });
-        });
-
-        // Buscar la primera voz en español
-        finalVoice =
-          installedVoices.find(v =>
-            v.toLowerCase().includes("spanish") ||
-            v.toLowerCase().includes("es-")
-          ) || installedVoices[0]; // fallback: la primera disponible
-      } catch (err) {
-        logger.warn(`No se pudieron obtener las voces, usando default: ${err}`);
+    try {
+      // Si se pasa voiceName explícito desde el frontend → cachearlo
+      if (voiceName) {
+        cachedVoice = voiceName;
+        logger.info(`✅ Voz seleccionada por usuario: ${cachedVoice}`);
       }
-    }
 
-    say.speak(text, finalVoice, rate, (err) => {
-      if (err) logger.error(`Error con say: ${err}`);
-    });
+      const finalVoice = cachedVoice || await getDefaultVoice();
+
+      say.speak(text, finalVoice, rate, (err) => {
+        if (err) logger.error(`Error con say: ${err}`);
+      });
+    } catch (err) {
+      logger.error(`Error en tts-speak: ${err}`);
+    }
   }
 });
 
@@ -431,34 +446,19 @@ ipcMain.handle("tts-stop", () => {
 });
 
 // ===============================
-// HANDLER GET (Windows / macOS / Linux)
+// HANDLER GET VOICES
 // ===============================
 ipcMain.handle("tts-get-voices", async () => {
   const platform = process.platform;
 
-  const psCmd = `$voices = @(); try { $spVoice = New-Object -ComObject SAPI.SpVoice; foreach ($v in $spVoice.GetVoices()) { $voices += [PSCustomObject]@{ Name = $v.GetDescription(); Lang = $v.GetAttribute('Language') } } } catch {} try { $oneCore = Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\Speech_OneCore\\Voices\\Tokens'; foreach ($v in $oneCore) { $token = (New-Object -ComObject SAPI.SpVoice).GetVoices('Name='+$v.PSChildName, $null); if ($token.Count -gt 0) { $voices += [PSCustomObject]@{ Name = $token.Item(0).GetDescription(); Lang = $token.Item(0).GetAttribute('Language') } } } } catch {} if ($voices.Count -eq 0) { $voices = @() }; $voices | ConvertTo-Json -Compress`;
-
-  if (process.platform === "win32") {
+  if (platform === "win32") {
     return new Promise((resolve) => {
-      exec(`powershell -NoProfile -Command "${psCmd}"`, (err, stdout, stderr) => {
+      say.getInstalledVoices((err, voices) => {
         if (err) {
-          logger.error(`Error obteniendo voces de Windows: ${err}`);
+          logger.error(`Error obteniendo voces Windows: ${err}`);
           resolve([]);
-          return;
-        }
-        try {
-          stdout = (stdout || "").trim();
-          if (!stdout) {
-            logger.warn("No se devolvió ninguna voz desde PowerShell");
-            resolve([]);
-            return;
-          }
-          const voices = JSON.parse(stdout);
-          logger.debug("Voces instaladas:", voices);
-          resolve(voices);
-        } catch (e) {
-          logger.error(`Error parseando JSON: ${e}, stdout: ${stdout}`);
-          resolve([]);
+        } else {
+          resolve(voices.map(v => ({ name: v, lang: v.includes("Spanish") ? "es" : "en" })));
         }
       });
     });
@@ -475,7 +475,7 @@ ipcMain.handle("tts-get-voices", async () => {
             .split("\n")
             .map(line => line.trim().split(/\s+/)[0])
             .filter(Boolean)
-            .map(name => ({ Name: name, Lang: "" }));
+            .map(name => ({ name, lang: "" }));
           resolve(voices);
         }
       });
@@ -483,11 +483,14 @@ ipcMain.handle("tts-get-voices", async () => {
   }
 
   if (platform === "linux") {
-    return [{ Name: "Coqui-es-female", Lang: "es-ES (female)" }];
+    return [{ name: "Coqui-es-female", lang: "es-ES (female)" }];
   }
 
   return [];
 });
+// ===============================================
+// FIN HANDLER TTS
+// ===============================
 
 // Manejo de fullscreen dinámico
 ipcMain.on("set-fullscreen", (event, value) => {

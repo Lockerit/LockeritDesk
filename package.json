@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "dev:watch": "concurrently \"vite\" \"wait-on http://localhost:5173 && electronmon .\"",
-    "clean": "rimraf dist release",
+    "clean": "del-cli dist release",
     "build:web": "vite build",
     "build:electron": "electron-builder",
     "build:linux": "npm run clean && npm run build:web && electron-builder --linux",
@@ -60,6 +60,7 @@
     "@vitejs/plugin-react-swc": "^3.10.2",
     "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
+    "del-cli": "^7.0.0",
     "electron": "^37.2.2",
     "electron-builder": "^26.0.12",
     "electronmon": "^2.0.3",

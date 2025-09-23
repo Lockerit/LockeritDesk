@@ -35,16 +35,20 @@
         "timezoneMode": "local"
     },
     "voice": {
-        "active": true,
-        "playInterval": 30,
+        "active": false,
+        "playInterval": 20,
         "name": "Sabina",
         "rate": 1.5,
         "pitch": 2,
         "volume": 1,
-        "message" : {
-            "welcome": "Bienvenido... Con TuLocker puedes guardar tus objetos personales de forma segura, para que estes comodo y tranquilo. Por tan solo {{amount}} {{pesos}}.",
-            "assignLocker": "Tu casillero es el {{lockerCode}}, Guarda tus pertenencias, Gracias por utilizar nuestro servicio, Por favor, no olvides cerrar el casillero.",
-            "openSessionLocker": "Tu casillero es el {{lockerCode}}, Retira tus pertenencias, Gracias por utilizar nuestro servicio, Por favor, no olvides cerrar el casillero, Disponible para una nueva asignacion."
+        "message": {
+            "welcome": "Bienvenido... Con TuLocker puedes guardar tus objetos personales de forma segura, para que estes comodo y tranquilo. Por tan solo {{amount}} {{pesos}}. No guardes si encuentras un casillero abierto, asigna uno desde la pantalla del sistema. No olvides cerrar el casillero al retirar tus pertenencias. Muchas gracias por utilizar nuestro servicio.",
+            "assignLocker": "Tu casillero es el {{lockerCode}}, Guarda tus pertenencias, Gracias por utilizar nuestro servicio. No olvides cerrar el casillero.",
+            "openSessionLocker": "Tu casillero es el {{lockerCode}}, Retira tus pertenencias, Gracias por utilizar nuestro servicio. No olvides cerrar el casillero, Disponible para una nueva asignacion."
         }
+    },
+    "paymentPeriod": {
+        "active": true,
+        "percentage": 40
     }
 }
