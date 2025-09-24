@@ -333,14 +333,17 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         const result = await OpenSessionLocker(payload);
 
         if (result?.success) {
-          if (config?.voice?.active) {
-            let message = config?.voice?.message?.openSessionLocker || "";
-            // Reemplazo dinámico del placeholder
-            message = message.replace("{{lockerCode}}", result.data.lockerCode || '');
-            speak(message || "");
-          }
+
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
           if (lockerCode) {
+
+            if (config?.voice?.enabled) {
+              let message = config?.voice?.message?.openSessionLocker || "";
+              // Reemplazo dinámico del placeholder
+              message = message.replace("{{lockerCode}}", lockerCode || '');
+              speak(message || "");
+            }
+
             setLocker(lockerCode);
             setAssignLockerOpen(true);
           } else {
@@ -423,14 +426,17 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
       const result = await paymentService(payload, (timeoutInsert * 1000 * 3), handleTotalUpdate, handleLoadingChange);
       if (result?.http?.success) {
-        if (config?.voice?.active) {
-          let message = config?.voice?.message?.assignLocker || "";
-          // Reemplazo dinámico del placeholder
-          message = message.replace("{{lockerCode}}", result?.http?.data?.lockerCode || '');
-          speak(message || "");
-        }
+        
         const lockerCode = result?.http?.data?.lockerCode;
         if (lockerCode) {
+
+          if (config?.voice?.enabled) {
+          let message = config?.voice?.message?.assignLocker || "";
+          // Reemplazo dinámico del placeholder
+          message = message.replace("{{lockerCode}}", lockerCode || '');
+          speak(message || "");
+        }
+
           setLocker(lockerCode);
           setAssignLockerOpen(true);
         }

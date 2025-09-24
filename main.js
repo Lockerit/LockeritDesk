@@ -163,6 +163,25 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
     }
   });
 
+  win.on("close", () => {
+    logger.info(`[${fileName}] Ventana cerrándose, deteniendo TTS...`);
+
+    // detener TTS directamente en main
+    const platform = process.platform;
+    if (platform === "linux") {
+      execFile("pkill", ["aplay"], (error) => {
+        if (error) logger.warn(`No había procesos de aplay para detener: ${error}`);
+      });
+    } else {
+      say.stop();
+    }
+
+    // además avisar al renderer (si sigue vivo)
+    if (!win.isDestroyed()) {
+      win.webContents.send("app-close");
+    }
+  });
+
   // Bloqueo de Google Fonts externos
   win.webContents.session.webRequest.onBeforeRequest(
     { urls: ['https://fonts.googleapis.com/*'] },
@@ -519,13 +538,19 @@ ipcMain.on("set-frame", (event, value) => {
 });
 
 // ------------------- EVENTOS APP -------------------
-ipcMain.on('app:exit', async () => {
+
+ipcMain.on("app:exit", async () => {
   logger.info(`[${fileName}] Cerrando aplicación...`);
+
+  // Avisar al renderer ANTES de cerrar
+  if (win && !win.isDestroyed()) {
+    win.webContents.send("app-close");
+  }
+
   setTimeout(() => {
     app.quit();
   }, 300);
 });
-
 app.whenReady().then(() => {
   logger.info(`[${fileName}] App lista, creando ventana...`);
 
@@ -549,11 +574,24 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-app.on('window-all-closed', async () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", async () => {
+  if (process.platform !== "darwin") {
     logger.info(`[${fileName}] Cerrando aplicación (todas las ventanas cerradas)`);
+
+    // Avisar al renderer ANTES de cerrar
+    if (win && !win.isDestroyed()) {
+      win.webContents.send("app-close");
+    }
+
+    // Forzar detener TTS desde el main
+    try {
+      await ipcMain.emit("tts-stop"); // dispara tu handler
+    } catch (e) {
+      logger.warn("No se pudo detener TTS:", e);
+    }
+
     setTimeout(() => {
       app.quit();
-    }, 300);
+    }, 1000);
   }
 });

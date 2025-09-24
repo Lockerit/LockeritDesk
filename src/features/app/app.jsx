@@ -28,12 +28,25 @@ const log = (level, message) => {
 function normalizeReportConfig(report) {
     // solo tomamos los campos relevantes
     return {
-        frequency: report.frequency,
-        dayOfWeek: report.dayOfWeek,
-        dayOfMonth: report.dayOfMonth,
-        hour: report.hour,
-        minute: report.minute,
-        timezoneMode: report.timezoneMode,
+        daily: {
+            enabled: report?.daily?.enabled,
+            hour: report?.daily?.hour,
+            minute: report?.daily?.minute
+        },
+        weekly: {
+            enabled: report?.weekly?.enabled,
+            dayOfWeek: report?.weekly?.dayOfWeek,
+            hour: report?.weekly?.hour,
+            minute: report?.weekly?.minute
+        },
+        monthly: {
+            enabled: report?.monthly?.enabled,
+            dayOfMonth: report?.monthly?.dayOfMonth,
+            hour: report?.monthly?.hour,
+            minute: report?.monthly?.minute
+        },
+        timezoneMode: report?.timezoneMode,
+        timeInterval: report?.timeInterval,
     };
 }
 
@@ -46,8 +59,12 @@ function useResetLocalStorageOnConfigChange(config) {
 
         if (!prevConfig || JSON.stringify(prevConfig) !== JSON.stringify(newConfig)) {
             // Config cambió → limpiar lastExecution y lastTarget
-            localStorage.removeItem("lastExecution");
-            localStorage.removeItem("lastTarget");
+            localStorage.removeItem("lastExecution_daily");
+            localStorage.removeItem("lastTarget_daily");
+            localStorage.removeItem("lastExecution_Weekly");
+            localStorage.removeItem("lastTarget_Weekly");
+            localStorage.removeItem("lastExecution_Monthly");
+            localStorage.removeItem("lastTarget_Monthly");
             log('info', '[Scheduler] Config cambió → reseteando localStorage');
 
             localStorage.setItem("reportConfigSnapshot", JSON.stringify(newConfig));
@@ -121,39 +138,78 @@ export default function App() {
 
     useResetLocalStorageOnConfigChange(config);
 
+    // Daily
     useSchedulerReport({
-        frequency: config?.report?.frequency ?? "daily",
-        dayOfWeek: config?.report?.dayOfWeek ?? 0,
-        dayOfMonth: config?.report?.dayOfMonth ?? 1,
-        hour: config?.report?.hour ?? 0,
-        minute: config?.report?.minute ?? 0,
-        enabled: !!config,   // 👈 solo corre cuando hay config
+        frequency: "daily",
+        hour: config?.report?.daily?.hour ?? 0,
+        minute: config?.report?.daily?.minute ?? 0,
+        enabled: !!config?.report?.daily?.enabled,
+        timeInterval: config?.report?.timeInterval || 60, // segundos
         task: async (startDate, endDate) => {
-            const timezoneMode = config.report?.timezoneMode || "local";
-            log("info", `Generando payload en modo [${timezoneMode}]`);
-
-            const formatUTC = (d) => dayjs(d).utc().format("YYYY-MM-DD HH:mm:ss");
-
-            const payload = {
-                startDate: formatUTC(startDate),
-                endDate: formatUTC(endDate),
-                sendEmail: true
-            };
-
-            log("info", `Payload generado: ${JSON.stringify(payload)}`);
-
-            try {
-                const result = await GetReportLockers(payload);
-                if (result.success) {
-                    log("info", `Datos del reporte obtenidos: ${JSON.stringify(result.data)}`);
-                } else {
-                    log("error", result?.data?.message || "Error al obtener reporte");
-                }
-            } catch (err) {
-                log("error", err.message || "Error al obtener reporte");
-            }
-        }
+            await executeReportTask(startDate, endDate, "daily", config?.report?.timezoneMode);
+        },
     });
+
+    // Weekly
+    useSchedulerReport({
+        frequency: "weekly",
+        dayOfWeek: config?.report?.weekly?.dayOfWeek ?? 1,
+        hour: config?.report?.weekly?.hour ?? 0,
+        minute: config?.report?.weekly?.minute ?? 0,
+        enabled: !!config?.report?.weekly?.enabled,
+        timeInterval: config?.report?.timeInterval || 60, // segundos
+        task: async (startDate, endDate) => {
+            await executeReportTask(startDate, endDate, "weekly");
+        },
+    });
+
+    // Monthly
+    useSchedulerReport({
+        frequency: "monthly",
+        dayOfMonth: config?.report?.monthly?.dayOfMonth ?? 1,
+        hour: config?.report?.monthly?.hour ?? 0,
+        minute: config?.report?.monthly?.minute ?? 0,
+        enabled: !!config?.report?.monthly?.enabled,
+        timeInterval: config?.report?.timeInterval || 60, // segundos
+        task: async (startDate, endDate) => {
+            await executeReportTask(startDate, endDate, "monthly");
+        },
+    });
+
+    const executeReportTask = async (startDate, endDate, frequency) => {
+        if (!config) {
+            log("warn", `No se ejecuta reporte [${frequency}] porque la config no está lista`);
+            return;
+        }
+        if (!config.report || !config.report.enabled) {
+            log("info", `No se ejecuta reporte [${frequency}] porque el reporte está deshabilitado en la config`);
+            return;
+        }
+        const timezoneMode = config.report?.timezoneMode || "local";
+
+        log("info", `Generando payload en modo [${timezoneMode}]`);
+
+        const formatUTC = (d) => dayjs(d).utc().format("YYYY-MM-DD HH:mm:ss");
+
+        const payload = {
+            startDate: formatUTC(startDate),
+            endDate: formatUTC(endDate),
+            sendEmail: true
+        };
+
+        log("info", `Payload generado: ${JSON.stringify(payload)}`);
+
+        try {
+            const result = await GetReportLockers(payload);
+            if (result.success) {
+                log("info", `Datos del reporte obtenidos: ${JSON.stringify(result.data)}`);
+            } else {
+                log("error", result?.data?.message || "Error al obtener reporte");
+            }
+        } catch (err) {
+            log("error", err.message || "Error al obtener reporte");
+        }
+    }
 
     const loadVoices = async (voiceName) => {
         const voices = await getVoices() || [];

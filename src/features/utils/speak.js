@@ -10,10 +10,18 @@ let defaultOptions = {
 
 let voicesReady = null;
 
+// Función auxiliar para loguear si está disponible
+const log = (level, message) => {
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+
 /**
  * Cargar voces disponibles
  */
 const loadVoices = () => {
+    if (!window.speechSynthesis) return;
     voices = window.speechSynthesis.getVoices();
     if (voices.length > 0 && voicesReady) {
         voicesReady(voices);
@@ -64,7 +72,7 @@ export const speak = async (text, options = {}) => {
     const isWindows = navigator.userAgent.includes("Windows");
 
     if (window.speechSynthesis && !isWindows) {
-        await waitForVoices(); // 🔥 aseguramos voces listas
+        await waitForVoices();
 
         const utterance = new SpeechSynthesisUtterance(text);
 
@@ -77,12 +85,14 @@ export const speak = async (text, options = {}) => {
         utterance.pitch = pitch;
         utterance.volume = volume;
 
+        // Siempre cancelar antes de hablar
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
     } else if (window.electronAPI?.speak) {
-        // 🪟 Windows o IPC
-        window.electronAPI.speak(text, { voiceName, rate });
+        // 🪟 Windows o backend IPC
+        window.electronAPI.speak(text, { voiceName, rate, pitch, volume });
     } else {
-        console.warn("No hay TTS disponible (ni speechSynthesis ni electronAPI)");
+        log("warn", "No hay TTS disponible (ni speechSynthesis ni electronAPI)");
     }
 };
 

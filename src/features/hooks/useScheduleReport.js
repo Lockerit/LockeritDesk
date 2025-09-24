@@ -15,12 +15,12 @@ const log = (level, message) => {
 };
 
 // Helpers
-function getLastExecution() {
-    return localStorage.getItem("lastExecution");
+function getLastExecution(frequency) {
+    return localStorage.getItem(`lastExecution_${frequency}`);
 }
 
-function getNextTarget() {
-    return localStorage.getItem("nextTarget");
+function getNextTarget(frequency) {
+    return localStorage.getItem(`nextTarget_${frequency}`);
 }
 
 function setExecutionDates(frequency, hour, minute, dayOfWeek, dayOfMonth) {
@@ -42,8 +42,8 @@ function setExecutionDates(frequency, hour, minute, dayOfWeek, dayOfMonth) {
         nextTarget = realExec.add(1, "month").date(dayOfMonth).hour(hour).minute(minute).second(0).millisecond(0);
     }
 
-    localStorage.setItem("lastExecution", realExec.format("YYYY-MM-DD HH:mm:ss"));
-    localStorage.setItem("nextTarget", nextTarget.format("YYYY-MM-DD HH:mm:ss"));
+    localStorage.setItem(`lastExecution_${frequency}`, realExec.format("YYYY-MM-DD HH:mm:ss"));
+    localStorage.setItem(`nextTarget_${frequency}`, nextTarget.format("YYYY-MM-DD HH:mm:ss"));
 
     log(
         "info",
@@ -53,9 +53,9 @@ function setExecutionDates(frequency, hour, minute, dayOfWeek, dayOfMonth) {
     return nextTarget;
 }
 
-function shouldRunNow() {
-    const lastExec = getLastExecution();
-    const nextTarget = getNextTarget();
+function shouldRunNow(frequency) {
+    const lastExec = getLastExecution(frequency);
+    const nextTarget = getNextTarget(frequency);
     const now = dayjs();
 
     log(
@@ -86,6 +86,7 @@ export function useSchedulerReport({
     dayOfMonth = 1,
     task,
     enabled = true,
+    timeInterval = 60, // 60 segundos
 }) {
     useEffect(() => {
         if (!enabled) {
@@ -124,15 +125,15 @@ export function useSchedulerReport({
 
         log("debug", `Iniciando scheduler [${frequency}] con hora ${hour}:${minute}`);
 
-        if (shouldRunNow()) {
+        if (shouldRunNow(frequency)) {
             runTask();
         }
 
         const interval = setInterval(() => {
-            if (shouldRunNow()) {
+            if (shouldRunNow(frequency)) {
                 runTask();
             }
-        }, 60 * 1000);
+        }, timeInterval * 1000);
 
         return () => clearInterval(interval);
     }, [frequency, hour, minute, dayOfWeek, dayOfMonth, task, enabled]);

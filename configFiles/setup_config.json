@@ -27,16 +27,29 @@
         }
     },
     "report": {
-        "frequency": "daily",
-        "dayOfWeek": 2,
-        "dayOfMonth": 25,
-        "hour": 0,
-        "minute": 5,
-        "timezoneMode": "local"
+        "daily" : {
+            "enabled": true,
+            "hour": 0,
+            "minute": 5
+        },
+        "weekly": {
+            "enabled": true,
+            "dayOfWeek": 1,
+            "hour": 0,
+            "minute": 10
+        },
+        "monthly": {
+            "enabled": true,
+            "dayOfMonth": 1,
+            "hour": 0,
+            "minute": 15
+        },       
+        "timezoneMode": "local",
+        "timeInterval": 300
     },
     "voice": {
-        "active": false,
-        "playInterval": 20,
+        "enabled": true,
+        "timeInterval": 20,
         "name": "Sabina",
         "rate": 1.5,
         "pitch": 2,
@@ -48,7 +61,7 @@
         }
     },
     "paymentPeriod": {
-        "active": true,
+        "enabled": true,
         "percentage": 40
     }
 }

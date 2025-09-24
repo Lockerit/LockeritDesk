@@ -56,7 +56,24 @@ export default function Ppal() {
     const intervalRef = useRef(null);
 
     useEffect(() => {
-        if (!config || !config?.voice?.active) return;
+        const stopSpeech = () => {
+            try {
+                window.speechSynthesis.cancel(); // fuerza parar siempre
+            } catch (e) {
+                console.warn("Error al cancelar TTS:", e);
+            }
+        };
+
+        // escuchar evento enviado desde main
+        window.electronAPI?.onAppClose(stopSpeech);
+
+        return () => {
+            stopSpeech(); // limpiar si desmonta el componente
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!config || !config?.voice?.enabled) return;
 
         // Si el modal está abierto, detener audio y limpiar interval
         if (modalOpen) {
@@ -67,6 +84,12 @@ export default function Ppal() {
             }
             return;
         }
+        // Hablar mensaje de bienvenida inmediatamente
+        let msg = config?.voice?.message?.welcome || "";
+        // Reemplazo dinámico del placeholder
+        msg = msg.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
+        msg = msg.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
+        speak(msg || "");
 
         // Si ya existe un intervalo, no crear otro
         if (!intervalRef.current) {
@@ -76,7 +99,7 @@ export default function Ppal() {
                 message = message.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
                 message = message.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
                 speak(message || "");
-            }, (config?.voice?.playInterval || 30) * 1000); // segundos → ms
+            }, (config?.voice?.timeInterval || 30) * 1000); // segundos → ms
         }
 
         return () => {
@@ -86,7 +109,7 @@ export default function Ppal() {
             }
             stopSpeaking();
         };
-    }, [modalOpen, config]); // 👈 importante agregar sabina aquí
+    }, [modalOpen, config]); // importante agregar sabina aquí
 
     useEffect(() => {
 

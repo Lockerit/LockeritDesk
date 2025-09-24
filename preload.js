@@ -78,6 +78,7 @@ try {
     getVoices: () => ipcRenderer.invoke("tts-get-voices"),
     setFullScreen: (value) => ipcRenderer.send("set-fullscreen", value),
     setFrame: (value) => ipcRenderer.send("set-frame", value),
+    onAppClose: (callback) => ipcRenderer.on("app-close", callback),
   });
 
   logger.info(`[${fileName}] API expuesta en window.electronAPI`);
