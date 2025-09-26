@@ -128,6 +128,31 @@ const removeOnMessage = (callback) => {
     log('debug', 'Callback removido de messageListeners');
 };
 
+const waitWebSocketReady = (timeout = 5000) => {
+    return new Promise((resolve, reject) => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            return resolve();
+        }
+
+        const timer = setTimeout(() => {
+            reject(new Error("WebSocket no se abrió a tiempo"));
+        }, timeout);
+
+        const handleOpen = () => {
+            clearTimeout(timer);
+            resolve();
+        };
+
+        const handleError = (err) => {
+            clearTimeout(timer);
+            reject(err);
+        };
+
+        socket?.addEventListener("open", handleOpen);
+        socket?.addEventListener("error", handleError);
+    });
+}
+
 const isWebSocketConnected = () => isConnected;
 
 export {
@@ -137,4 +162,5 @@ export {
     isWebSocketConnected,
     onMessage,
     removeOnMessage,
+    waitWebSocketReady,
 };

@@ -27,13 +27,19 @@ export default function ConfirmDialog({ open, onConfirm, onCancel, title, mesg, 
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     return (
-        <Dialog open={open} onClose={(event, reason) => {
-            if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                onCancel(); // tu función personalizada para cerrar
-            }
-
-        }}
+        <Dialog
+            open={open}
+            onClose={() => { }}
+            keepMounted={false}
+            hideBackdrop               // 👈 evita bloquear clics en el fondo
             disableEscapeKeyDown
+            disableEnforceFocus        // 👈 no fuerza el foco al modal
+            disableAutoFocus
+            disableRestoreFocus
+            sx={{
+                pointerEvents: "auto",   // 👈 asegura que botones sean clickeables
+                zIndex: 1500,            // encima del keypad
+            }}
             PaperProps={{
                 sx: {
                     width: scaledDimension(

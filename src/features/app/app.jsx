@@ -146,7 +146,7 @@ export default function App() {
         enabled: !!config?.report?.daily?.enabled,
         timeInterval: config?.report?.timeInterval || 60, // segundos
         task: async (startDate, endDate) => {
-            await executeReportTask(startDate, endDate, "daily", config?.report?.timezoneMode);
+            await executeReportTask(startDate, endDate, "daily");
         },
     });
 
@@ -177,24 +177,21 @@ export default function App() {
     });
 
     const executeReportTask = async (startDate, endDate, frequency) => {
-        if (!config) {
-            log("warn", `No se ejecuta reporte [${frequency}] porque la config no está lista`);
-            return;
-        }
-        if (!config.report || !config.report.enabled) {
-            log("info", `No se ejecuta reporte [${frequency}] porque el reporte está deshabilitado en la config`);
-            return;
-        }
+
         const timezoneMode = config.report?.timezoneMode || "local";
 
         log("info", `Generando payload en modo [${timezoneMode}]`);
 
-        const formatUTC = (d) => dayjs(d).utc().format("YYYY-MM-DD HH:mm:ss");
+        const formatUTC = (d, isEnd = false) =>
+            dayjs(d)
+                .utc()
+                .set("second", isEnd ? 59 : 0)
+                .format("YYYY-MM-DD HH:mm:ss");
 
         const payload = {
-            startDate: formatUTC(startDate),
-            endDate: formatUTC(endDate),
-            sendEmail: true
+            startDate: formatUTC(startDate),        // segundos en 00
+            endDate: formatUTC(endDate, true),      // segundos en 59
+            sendEmail: true,
         };
 
         log("info", `Payload generado: ${JSON.stringify(payload)}`);
@@ -278,7 +275,6 @@ export default function App() {
             </Container>
 
             {loading && (<LoadingScreen />)}
-
         </HashRouter>
     );
 }

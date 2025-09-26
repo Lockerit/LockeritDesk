@@ -6,6 +6,7 @@ import {
     closeWebSocket,
     isWebSocketConnected,
     onMessage,
+    waitWebSocketReady
 } from './websocket.js';
 import { cancelObservable } from '../utils/cancelObservable.js';
 
@@ -109,108 +110,105 @@ const AddAssignLocker = async (payload, timeoutMs) => {
     }
 };
 
+// addAssignLocker.js
 export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoading) => {
-    if (onLoading && typeof onLoading === 'function') {
-        onLoading(false); // Apaga loading inicial
+    if (onLoading && typeof onLoading === "function") {
+        onLoading(false);
     }
 
-    log('info', `Timeout por parámetro: ${timeoutMs}`);
+    log("info", `Timeout por parámetro: ${timeoutMs}`);
 
-    const env = getEnv(); // Config dinámica
-    const effectiveTimeout = timeoutMs ?? Number((env?.apiBaseTimeout * 1000) ?? 30000);
+    const env = getEnv();
+    const effectiveTimeout = timeoutMs
+        ?? ((env?.apiBaseTimeout ? Number(env.apiBaseTimeout) * 1000 : 30000));
 
-    log('info', `Timeout efectivo en ejecución: ${effectiveTimeout}`);
+    log("info", `Timeout efectivo en ejecución: ${effectiveTimeout}`);
 
     try {
-        log('info', 'Iniciando proceso de pago');
+        // 🔄 Si había un WS abierto, cerramos primero
+        if (isWebSocketConnected()) {
+            log("warn", "Ya había un WebSocket abierto, cerrando antes de reconectar...");
+            closeWebSocket();
+            await new Promise((r) => setTimeout(r, 200));
+        }
 
+        // 1) Conectar
         await connectWebSocket();
 
-        if (!isWebSocketConnected()) {
-            const err = 'Error en la conexión con el WebSocket (001)';
-            log('error', err);
-            throw new Error(err);
-        }
+        // 2) Esperar a que esté realmente listo
+        await waitWebSocketReady(5000);
+        log("info", "WebSocket listo, enviando HTTP /assign...");
 
         let wsComplete = false;
         let httpResponse = null;
 
-        // Escuchamos WS, pero no define cuándo termina el proceso
+        // 3) Escuchar mensajes WS
         onMessage((data) => {
-            log('info', `Mensaje WebSocket recibido: ${JSON.stringify(data)}`);
+            log("info", `Mensaje WebSocket recibido: ${JSON.stringify(data)}`);
 
-            if (onTotalUpdate) {
-                onTotalUpdate(data.total);
-            }
+            if (onTotalUpdate) onTotalUpdate(data.total);
 
             if (data.complete === true) {
                 wsComplete = true;
-                if (onLoading && typeof onLoading === 'function') {
-                    onLoading(true);
-                }
-                // closeWebSocket();
+                if (onLoading) onLoading(true);
             }
         });
 
-        // HTTP: este sí define la finalización
+        // 4) HTTP principal
         const httpPromise = AddAssignLocker(payload, effectiveTimeout)
             .then((res) => {
                 httpResponse = res;
 
                 if (!res.success) {
                     if (res.status === 499) {
-                        log('warn', 'WebSocket desconectado - status 499');
+                        log("warn", "WebSocket desconectado - status 499");
                         closeWebSocket();
                         return res;
                     }
-                    const err = res.data?.message || 'Error HTTP en servidor (002)';
-                    log('error', err);
+                    const err = res.data?.message || "Error HTTP en servidor (002)";
+                    log("error", err);
                     closeWebSocket();
-                    // return res;
                 }
 
                 wsComplete = true;
                 closeWebSocket();
-                return 'HTTP complete';
+                return "HTTP complete";
             })
             .catch((err) => {
-                log('error', `Error en HTTP: ${err.message}`);
+                log("error", `Error en HTTP: ${err.message}`);
                 closeWebSocket();
                 throw err;
             });
 
-        // Timeout para cortar HTTP
+        // 5) Timeout para cortar HTTP
         const httpTimeout = new Promise((_, reject) =>
             setTimeout(() => {
-                const err = 'Timeout en HTTP (002)';
-                log('error', err);
+                const err = "Timeout en HTTP (002)";
+                log("error", err);
                 closeWebSocket();
-                // reject(new Error(err));
+                reject(new Error(err));
             }, effectiveTimeout)
         );
 
-        // Solo esperamos HTTP o timeout
         await Promise.race([httpPromise, httpTimeout]);
 
         closeWebSocket();
-        log('info', 'Proceso completado exitosamente');
+        log("info", "Proceso completado exitosamente");
 
         return {
             websocket: wsComplete,
             http: httpResponse,
         };
-
     } catch (error) {
-        log('error', `Error general: ${error.message}`);
+        log("error", `Error general: ${error.message}`);
         closeWebSocket();
         return {
             websocket: false,
             http: null,
-            error: error.message || 'Error inesperado (003)',
+            error: error.message || "Error inesperado (003)",
         };
     }
 };
-
 
 // Escucha cambios en .env para actualizar baseURL dinámicamente
 subscribeEnv((env) => {

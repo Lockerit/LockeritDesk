@@ -13,14 +13,11 @@ import {
     IconButton,
 } from '@mui/material';
 import {
-    SmsFailed,
     Close,
     ErrorOutline,
     CheckCircleOutline
 } from '@mui/icons-material';
-import {
-    formatTime
-} from '../utils/utils.js';
+import { formatTime } from '../utils/utils.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -29,18 +26,17 @@ const Transition = forwardRef(function Transition(props, ref) {
 const fileName = 'showErrorAPI';
 
 export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15, isError = true }) {
-
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const scale = size.factor || 1;
 
     useEffect(() => {
         if (open) {
-            setSecondsLeft(timeout); // reinicia cada vez que abre
+            setSecondsLeft(timeout);
         }
     }, [open, timeout]);
 
-    // Manejar conteo
+    // Manejar conteo regresivo
     useEffect(() => {
         if (!open || secondsLeft <= 0) return;
 
@@ -51,47 +47,48 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15, isErr
         return () => clearInterval(interval);
     }, [open, secondsLeft]);
 
-    // Cerrar automáticamente cuando llegue a 0
+    // Cerrar automáticamente al llegar a 0
     useEffect(() => {
         if (open && secondsLeft === 0) {
             setSecondsLeft(timeout);
-            setTimeout(() => {
-                onConfirm();
-            }, 0);
+            onConfirm();
         }
     }, [open, secondsLeft, onConfirm]);
 
     return (
-        <Dialog open={open} onClose={(event, reason) => {
-            if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                setTimeout(() => onConfirm(), 0); // diferir para evitar el warning
-            }
-
-        }}
+        <Dialog
+            open={open}
+            onClose={() => { }}
+            keepMounted={false}
+            hideBackdrop               // 👈 evita bloquear clics en el fondo
             disableEscapeKeyDown
+            disableEnforceFocus        // 👈 no fuerza el foco al modal
+            disableAutoFocus
+            disableRestoreFocus
+            sx={{
+                pointerEvents: "auto",   // 👈 asegura que botones sean clickeables
+                zIndex: 1500,            // encima del keypad
+            }}
             PaperProps={{
                 sx: {
                     width: scaledDimension(
                         {
-                            xs: { base: 70, min: 65, max: 75 }, // en % para mobile
-                            sm: { base: 70, min: 65, max: 75 }, // tablet
-                            md: { base: 50, min: 45, max: 55 }, // desktop medio
-                            lg: { base: 40, min: 35, max: 45 }, // desktop grande
+                            xs: { base: 70, min: 65, max: 75 },
+                            sm: { base: 70, min: 65, max: 75 },
+                            md: { base: 50, min: 45, max: 55 },
+                            lg: { base: 40, min: 35, max: 45 },
                         },
                         scale
                     ),
                     height: 'auto',
-                    // maxWidth: `${Math.max(70, Math.min(95, 90 * scale))}vw`, // rango de 70%-95% según escala
-                    borderRadius: `${Math.max(8, 16 * scale)}px`, // esquinas suaves que escalan
-                    p: 2 * scale // padding proporcional
-                }
+                    borderRadius: `${Math.max(8, 16 * scale)}px`,
+                    p: 2 * scale,
+                },
             }}
-            slots={{
-                transition: Transition,
-            }}
+            slots={{ transition: Transition }}
         >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
-                {/* Encabezado superior: tiempo y botón cerrar */}
+                {/* Encabezado superior */}
                 <Box
                     sx={{
                         display: 'flex',
@@ -111,53 +108,42 @@ export default function ShowErrorAPI({ open, onConfirm, msg, timeout = 15, isErr
                     </IconButton>
                 </Box>
 
-                {/* Texto centrado */}
-                <DialogTitle>
-                    Información
-                </DialogTitle>
+                <DialogTitle>Información</DialogTitle>
             </Box>
 
             <DialogContent
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center',   // centra horizontalmente
-                    justifyContent: 'center', // centra verticalmente
+                    alignItems: 'center',
                     textAlign: 'center',
+                    gap: 2 * scale,
                 }}
             >
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        textAlign: 'center',
-                        gap: 2 * scale,
-                    }}
-                >
-                    {isError ? (
-                        <ErrorOutline color="error" sx={{ fontSize: 75 * scale }} />
-                    ) : (
-                        <CheckCircleOutline color="success" sx={{ fontSize: 75 * scale }} />
-                    )}
-                </Box>
-                <Box textAlign="center">
-                    <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
-                        {typeof msg === 'string' ? msg : msg?.message || JSON.stringify(msg)}
-                    </Typography>
-                </Box>
+                {isError ? (
+                    <ErrorOutline color="error" sx={{ fontSize: 75 * scale }} />
+                ) : (
+                    <CheckCircleOutline color="success" sx={{ fontSize: 75 * scale }} />
+                )}
+                <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                    {typeof msg === 'string' ? msg : msg?.message || JSON.stringify(msg)}
+                </Typography>
             </DialogContent>
 
             <DialogActions
                 sx={{
                     display: 'flex',
-                    alignItems: 'center',   // centra horizontalmente
-                    justifyContent: 'center', // centra verticalmente
-                    textAlign: 'center',
-                    height: '100%', // puedes ajustar esto según lo que necesites
+                    justifyContent: 'center',
                     width: '100%',
-                }}>
-                <Button onClick={onConfirm} color="primary" variant="contained" fullWidth sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
+                }}
+            >
+                <Button
+                    onClick={onConfirm}
+                    color="primary"
+                    variant="contained"
+                    fullWidth
+                    sx={{ mx: 3 * scale, p: 3 * scale }}
+                >
                     Aceptar
                 </Button>
             </DialogActions>

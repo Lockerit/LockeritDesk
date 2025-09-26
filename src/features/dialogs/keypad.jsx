@@ -42,6 +42,7 @@ import { getVoices, speak, stopSpeaking } from '../utils/speak.js'
 import { cancelObservable } from '../utils/cancelObservable.js';
 import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
+import { useModal } from "../context/modalContext.jsx";
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -49,11 +50,13 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const fileName = 'keypad';
 
-export default function KeyPadModal({ open, onClose, operation, timeout = 600 }) {
+export default function KeyPadModal({
+  open,
+  onClose,
+  operation,
+  timeout = 600
+}) {
   const [activeInput, setActiveInput] = useState('phone');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
@@ -65,19 +68,26 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   const [msgPhone, setMsgPhone] = useState('');
   const [msgPass, setMsgPass] = useState('');
   const [msgConfPass, setMsgConfPass] = useState('');
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [insertMoneyOpen, setInsertMoneyOpen] = useState(false);
-  const [assignLockerOpen, setAssignLockerOpen] = useState(false);
-  const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
-  const [amountPay, setAmountPay] = useState(0);
   const [amountService, setAmountService] = useState('');
   const [messageErrorAPI, setMessageErrorAPI] = useState('');
-  const [locker, setLocker] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(timeout);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+
+  const {
+    phone, setPhone,
+    password, setPassword,
+    confirmPassword, setConfirmPassword,
+    amountPay, setAmountPay,
+    locker, setLocker,
+    confirmDialogOpen, setConfirmDialogOpen,
+    insertMoneyOpen, setInsertMoneyOpen,
+    assignLockerOpen, setAssignLockerOpen,
+    showErrorAPIOpen, setShowErrorAPIOpen,
+    closeAllModals,
+  } = useModal();
 
   // Refs para cambiar el foco
   const size = useWindowSizeContext();
@@ -91,6 +101,27 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
   const operationRet = operation === 'Retirar' ? true : false;
   const isConfigReady = config && Object.keys(config).length > 0;
+
+  useEffect(() => {
+
+    if (insertMoneyOpen) {
+      setShowErrorAPIOpen(true);
+      setMessageErrorAPI(
+        'No te preocupes, el proceso continuará con el monto que hayas ingresado hasta ahora, vuelve a intentarlo.'
+      );
+      const timer = setTimeout(() => {
+        cancelInsertMoney();
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      stopSpeaking(); // cortar audio cuando se abre
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -119,11 +150,9 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
   useEffect(() => {
     if (open && secondsLeft === 0) {
       setSecondsLeft(timeout);
-      setTimeout(() => {
-        onClose();
-      }, 0);
+      cancel();
     }
-  }, [open, secondsLeft, onClose]);
+  }, [open, secondsLeft]);
 
   useEffect(() => {
     if (!isConfigReady) return;
@@ -140,7 +169,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       setTimeoutInsert(config?.paramsHtml?.modalTimeouts?.timeoutInsertMoney);
       setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
     }
-  }, [config])
+  }, [config, open])
 
   const getInputValue = () => {
     switch (activeInput) {
@@ -417,7 +446,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
       openBy: openBy
     }
 
-
     setInsertMoneyOpen(true);
 
     try {
@@ -426,16 +454,16 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
 
       const result = await paymentService(payload, (timeoutInsert * 1000 * 3), handleTotalUpdate, handleLoadingChange);
       if (result?.http?.success) {
-        
+
         const lockerCode = result?.http?.data?.lockerCode;
         if (lockerCode) {
 
           if (config?.voice?.enabled) {
-          let message = config?.voice?.message?.assignLocker || "";
-          // Reemplazo dinámico del placeholder
-          message = message.replace("{{lockerCode}}", lockerCode || '');
-          speak(message || "");
-        }
+            let message = config?.voice?.message?.assignLocker || "";
+            // Reemplazo dinámico del placeholder
+            message = message.replace("{{lockerCode}}", lockerCode || '');
+            speak(message || "");
+          }
 
           setLocker(lockerCode);
           setAssignLockerOpen(true);
@@ -470,12 +498,10 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setConfirmDialogOpen(false);
   };
 
-
   const cancelInsertMoney = () => {
     if (cleanupRef.current) cleanupRef.current();
     cancelObservable.setCancel(true);
     setAmountPay(0);
-    setInsertMoneyOpen(false);
     closeWebSocket();
   };
 
@@ -483,20 +509,13 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     setAssignLockerOpen(false);
     clearInputs();
     closeWebSocket();
-    // Cierra el modal padre
-    if (typeof onClose === 'function') {
-      onClose();
-    }
+    cancel();
   };
 
   const confirmShowErrorAPI = () => {
     setShowErrorAPIOpen(false);
-    clearInputs();
+    setAmountPay(0);  // resetear monto a pagar
     closeWebSocket();
-    // Cierra el modal padre
-    if (typeof onClose === 'function') {
-      onClose();
-    }
   };
 
   const renderButton = (value) => {
@@ -581,11 +600,13 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
     <>
       <Dialog
         open={open}
-        onClose={(event, reason) => {
-          if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-            setTimeout(() => onCancel(), 0); // diferir para evitar el warning
-          }
-        }}
+        onClose={() => { }}
+        keepMounted={false}
+        hideBackdrop               // 👈 evita bloquear clics en el fondo
+        disableEscapeKeyDown
+        disableEnforceFocus        // 👈 no fuerza el foco al modal
+        disableAutoFocus
+        disableRestoreFocus
         PaperProps={{
           sx: {
             width: scaledDimension(
@@ -607,10 +628,6 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         slots={{
           transition: Transition,
         }}
-        disableEnforceFocus
-        disableAutoFocus
-        disableEscapeKeyDown
-        disableRestoreFocus
         sx={{ zIndex: 1300, height: '100%' }} // Asegura que el diálogo esté por encima de otros elementos
       >
 
@@ -785,6 +802,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         mesg={'¡Vas a ' + operation + '!\n¿El número celular es correcto?'}
         phone={formatNumberPhone(phone)}
         isPhone={true}
+        hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -798,6 +816,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         amountPay={formatCurrency(amountPay)}
         phone={formatNumberPhone(phone)}
         timeout={timeoutInsert}
+        hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -810,6 +829,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         msg={(operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio.'}
         timeout={timeoutShowMessage}
         backColor={operationRet ? 'primary.main' : 'error.main'}
+        hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -820,6 +840,7 @@ export default function KeyPadModal({ open, onClose, operation, timeout = 600 })
         onConfirm={confirmShowErrorAPI}
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
+        hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus

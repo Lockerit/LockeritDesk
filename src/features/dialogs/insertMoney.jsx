@@ -71,13 +71,19 @@ export default function InsertMoney({ open, onCancel, amountService, amountPay, 
     }, [open, secondsLeft, onCancel]);
 
     return (
-        <Dialog open={open} onClose={(event, reason) => {
-            if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                setTimeout(() => onCancel(), 0); // diferir para evitar el warning
-            }
-
-        }}
+        <Dialog
+            open={open}
+            onClose={() => { }}
+            keepMounted={false}
+            hideBackdrop               // 👈 evita bloquear clics en el fondo
             disableEscapeKeyDown
+            disableEnforceFocus        // 👈 no fuerza el foco al modal
+            disableAutoFocus
+            disableRestoreFocus
+            sx={{
+                pointerEvents: "auto",   // 👈 asegura que botones sean clickeables
+                zIndex: 1500,            // encima del keypad
+            }}
             PaperProps={{
                 sx: {
                     width: scaledDimension(

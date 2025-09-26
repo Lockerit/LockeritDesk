@@ -62,12 +62,17 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
     return (
         <Dialog
             open={open}
-            onClose={(event, reason) => {
-                if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                    setTimeout(() => onConfirm(), 0);
-                }
-            }}
+            onClose={() => { }}
+            keepMounted={false}
+            hideBackdrop               // 👈 evita bloquear clics en el fondo
             disableEscapeKeyDown
+            disableEnforceFocus        // 👈 no fuerza el foco al modal
+            disableAutoFocus
+            disableRestoreFocus
+            sx={{
+                pointerEvents: "auto",   // 👈 asegura que botones sean clickeables
+                zIndex: 1500,            // encima del keypad
+            }}
             PaperProps={{
                 sx: {
                     width: scaledDimension(

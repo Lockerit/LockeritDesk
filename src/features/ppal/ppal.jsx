@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import KeyPadModal from '../dialogs/keypad.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,6 +7,7 @@ import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
 import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import LoadingScreen from '../dialogs/loading.jsx';
 import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
+import { useModal } from "../context/modalContext.jsx";
 import { scaledDimension } from '../utils/scaledDimension.js';
 import { speak, stopSpeaking, getVoices } from '../utils/speak.js';
 import {
@@ -31,18 +32,14 @@ const log = (level, message) => {
 
 export default function Ppal() {
 
-    const [modalOpen, setModalOpen] = useState(false);
-    const [operation, setOperation] = useState(null);
+    const [showErrorAPIOpenPpal, setShowErrorAPIOpenPpal] = useState(false);
     const { userInit, setUserInit } = useUser();
     const [available, setAvailable] = useState(null);
-    const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
     const [loading, setLoading] = useState(true);
     const [timeoutKeypad, setTimeoutKeypad] = useState();
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const [disabledButton, setDisabledButton] = useState(false);
-    // const [availableLockers, setAvailableLockers] = useState();
-    // const [unavailableLockers, setUnavailableLockers] = useState();
     const size = useWindowSizeContext();
 
     log('debug', `size ${JSON.stringify(size)}`)
@@ -52,8 +49,12 @@ export default function Ppal() {
     const navigate = useNavigate();
     const config = useElectronConfig();
     const location = useLocation();
+    const {
+        modalOpen, setModalOpen, operation, setOperation
+    } = useModal();
 
     const intervalRef = useRef(null);
+
 
     useEffect(() => {
         const stopSpeech = () => {
@@ -75,7 +76,7 @@ export default function Ppal() {
     useEffect(() => {
         if (!config || !config?.voice?.enabled) return;
 
-        // Si el modal está abierto, detener audio y limpiar interval
+        // Si el modal está abierto, detener audio e intervalos
         if (modalOpen) {
             stopSpeaking();
             if (intervalRef.current) {
@@ -84,22 +85,20 @@ export default function Ppal() {
             }
             return;
         }
-        // Hablar mensaje de bienvenida inmediatamente
-        let msg = config?.voice?.message?.welcome || "";
-        // Reemplazo dinámico del placeholder
-        msg = msg.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
-        msg = msg.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
-        speak(msg || "");
 
-        // Si ya existe un intervalo, no crear otro
+        // Verificar si ya dimos la bienvenida antes (persistente)
+        const hasWelcomed = localStorage.getItem("hasWelcomed") === "true";
+
+        if (!hasWelcomed) {
+            speakWelcome();
+            localStorage.setItem("hasWelcomed", "true"); // persiste
+        }
+
+        // Crear intervalo si no existe
         if (!intervalRef.current) {
             intervalRef.current = setInterval(() => {
-                let message = config?.voice?.message?.welcome || "";
-                // Reemplazo dinámico del placeholder
-                message = message.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
-                message = message.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
-                speak(message || "");
-            }, (config?.voice?.timeInterval || 30) * 1000); // segundos → ms
+                speakWelcome();
+            }, (config?.voice?.timeInterval || 30) * 1000);
         }
 
         return () => {
@@ -109,17 +108,15 @@ export default function Ppal() {
             }
             stopSpeaking();
         };
-    }, [modalOpen, config]); // importante agregar sabina aquí
+    }, [modalOpen, config?.voice?.enabled]);
 
     useEffect(() => {
-
-        if (!config) return;
-
         fetchDataStatusLocker();
-        setDisabledButton(available === 0 ? true : false);
-        // calculateLockerAvailables();
-    }, [config, available]);
+    }, []);
 
+    useEffect(() => {
+        setDisabledButton(available === 0);
+    }, [available]);
 
     useEffect(() => {
         if (!userInit || !config) return;
@@ -153,6 +150,42 @@ export default function Ppal() {
 
     }, [config]);
 
+    const fetchDataStatusLocker = async () => {
+        setLoading(true);
+        try {
+            const result = await GetAllStatusLockers();
+
+            if (result.success) {
+                if (Array.isArray(result?.data?.general)) {
+                    const libre = result?.data?.general.find(item => item.status.toLowerCase() === "libre");
+                    setAvailable(libre?.total || 0);
+                }
+                setShowErrorAPIOpenPpal(false);
+            } else {
+                const msg = typeof result?.data === 'string'
+                    ? result.data
+                    : 'No se puedo obtener estado de casilleros';
+
+                setMessageErrorAPI(msg);
+                setShowErrorAPIOpenPpal(true);
+            }
+
+        } catch (err) {
+            setMessageErrorAPI('No se puedo obtener estado de casilleros');
+            setShowErrorAPIOpenPpal(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const speakWelcome = () => {
+        stopSpeaking();
+        let msg = config?.voice?.message?.welcome || "";
+        msg = msg.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
+        msg = msg.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
+        speak(msg || "");
+    };
+
     const ActionButton = ({ text, icon, color, onClick, disabled }) => (
         <Button
             variant="contained"
@@ -180,36 +213,7 @@ export default function Ppal() {
     );
 
     const confirmShowErrorAPI = () => {
-        setShowErrorAPIOpen(false);
-    };
-
-    const fetchDataStatusLocker = async () => {
-        setLoading(true);
-        try {
-            const result = await GetAllStatusLockers();
-
-            if (result.success) {
-                if (Array.isArray(result?.data?.general)) {
-                    const libre = result?.data?.general.find(item => item.status.toLowerCase() === "libre");
-                    setAvailable(libre?.total || 0);
-                }
-                setShowErrorAPIOpen(false);
-            } else {
-                const msg = typeof result?.data === 'string'
-                    ? result.data
-                    : 'No se puedo obtener estado de casilleros';
-
-                setMessageErrorAPI(msg);
-                setShowErrorAPIOpen(true);
-            }
-
-        } catch (err) {
-            setMessageErrorAPI('No se puedo obtener estado de casilleros');
-            setShowErrorAPIOpen(true);
-        } finally {
-            setLoading(false);
-        }
-        setLoading(false);
+        setShowErrorAPIOpenPpal(false);
     };
 
     const saveLocker = () => {
@@ -225,7 +229,7 @@ export default function Ppal() {
     const closeKeypad = () => {
         setModalOpen(false);
         fetchDataStatusLocker();
-    }
+    };
 
     return (
         <>
@@ -363,7 +367,7 @@ export default function Ppal() {
             />
 
             <ShowErrorAPI
-                open={showErrorAPIOpen}
+                open={showErrorAPIOpenPpal}
                 onConfirm={confirmShowErrorAPI}
                 msg={messageErrorAPI}
                 timeout={timeoutShowMessage}

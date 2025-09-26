@@ -10,6 +10,7 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import './fonts.css';
 import LoadingScreen from './features/dialogs/loading.jsx';
+import { ModalProvider } from './features/context/modalContext.jsx';
 
 const fileName = 'main-renderer';
 
@@ -91,10 +92,12 @@ function RootApp() {
       )}
 
       <UserProvider>
-        <ThemeProvider key={`theme-${size.factor}`} theme={theme}>
-          <CssBaseline />
-          <App />
-        </ThemeProvider>
+        <ModalProvider>
+          <ThemeProvider key={`theme-${size.factor}`} theme={theme}>
+            <CssBaseline />
+            <App />
+          </ThemeProvider>
+        </ModalProvider>
       </UserProvider>
     </>
   );
