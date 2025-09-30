@@ -103,12 +103,12 @@ export default function KeyPadModal({
   const isConfigReady = config && Object.keys(config).length > 0;
 
   useEffect(() => {
+    setMessageErrorAPI(
+      'No te preocupes, el proceso continuará con el monto que hayas ingresado hasta ahora, vuelve a intentarlo.'
+    );
 
     if (insertMoneyOpen) {
       setShowErrorAPIOpen(true);
-      setMessageErrorAPI(
-        'No te preocupes, el proceso continuará con el monto que hayas ingresado hasta ahora, vuelve a intentarlo.'
-      );
       const timer = setTimeout(() => {
         cancelInsertMoney();
       }, 1000);

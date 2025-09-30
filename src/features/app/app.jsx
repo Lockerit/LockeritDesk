@@ -138,6 +138,38 @@ export default function App() {
 
     useResetLocalStorageOnConfigChange(config);
 
+    const executeReportTask = async (startDate, endDate, frequency) => {
+
+        const timezoneMode = config.report?.timezoneMode || "local";
+
+        log("info", `Generando payload en modo [${timezoneMode}]`);
+
+        const formatUTC = (d, isEnd = false) =>
+            dayjs(d)
+                .utc()
+                .set("second", isEnd ? 59 : 0)
+                .format("YYYY-MM-DD HH:mm:ss");
+
+        const payload = {
+            startDate: formatUTC(startDate),        // segundos en 00
+            endDate: formatUTC(endDate, true),      // segundos en 59
+            sendEmail: true,
+        };
+
+        log("info", `Payload generado: ${JSON.stringify(payload)}`);
+
+        try {
+            const result = await GetReportLockers(payload);
+            if (result.success) {
+                log("info", `Datos del reporte obtenidos: ${JSON.stringify(result.data)}`);
+            } else {
+                log("error", result?.data?.message || "Error al obtener reporte");
+            }
+        } catch (err) {
+            log("error", err.message || "Error al obtener reporte");
+        }
+    }
+
     // Daily
     useSchedulerReport({
         frequency: "daily",
@@ -175,38 +207,6 @@ export default function App() {
             await executeReportTask(startDate, endDate, "monthly");
         },
     });
-
-    const executeReportTask = async (startDate, endDate, frequency) => {
-
-        const timezoneMode = config.report?.timezoneMode || "local";
-
-        log("info", `Generando payload en modo [${timezoneMode}]`);
-
-        const formatUTC = (d, isEnd = false) =>
-            dayjs(d)
-                .utc()
-                .set("second", isEnd ? 59 : 0)
-                .format("YYYY-MM-DD HH:mm:ss");
-
-        const payload = {
-            startDate: formatUTC(startDate),        // segundos en 00
-            endDate: formatUTC(endDate, true),      // segundos en 59
-            sendEmail: true,
-        };
-
-        log("info", `Payload generado: ${JSON.stringify(payload)}`);
-
-        try {
-            const result = await GetReportLockers(payload);
-            if (result.success) {
-                log("info", `Datos del reporte obtenidos: ${JSON.stringify(result.data)}`);
-            } else {
-                log("error", result?.data?.message || "Error al obtener reporte");
-            }
-        } catch (err) {
-            log("error", err.message || "Error al obtener reporte");
-        }
-    }
 
     const loadVoices = async (voiceName) => {
         const voices = await getVoices() || [];
