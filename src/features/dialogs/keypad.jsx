@@ -343,6 +343,7 @@ export default function KeyPadModal({
     setLoading(false);
     if (!operationRet) {
       setMessageLoading('Asignando Casilllero...');
+      
       setConfirmDialogOpen(true); // Mostrar confirmación
     } else {
       setMessageLoading('Buscando Casilllero...');
@@ -799,7 +800,7 @@ export default function KeyPadModal({
         onConfirm={confirmSendData}
         onCancel={cancelConfirmation}
         tittle={'Confirmar'}
-        mesg={'¡Vas a ' + operation + '!\n¿El número celular es correcto?'}
+        mesg={`¡Vas a ${operation}! ${config?.sendSMS ? '\nRecibirás un mensaje de texto con los datos ingresados.' : ''} \n¿El número celular es correcto?`}
         phone={formatNumberPhone(phone)}
         isPhone={true}
         hideBackdrop    // 👈 evita que bloquee clicks

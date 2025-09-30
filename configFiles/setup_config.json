@@ -2,6 +2,7 @@
     "customer": "Tulocker",
     "pointName": "CC Outlet Factory",
     "pointId": "Sótano 1",
+    "sendSMS": true,
     "login": {
         "userOpera": "Operador",
         "passOpera": "250701",

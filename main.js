@@ -394,10 +394,10 @@ async function getDefaultVoice() {
         v.toLowerCase().includes("es-")
       ) || installedVoices[0]; // fallback
 
-    logger.info(`🎤 Voz cacheada por defecto: ${cachedVoice}`);
+    logger.info(`Voz cacheada por defecto: ${cachedVoice}`);
     return cachedVoice;
   } catch (err) {
-    logger.warn(`⚠️ No se pudieron obtener las voces: ${err}`);
+    logger.warn(`No se pudieron obtener las voces: ${err}`);
     return null;
   }
 }
@@ -430,18 +430,21 @@ ipcMain.handle("tts-speak", async (event, text, options = {}) => {
       }
     })();
   } else if (platform === "win32" || platform === "darwin") {
-    // 🪟 Windows / 🍎 macOS → say
+    // 🪟 Windows / macOS → say
     try {
       // Si se pasa voiceName explícito desde el frontend → cachearlo
       if (voiceName) {
         cachedVoice = voiceName;
-        logger.info(`✅ Voz seleccionada por usuario: ${cachedVoice}`);
+        logger.info(`Voz seleccionada por usuario: ${cachedVoice}`);
       }
 
       const finalVoice = cachedVoice || await getDefaultVoice();
 
       say.speak(text, finalVoice, rate, (err) => {
-        if (err) logger.error(`Error con say: ${err}`);
+        if (err) {
+          logger.warn(`Error con voz '${finalVoice}': ${err.message}, usando voz predeterminada`);
+          say.speak(text, undefined, rate); // Windows elige la default
+        }
       });
     } catch (err) {
       logger.error(`Error en tts-speak: ${err}`);
