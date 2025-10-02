@@ -58,7 +58,8 @@
         "message": {
             "welcome": "Bienvenido... Con TuLocker puedes guardar tus objetos personales de forma segura, para que estes comodo y tranquilo. Por tan solo {{amount}} {{pesos}}. No guardes si encuentras un casillero abierto, asigna uno desde la pantalla del sistema. No olvides cerrar el casillero al retirar tus pertenencias. Muchas gracias por utilizar nuestro servicio.",
             "assignLocker": "Tu casillero es el {{lockerCode}}, Guarda tus pertenencias, Gracias por utilizar nuestro servicio. No olvides cerrar el casillero.",
-            "openSessionLocker": "Tu casillero es el {{lockerCode}}, Retira tus pertenencias, Gracias por utilizar nuestro servicio. No olvides cerrar el casillero, Disponible para una nueva asignacion."
+            "openSessionLocker": "Tu casillero es el {{lockerCode}}, Retira tus pertenencias, Gracias por utilizar nuestro servicio. No olvides cerrar el casillero, Disponible para una nueva asignacion.",
+            "openReserveLocker": "Tu casillero es el {{lockerCode}}, Gracias por utilizar nuestro servicio. No olvides cerrar el casillero."
         }
     },
     "reserve": {

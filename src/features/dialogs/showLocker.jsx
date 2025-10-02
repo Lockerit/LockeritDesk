@@ -26,7 +26,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const fileName = 'showLocker';
 
-export default function ShowLocker({ open, onConfirm, locker, title, msg, timeout = 15, backColor }) {
+export default function ShowLocker({ open, onConfirm, locker, title, msg, timeout = 15, backColor, operation }) {
 
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
@@ -167,12 +167,12 @@ export default function ShowLocker({ open, onConfirm, locker, title, msg, timeou
                     {msg}
                 </Typography>
 
-                {(msg.substring(0, 6) === "Retira" || msg.substring(0, 6) === "Guarda") && (
+                {(operation === "Retirar" || operation === "Guardar" || operation === "Reservado") && (
                     <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold", py: 2 * scale }}>
                         ¡No olvides cerrar el casillero!
                     </Typography>
                 )}
-                {msg.substring(0, 6) === "Retira" && (
+                {operation === "Retirar" && (
                     <Typography variant="h5" sx={{ textAlign: "center" }}>
                         Disponible para una nueva asignación.
                     </Typography>

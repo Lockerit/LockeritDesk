@@ -26,7 +26,8 @@ import ShowErrorAPI from './showErrorAPI.jsx';
 import { paymentService } from '../apis/assignLocker.js';
 import LoadingScreen from './loading.jsx';
 import ShowLocker from './showLocker.jsx';
-import OpenSessionLocker from '../apis/openSessionLocker.js';
+import OpenSessionLocker from '../apis/openReserveLocker.js';
+import OpenReserveLocker from '../apis/openReserveLocker.js';
 import {
   formatTime,
   phoneRegex,
@@ -98,7 +99,7 @@ export default function KeyPadModal({
   const config = useElectronConfig();
 
 
-  const operationRet = operation === 'Retirar' ? true : false;
+  const operationRet = (operation === 'Retirar' || operation === 'Reservado') ? true : false;
   const isConfigReady = config && Object.keys(config).length > 0;
 
   useEffect(() => {
@@ -341,7 +342,6 @@ export default function KeyPadModal({
     setLoading(false);
     if (!operationRet) {
       setMessageLoading('Asignando Casilllero...');
-      
       setConfirmDialogOpen(true); // Mostrar confirmación
     } else {
       setMessageLoading('Buscando Casilllero...');
@@ -358,7 +358,18 @@ export default function KeyPadModal({
         setLoading(true);
         speak(" ");
 
-        const result = await OpenSessionLocker(payload);
+        let result = null;
+        let message = '';
+
+        if (operation === 'Retirar') {
+          result = await OpenSessionLocker(payload);
+          message = config?.voice?.message?.openSessionLocker || "";
+        } else if (operation === 'Reservado') {
+          result = await OpenReserveLocker(payload);
+          message = config?.voice?.message?.openReserveLocker || "";
+        }
+
+        console.log("result: ", result)
 
         if (result?.success) {
 
@@ -366,7 +377,6 @@ export default function KeyPadModal({
           if (lockerCode) {
 
             if (config?.voice?.enabled) {
-              let message = config?.voice?.message?.openSessionLocker || "";
               // Reemplazo dinámico del placeholder
               message = message.replace("{{lockerCode}}", lockerCode || '');
               speak(message || "");
@@ -380,9 +390,9 @@ export default function KeyPadModal({
           }
         } else {
           if (result?.status === 500) {
-            setMessageErrorAPI('No se pudo realizar el retiro del casillero, ¡Inténtalo nuevamente!');
+            setMessageErrorAPI('No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!');
           } else {
-            setMessageErrorAPI(result?.data?.message || 'No se pudo realizar el retiro del casillero, ¡Inténtalo nuevamente!');
+            setMessageErrorAPI(result?.data?.message || 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!');
           }
           setShowErrorAPIOpen(true);
         }
@@ -824,9 +834,12 @@ export default function KeyPadModal({
         onConfirm={confirmAssignLocker}
         locker={locker}
         title={'Tu casillero es el:'}
-        msg={(operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio.'}
+        msg={
+          operation !== 'Reservado' ? (operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio' : 'gracias por utilizar nuestro servicio'
+        }
         timeout={timeoutShowMessage}
-        backColor={operationRet ? 'primary.main' : 'error.main'}
+        backColor={operation === 'Retirar' ? 'primary.main' : operation === 'Guardar' ? 'error.main' : 'secondary.main'}
+        operation={operation}
         hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus

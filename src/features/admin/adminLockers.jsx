@@ -224,7 +224,7 @@ const AdminLockers = () => {
 
         for (const locker of selectedLockers) {
 
-            if (locker.status.toLowerCase() !== 'ocupado') {
+            if (locker.status.toLowerCase() !== 'ocupado' && locker.status.toLowerCase() !== 'reservado') {
                 try {
                     const payloadSetStatus = {
                         lockerCode: locker.lockerCode,
