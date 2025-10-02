@@ -7,6 +7,7 @@ const API_ROUTES = {
     OPEN_BY_CODE_LOCKER: '/api/lockers/open-by-code',
     SET_STATUS_LOCKER: '/api/lockers/set-status',
     REPORT_LOCKERS: '/api/lockers/report',
+    RESERVE_LOCKERS: '/api/lockers/reserve',
     // Agrega más rutas aquí
 };
 

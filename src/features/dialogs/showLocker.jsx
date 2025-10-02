@@ -1,5 +1,5 @@
 import { useState, forwardRef, useEffect } from 'react';
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext.jsx'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
 import {
     Dialog,
@@ -24,9 +24,9 @@ const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const fileName = 'assignLocker';
+const fileName = 'showLocker';
 
-export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 15, backColor }) {
+export default function ShowLocker({ open, onConfirm, locker, title, msg, timeout = 15, backColor }) {
 
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
@@ -143,7 +143,7 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                 }}
             >
                 <Typography variant="h3" sx={{ textAlign: "center", mt: 2 * scale, fontWeight: "bold" }}>
-                    Tu casillero es el:
+                    {title}
                 </Typography>
 
                 <Paper
@@ -167,10 +167,11 @@ export default function AssignLocker({ open, onConfirm, locker, msg, timeout = 1
                     {msg}
                 </Typography>
 
-                <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold", py: 2 * scale }}>
-                    ¡No olvides cerrar el casillero!
-                </Typography>
-
+                {(msg.substring(0, 6) === "Retira" || msg.substring(0, 6) === "Guarda") && (
+                    <Typography variant="h4" sx={{ textAlign: "center", fontWeight: "bold", py: 2 * scale }}>
+                        ¡No olvides cerrar el casillero!
+                    </Typography>
+                )}
                 {msg.substring(0, 6) === "Retira" && (
                     <Typography variant="h5" sx={{ textAlign: "center" }}>
                         Disponible para una nueva asignación.

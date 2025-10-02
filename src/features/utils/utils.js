@@ -23,16 +23,15 @@ export const anotherUtil = (value) => {
     return value.toUpperCase();
 };
 
-export const phoneRegex = () => {
-    return /^3\d{9}$/;
-}
+export const phoneRegex = /^3\d{9}$/;
+
+export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const keys = () => {
     return [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Borrar', 0, 'Cancelar', 'Aceptar'];
 }
 
-export const formatCurrency = (value) => {
-    // Asegúrate de que value es un número válido
+export const formatCurrency = (value, { onlyThousands = false } = {}) => {
     const number = Number(value);
     if (isNaN(number)) {
         return value; // Devuelve el original si no es número
@@ -42,6 +41,16 @@ export const formatCurrency = (value) => {
     const decimal = config?.paramsHtml?.currency?.decimal ?? 0;
 
     try {
+        if (onlyThousands) {
+            // Solo separadores de miles, sin símbolo
+            return new Intl.NumberFormat('es-CO', {
+                minimumFractionDigits: decimal,
+                maximumFractionDigits: decimal,
+                useGrouping: true,
+            }).format(number);
+        }
+
+        // Caso normal: moneda con símbolo
         return new Intl.NumberFormat('es-CO', {
             style: 'currency',
             currency: currencyCode,
@@ -51,6 +60,7 @@ export const formatCurrency = (value) => {
         return number.toLocaleString('es-CO');
     }
 };
+
 
 
 

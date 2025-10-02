@@ -7,6 +7,8 @@ import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
 import SetStatusLocker from '../apis/setStatusLocker.js';
 import SnackBarAlert from '../bar/snackAlert.jsx';
 import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
+import RegisterUserPeriod from '../dialogs/registerUserPeriod.jsx';
+import { useModal } from "../context/modalContext.jsx";
 import {
     Box,
     Typography,
@@ -23,7 +25,7 @@ import {
     FormControlLabel,
     Chip
 } from '@mui/material';
-import { Sync } from '@mui/icons-material';
+import { Payment, Sync } from '@mui/icons-material';
 
 const fileName = 'adminLockers';
 
@@ -48,10 +50,15 @@ const AdminLockers = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+    const [timeoutKeypad, setTimeoutKeypad] = useState();
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
     const config = useElectronConfig();
+
+    const {
+        registerUserPeriodOpen, setRegisterUserPeriodOpen,
+    } = useModal();
 
     useEffect(() => {
         if (!config) return;
@@ -111,6 +118,13 @@ const AdminLockers = () => {
 
 
     const handleAction = async (action) => {
+
+        if (action.toLowerCase() === 'reservar') {
+            setSelectedLockers([]); // Deseleccionar todos
+            setRegisterUserPeriodOpen(true);
+            return;
+
+        }
 
         let setFree = null;
 
@@ -288,6 +302,10 @@ const AdminLockers = () => {
         }
     };
 
+    const closeKeypad = () => {
+        setRegisterUserPeriodOpen(false);
+    };
+
     return (
         <>
             <Box
@@ -452,6 +470,7 @@ const AdminLockers = () => {
                         </Grid>
                     </Box>
                 )}
+
                 {currentModule && (
                     <Box sx={{ flex: "0 0 15%", width: "100%" }}>
                         {/* Acciones */}
@@ -476,7 +495,7 @@ const AdminLockers = () => {
                                             height: 48 * scale,
                                             fontSize: 20 * scale,
                                             px: 2 * scale,
-                                            borderRadius: 2 * scale, 
+                                            borderRadius: 2 * scale,
                                         }} />
                                     ))}
                                 </Box>
@@ -484,10 +503,10 @@ const AdminLockers = () => {
                                     <Button variant="outlined" color="primary" fullWidth onClick={() => handleAction('abrir')}>
                                         Abrir
                                     </Button>
-                                    <Button variant="outlined" color="secondary" fullWidth onClick={() => handleAction('liberar')}>
+                                    <Button variant="outlined" color="warning" fullWidth onClick={() => handleAction('liberar')}>
                                         Liberar
                                     </Button>
-                                    <Button variant="outlined" color="warning" fullWidth onClick={handleMenuClick}>
+                                    <Button variant="outlined" color="error" fullWidth onClick={handleMenuClick}>
                                         Cambiar estado
                                     </Button>
                                     <Menu
@@ -496,7 +515,10 @@ const AdminLockers = () => {
                                         onClose={handleMenuClose}
                                     >
                                         {data.general
-                                            .filter(item => item.status !== 'ocupado') // excluye los que son "ocupado"
+                                            .filter(item => {
+                                                if (item.status.toLowerCase() === "ocupado" || item.status.toLowerCase() === "reservado") return false; // nunca mostrar "ocupado"
+                                                return true; // los demás pasan
+                                            })
                                             .map(item => (
                                                 <MenuItem
                                                     key={item.status}
@@ -514,6 +536,19 @@ const AdminLockers = () => {
                                 </Stack>
                             </Stack>
                         )}
+                    </Box>
+                )}
+
+                {config?.reserve?.enabled && (
+                    <Box sx={{ mt: "auto", width: '100%' }}>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            fullWidth
+                            onClick={() => handleAction("reservar")}
+                        >
+                            Reservar
+                        </Button>
                     </Box>
                 )}
             </Box>
@@ -536,6 +571,12 @@ const AdminLockers = () => {
                 message={snackbarMessage}
                 severity={snackbarSeverity}
                 onClose={() => setSnackbarOpen(false)}
+            />
+
+            <RegisterUserPeriod
+                open={registerUserPeriodOpen}
+                onClose={closeKeypad}
+                timeout={timeoutKeypad}
             />
         </>
     );

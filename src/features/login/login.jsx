@@ -6,7 +6,7 @@ import logo from '../../assets/Logo.png';
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { useWindowSizeContext } from '../context/windowSizeContext';
 import { scaledDimension } from '../utils/scaledDimension.js';
-import LoginField from './loginField.jsx';
+import TextFieldVirtKeyPad from '../utils/textFieldVirtKeyPad.jsx';
 import {
     Box,
     Button,
@@ -49,9 +49,7 @@ export default function Login() {
         username: false,
         password: false,
     });
-    const [msgUser, setMsgUser] = useState('Ingresa el usuario.');
-    const [msgPass, setMsgPass] = useState('Ingresa la contraseña.');
-    const [msgErrorLogin, setMsgErrorLogin] = useState('Usuario o contraseña incorrectos.');
+    const [msgErrorLogin, setMsgErrorLogin] = useState('Usuario o contraseña incorrectos');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
@@ -234,8 +232,8 @@ export default function Login() {
 
         if (usernameError || passwordError) {
             const errores = [];
-            if (usernameError) errores.push(msgUser);
-            if (passwordError) errores.push('El Usuario es obligatorio');
+            if (usernameError) errores.push("El Usuario es obligatorio");
+            if (passwordError) errores.push('La contraseña es obligatoria');
 
             const msg = errores.join(' | ');
             log('warn', `Errores de validación: ${msg}`);
@@ -353,18 +351,6 @@ export default function Login() {
                             width: "100%",
                         }}
                     >
-                        {/* <Typography
-                            variant="h4"
-                            sx={{
-                                fontWeight: "bold",
-                                fontSize: `${2 * scale}rem`,
-                                pb: 5 * scale,
-                            }}
-                        >
-                            {(userInit?.adminWindowInto || userInit?.adminWindow)
-                                ? "Administración"
-                                : "Aplicación"}
-                        </Typography> */}
                     </Box>
 
                     {/* Inputs */}
@@ -380,24 +366,26 @@ export default function Login() {
                     >
                         <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <Person sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
-                            <LoginField
+                            <TextFieldVirtKeyPad
                                 label="Usuario"
                                 value={userName}
                                 setValue={setUserName}
                                 error={errorsEmpty.username}
-                                helperText={errorsEmpty.username ? msgUser : ""}
+                                helperText={errorsEmpty.username ? "Ingresa el usuario" : ""}
+                                inputProps={{ maxLength: 20 }}   // 👈 bloquea a 20
                             />
                         </Box>
 
                         <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
                             <LockOpen sx={{ color: "action.active", mr: 2 * scale, fontSize: 40 * scale }} />
-                            <LoginField
+                            <TextFieldVirtKeyPad
                                 label="Contraseña"
                                 value={pass}
                                 setValue={setPass}
                                 type={showPassword ? "text" : "password"}
                                 error={errorsEmpty.password}
-                                helperText={errorsEmpty.password ? msgPass : ""}
+                                helperText={errorsEmpty.password ? "Ingresa la contraseña" : ""}
+                                inputProps={{ maxLength: 10 }}   // 👈 bloquea a 10
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">

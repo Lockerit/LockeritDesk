@@ -28,7 +28,7 @@
         }
     },
     "report": {
-        "daily" : {
+        "daily": {
             "enabled": true,
             "hour": 0,
             "minute": 5
@@ -44,7 +44,7 @@
             "dayOfMonth": 1,
             "hour": 0,
             "minute": 15
-        },       
+        },
         "timezoneMode": "local",
         "timeInterval": 300
     },
@@ -61,8 +61,10 @@
             "openSessionLocker": "Tu casillero es el {{lockerCode}}, Retira tus pertenencias, Gracias por utilizar nuestro servicio. No olvides cerrar el casillero, Disponible para una nueva asignacion."
         }
     },
-    "paymentPeriod": {
+    "reserve": {
         "enabled": true,
-        "percentage": 40
+        "porcentWeekly": 10,
+        "porcentFortnightly": 20,
+        "porcentMonthly": 30
     }
 }

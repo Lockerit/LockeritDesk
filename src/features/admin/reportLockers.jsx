@@ -135,6 +135,7 @@ const ReportLockers = () => {
                         label="Fecha y hora inicial"
                         value={startDate}
                         onChange={setStartDate}
+                        showTime={true}
                     />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -142,6 +143,7 @@ const ReportLockers = () => {
                         label="Fecha y hora final"
                         value={endDate}
                         onChange={setEndDate}
+                        showTime={true}
                     />
                 </Box>
                 <Box>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import KeyPadModal from '../dialogs/keypad.jsx'
+import KeyPadModal from '../dialogs/keypadNumeric.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useElectronConfig } from '../hooks/useConfig.js';
@@ -50,7 +50,7 @@ export default function Ppal() {
     const config = useElectronConfig();
     const location = useLocation();
     const {
-        modalOpen, setModalOpen, operation, setOperation
+        keypadOpen, setKeypadOpen, operation, setOperation
     } = useModal();
 
     const intervalRef = useRef(null);
@@ -77,7 +77,7 @@ export default function Ppal() {
         if (!config || !config?.voice?.enabled) return;
 
         // Si el modal está abierto, detener audio e intervalos
-        if (modalOpen) {
+        if (keypadOpen) {
             stopSpeaking();
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
@@ -108,7 +108,7 @@ export default function Ppal() {
             }
             stopSpeaking();
         };
-    }, [modalOpen, config?.voice?.enabled]);
+    }, [keypadOpen, config?.voice?.enabled]);
 
     useEffect(() => {
         fetchDataStatusLocker();
@@ -218,16 +218,16 @@ export default function Ppal() {
 
     const saveLocker = () => {
         setOperation('Guardar');
-        setModalOpen(true);
+        setKeypadOpen(true);
     }
 
     const removeLocker = () => {
         setOperation('Retirar');
-        setModalOpen(true);
+        setKeypadOpen(true);
     }
 
     const closeKeypad = () => {
-        setModalOpen(false);
+        setKeypadOpen(false);
         fetchDataStatusLocker();
     };
 
@@ -360,7 +360,7 @@ export default function Ppal() {
             </Box >
 
             <KeyPadModal
-                open={modalOpen}
+                open={keypadOpen}
                 onClose={closeKeypad}
                 operation={operation}
                 timeout={timeoutKeypad}
