@@ -33,7 +33,7 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
                 width: '100%',
                 alignContent: 'center',
                 alignItems: 'center',
-                px: 10 * scale,
+                px: 5 * scale,
             }}
         >
             <Typography
@@ -123,7 +123,14 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
     );
 };
 
-const DateTime = ({ label, value, onChange, showTime = true, disabled = false }) => {
+const DateTime = ({
+    label,
+    value,
+    onChange,
+    showTime = true,
+    disabled = false,
+    disablePastDates = false, // 👈 NUEVA PROP OPCIONAL
+}) => {
     const [open, setOpen] = useState(false);
     const [tempValue, setTempValue] = useState(value); // estado temporal
     const size = useWindowSizeContext();
@@ -135,12 +142,18 @@ const DateTime = ({ label, value, onChange, showTime = true, disabled = false })
         }
     }, [open, value]);
 
+    // Función para deshabilitar días pasados si se requiere
+    const shouldDisableDate = (date) => {
+        if (!disablePastDates) return false; // ❌ no deshabilitar nada
+        return date.isBefore(dayjs().startOf("day")); // ✅ bloquea fechas anteriores al hoy
+    };
+
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
             <DateTimePicker
                 disabled={disabled}
                 label={label}
-                value={value} // 👈 el real sigue siendo value
+                value={value}
                 open={open}
                 onOpen={() => setOpen(true)}
                 onClose={() => setOpen(false)}
@@ -167,6 +180,7 @@ const DateTime = ({ label, value, onChange, showTime = true, disabled = false })
                                                 : newDate.startOf("day")
                                         );
                                     }}
+                                    shouldDisableDate={shouldDisableDate} // 👈 aquí se aplica
                                 />
 
                                 {showTime && (
@@ -191,12 +205,12 @@ const DateTime = ({ label, value, onChange, showTime = true, disabled = false })
                             <CustomActionBar
                                 onAccept={() => {
                                     props.onAccept?.();
-                                    onChange(tempValue); // ✅ solo guardo aquí
+                                    onChange(tempValue);
                                     setOpen(false);
                                 }}
                                 onCancel={() => {
                                     props.onCancel?.();
-                                    setTempValue(value); // 🔄 resetea a valor original
+                                    setTempValue(value);
                                     setOpen(false);
                                 }}
                                 setToday={() => setTempValue(dayjs())}
@@ -208,6 +222,7 @@ const DateTime = ({ label, value, onChange, showTime = true, disabled = false })
         </LocalizationProvider>
     );
 };
+
 
 
 export default DateTime;

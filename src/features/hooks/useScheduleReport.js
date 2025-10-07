@@ -53,7 +53,7 @@ function setExecutionDates(frequency, hour, minute, dayOfWeek, dayOfMonth) {
     return nextTarget;
 }
 
-function shouldRunNow(frequency) {
+function shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth) {
     const lastExec = getLastExecution(frequency);
     const nextTarget = getNextTarget(frequency);
     const now = dayjs();
@@ -63,10 +63,32 @@ function shouldRunNow(frequency) {
         `Ahora: ${now.format("YYYY-MM-DD HH:mm:ss")} | Próximo target: ${nextTarget ?? "N/A"} | Última ejecución: ${lastExec ?? "N/A"}`
     );
 
-    // 🚀 Primera ejecución → dispara inmediatamente
+    // 🚀 Si no hay registro previo, solo calcular el próximo target SIN ejecutar
     if (!lastExec || !nextTarget) {
-        log("debug", "Primera ejecución detectada, disparando tarea inmediatamente");
-        return true;
+        let firstTarget = now.hour(hour).minute(minute).second(0).millisecond(0);
+
+        if (frequency === "daily") {
+            if (now.isAfter(firstTarget)) firstTarget = firstTarget.add(1, "day");
+        }
+
+        if (frequency === "weekly") {
+            const diff = (dayOfWeek - now.day() + 7) % 7;
+            firstTarget = firstTarget.add(diff || 7, "day");
+        }
+
+        if (frequency === "monthly") {
+            firstTarget = now.date(dayOfMonth).hour(hour).minute(minute).second(0).millisecond(0);
+            if (now.isAfter(firstTarget)) firstTarget = firstTarget.add(1, "month");
+        }
+
+        localStorage.setItem(`nextTarget_${frequency}`, firstTarget.format("YYYY-MM-DD HH:mm:ss"));
+
+        log(
+            "info",
+            `[${frequency}] Primera inicialización — se calcula próximo target: ${firstTarget.format("YYYY-MM-DD HH:mm:ss")}`
+        );
+
+        return false; // no ejecutar ahora
     }
 
     const targetDate = dayjs(nextTarget, "YYYY-MM-DD HH:mm:ss");
@@ -125,12 +147,12 @@ export function useSchedulerReport({
 
         log("debug", `Iniciando scheduler [${frequency}] con hora ${hour}:${minute}`);
 
-        if (shouldRunNow(frequency)) {
+        if (shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth)) {
             runTask();
         }
 
         const interval = setInterval(() => {
-            if (shouldRunNow(frequency)) {
+            if (shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth)) {
                 runTask();
             }
         }, timeInterval * 1000);

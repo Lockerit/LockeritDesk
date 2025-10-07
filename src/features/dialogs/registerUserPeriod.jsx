@@ -210,6 +210,10 @@ export default function RegisterUserPeriod({
       errores.push("El número de identificación no debe superar los 20 caracteres");
       setErrorsEmpty(prev => ({ ...prev, idNumber: true }));
       hasError = true;
+    } else if (trimmedId.length < 6) {
+      errores.push("El número de identificación no debe ser inferior a los 6 caracteres");
+      setErrorsEmpty(prev => ({ ...prev, idNumber: true }));
+      hasError = true;
     } else {
       setErrorsEmpty(prev => ({ ...prev, idNumber: false }));
     }
@@ -239,7 +243,7 @@ export default function RegisterUserPeriod({
       errores.push("El número celiular es obligatorio");
       setErrorsEmpty(prev => ({ ...prev, phone: true }));
       hasError = true;
-    } else if (trimmedPhone.length > 50) {
+    } else if (trimmedPhone.length > 10) {
       errores.push("El número celular no debe superar los 10 caracteres");
       setErrorsEmpty(prev => ({ ...prev, phone: true }));
       hasError = true;
@@ -513,6 +517,7 @@ export default function RegisterUserPeriod({
                   value={startDate}
                   onChange={setStartDate}
                   showTime={false}
+                  disablePastDates={true}
                 />
               </Box>
 

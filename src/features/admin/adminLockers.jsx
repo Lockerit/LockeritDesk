@@ -141,10 +141,16 @@ const AdminLockers = () => {
         const failedLockers = [];
         const openBy = 'local';
 
-        for (const { lockerCode } of selectedLockers) {
+        for (const locker of selectedLockers) {
+
+            if (locker.status.toLowerCase() === 'reservado' && action !== 'abrir') {
+                failedLockers.push(locker.lockerCode);
+                continue;
+            }
+
             try {
                 const payloadOpen = {
-                    lockerCode,
+                    lockerCode: locker.lockerCode,
                     setFree,
                     openBy
                 };
@@ -152,13 +158,14 @@ const AdminLockers = () => {
                 const resultOpen = await OpenByCodeLocker(payloadOpen);
 
                 if (resultOpen?.success) {
-                    successfulLockers.push(lockerCode);
+                    successfulLockers.push(locker.lockerCode);
                 } else {
-                    failedLockers.push(lockerCode);
+                    failedLockers.push(locker.lockerCode);
                 }
             } catch (err) {
-                failedLockers.push(lockerCode);
+                failedLockers.push(locker.lockerCode);
             }
+
         }
         setLoading(false);
 
