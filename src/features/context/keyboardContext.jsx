@@ -1,3 +1,4 @@
+
 // KeyboardProvider.jsx
 import { useState, createContext, useContext, useRef } from "react";
 import VirtualKeyboard from "../utils/virtualKeyboard";
@@ -71,6 +72,35 @@ export function KeyboardProvider({ children }) {
         document.removeEventListener('mouseup', onMouseUp);
     };
 
+    // Soporte para pantallas táctiles
+    const onTouchStart = (e) => {
+        dragging.current = true;
+        const touch = e.touches[0];
+        offset.current = {
+            x: touch.clientX - position.x,
+            y: touch.clientY - position.y,
+        };
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+    };
+    const onTouchMove = (e) => {
+        if (!dragging.current) return;
+        const touch = e.touches[0];
+        const kbWidth = window.innerWidth * 0.9;
+        const kbHeight = 300 * scale;
+        const maxX = window.innerWidth - kbWidth;
+        const maxY = window.innerHeight - kbHeight;
+        const newX = clamp(touch.clientX - offset.current.x, 0, maxX);
+        const newY = clamp(touch.clientY - offset.current.y, 0, maxY);
+        setPosition({ x: newX, y: newY });
+        e.preventDefault(); // Evita scroll mientras arrastras
+    };
+    const onTouchEnd = () => {
+        dragging.current = false;
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+    };
+
     return (
         <KeyboardContext.Provider value={{ openKeyboard, closeKeyboard }}>
             {children}
@@ -94,6 +124,7 @@ export function KeyboardProvider({ children }) {
                 >
                     <div
                         onMouseDown={onMouseDown}
+                        onTouchStart={onTouchStart}
                         style={{
                             width: '100%',
                             cursor: 'move',
