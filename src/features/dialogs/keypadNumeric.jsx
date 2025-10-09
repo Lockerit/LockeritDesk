@@ -26,7 +26,7 @@ import ShowErrorAPI from './showErrorAPI.jsx';
 import { paymentService } from '../apis/assignLocker.js';
 import LoadingScreen from './loading.jsx';
 import ShowLocker from './showLocker.jsx';
-import OpenSessionLocker from '../apis/openReserveLocker.js';
+import OpenSessionLocker from '../apis/openSessionLocker.js';
 import OpenReserveLocker from '../apis/openReserveLocker.js';
 import {
   formatTime,

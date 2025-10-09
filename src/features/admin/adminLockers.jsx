@@ -142,30 +142,28 @@ const AdminLockers = () => {
         const openBy = 'local';
 
         for (const locker of selectedLockers) {
+            // if (locker.status.toLowerCase() !== 'reservado' ) {
+                try {
+                    const payloadOpen = {
+                        lockerCode: locker.lockerCode,
+                        setFree,
+                        openBy
+                    };
 
-            if (locker.status.toLowerCase() === 'reservado' && action !== 'abrir') {
-                failedLockers.push(locker.lockerCode);
-                continue;
-            }
+                    const resultOpen = await OpenByCodeLocker(payloadOpen);
 
-            try {
-                const payloadOpen = {
-                    lockerCode: locker.lockerCode,
-                    setFree,
-                    openBy
-                };
-
-                const resultOpen = await OpenByCodeLocker(payloadOpen);
-
-                if (resultOpen?.success) {
-                    successfulLockers.push(locker.lockerCode);
-                } else {
+                    if (resultOpen?.success) {
+                        successfulLockers.push(locker.lockerCode);
+                    } else {
+                        failedLockers.push(locker.lockerCode);
+                    }
+                } catch (err) {
                     failedLockers.push(locker.lockerCode);
                 }
-            } catch (err) {
-                failedLockers.push(locker.lockerCode);
-            }
-
+            // }
+            // else {
+            //     failedLockers.push(locker.lockerCode);
+            // }
         }
         setLoading(false);
 
