@@ -46,7 +46,7 @@
             "minute": 15
         },
         "timezoneMode": "local",
-        "timeInterval": 300
+        "timeInterval": 60
     },
     "voice": {
         "enabled": true,

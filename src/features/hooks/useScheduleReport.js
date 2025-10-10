@@ -65,30 +65,8 @@ function shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth) {
 
     // 🚀 Si no hay registro previo, solo calcular el próximo target SIN ejecutar
     if (!lastExec || !nextTarget) {
-        let firstTarget = now.hour(hour).minute(minute).second(0).millisecond(0);
-
-        if (frequency === "daily") {
-            if (now.isAfter(firstTarget)) firstTarget = firstTarget.add(1, "day");
-        }
-
-        if (frequency === "weekly") {
-            const diff = (dayOfWeek - now.day() + 7) % 7;
-            firstTarget = firstTarget.add(diff || 7, "day");
-        }
-
-        if (frequency === "monthly") {
-            firstTarget = now.date(dayOfMonth).hour(hour).minute(minute).second(0).millisecond(0);
-            if (now.isAfter(firstTarget)) firstTarget = firstTarget.add(1, "month");
-        }
-
-        localStorage.setItem(`nextTarget_${frequency}`, firstTarget.format("YYYY-MM-DD HH:mm:ss"));
-
-        log(
-            "info",
-            `[${frequency}] Primera inicialización — se calcula próximo target: ${firstTarget.format("YYYY-MM-DD HH:mm:ss")}`
-        );
-
-        return false; // no ejecutar ahora
+        log("debug", "Primera ejecución detectada, disparando tarea inmediatamente");
+        return true;
     }
 
     const targetDate = dayjs(nextTarget, "YYYY-MM-DD HH:mm:ss");
