@@ -115,9 +115,10 @@ export function KeyboardProvider({ children }) {
                         width: '90vw',
                         maxWidth: '90vw',
                         minWidth: `${320 * scale}px`,
-                        background: '#fff',
+                        background: '#f5f5f5',
                         borderRadius: 8 * scale,
                         boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+                        border: `${1 * scale}px solid #0c315e`,
                         userSelect: 'none',
                         padding: 8 * scale,
                     }}
@@ -130,15 +131,16 @@ export function KeyboardProvider({ children }) {
                             cursor: 'move',
                             padding: 4,
                             fontWeight: 'bold',
-                            color: '#333',
-                            background: '#f5f5f5',
+                            color: '#0c315e',
+                            background: '#ffffff',
+                            border: `${1 * scale}px solid #0c315e`,
                             borderRadius: 6 * scale,
                             marginBottom: 8 * scale,
                         }}
                     >
                         Arrastra para mover el teclado
                         <span
-                            style={{ float: 'right', cursor: 'pointer', color: '#888' }}
+                            style={{ float: 'right', cursor: 'pointer', color: '#0c315e' }}
                             onClick={closeKeyboard}
                         >
                             ✕

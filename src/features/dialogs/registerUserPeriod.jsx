@@ -10,6 +10,7 @@ import {
   Discount,
   AttachMoney,
   Email,
+  Today,
 } from '@mui/icons-material';
 import {
   Button,
@@ -280,9 +281,9 @@ export default function RegisterUserPeriod({
   };
 
   const confirmAssignLocker = () => {
-      setShowLockerOpen(false);
-      setConfirmDialogOpen(false);
-      cancel();
+    setShowLockerOpen(false);
+    setConfirmDialogOpen(false);
+    cancel();
   };
 
   const cancelConfirmation = () => {
@@ -501,17 +502,37 @@ export default function RegisterUserPeriod({
               </FormControl>
             </Box>
 
-            <Box
+            <Box sx={{ display: "flex", alignItems: "center", flex: 1, width: "100%" }}>
+              <Today sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
+              <TextFieldVirtKeyPad
+                label="Fecha de inicialización"
+                value={startDate?.format("YYYY-MM-DD")}
+                setValue={setStartDate}
+                disabled
+              />
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "center", flex: 1, width: "100%" }}>
+              <Event sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
+              <TextFieldVirtKeyPad
+                label="Fecha de finalización"
+                value={endDate?.format("YYYY-MM-DD")}
+                setValue={setEndDate}
+                disabled
+              />
+            </Box>
+
+            {/* <Box
               sx={{
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "flex-end",
                 width: "100%",
-                gap: 2 * scale, // espacio entre los dos DateTime
+                gap: 2 * scale,
                 my: 5 * scale,
               }}
             >
-              <Box sx={{ width: "calc(50% - 8px)" }}> {/* 8px ≈ theme.spacing(2) */}
+              <Box sx={{ width: "calc(50% - 8px)" }}>
                 <DateTime
                   label="Fecha de inicio"
                   value={startDate}
@@ -530,7 +551,7 @@ export default function RegisterUserPeriod({
                   disabled
                 />
               </Box>
-            </Box>
+            </Box> */}
 
             <Box sx={{ display: "flex", alignItems: "center", flex: 1, width: "100%" }}>
               <AttachMoney sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
