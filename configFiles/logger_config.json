@@ -4,6 +4,6 @@
     "datePattern": "YYYY-MM-DD",
     "zippedArchive": false,
     "maxSize": "10m",
-    "maxFiles": "14d",
+    "maxFiles": "15d",
     "logLevel": "info"
-}
+}   

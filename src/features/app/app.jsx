@@ -170,12 +170,22 @@ export default function App() {
         }
     }
 
+    const isEnabledDaily = !!config?.report?.daily?.enabled && (config?.login?.userOpera.toLowerCase() === userInit?.user.toLowerCase());
+    log("info", `Scheduler diario habilitado: ${isEnabledDaily} | usuario config: ${config?.login?.userOpera.toLowerCase()} | usuario actual: ${userInit?.user.toLowerCase()}`);
+
+    const isEnabledWeekly = !!config?.report?.weekly?.enabled && (config?.login?.userOpera.toLowerCase() === userInit?.user.toLowerCase());
+    log("info", `Scheduler semanal habilitado: ${isEnabledWeekly} | usuario config: ${config?.login?.userOpera.toLowerCase()} | usuario actual: ${userInit?.user.toLowerCase()}`);
+
+    const isEnabledMonthly = !!config?.report?.monthly?.enabled && (config?.login?.userOpera.toLowerCase() === userInit?.user.toLowerCase());
+    log("info", `Scheduler mensual habilitado: ${isEnabledMonthly} | usuario config: ${config?.login?.userOpera.toLowerCase()} | usuario actual: ${userInit?.user.toLowerCase()}`);
+
+
     // Daily
     useSchedulerReport({
         frequency: "daily",
         hour: config?.report?.daily?.hour ?? 0,
         minute: config?.report?.daily?.minute ?? 0,
-        enabled: !!config?.report?.daily?.enabled,
+        enabled: isEnabledDaily,
         timeInterval: config?.report?.timeInterval || 60, // segundos
         task: async (startDate, endDate) => {
             await executeReportTask(startDate, endDate, "daily");
@@ -188,7 +198,7 @@ export default function App() {
         dayOfWeek: config?.report?.weekly?.dayOfWeek ?? 1,
         hour: config?.report?.weekly?.hour ?? 0,
         minute: config?.report?.weekly?.minute ?? 0,
-        enabled: !!config?.report?.weekly?.enabled,
+        enabled: isEnabledWeekly,
         timeInterval: config?.report?.timeInterval || 60, // segundos
         task: async (startDate, endDate) => {
             await executeReportTask(startDate, endDate, "weekly");
@@ -201,7 +211,7 @@ export default function App() {
         dayOfMonth: config?.report?.monthly?.dayOfMonth ?? 1,
         hour: config?.report?.monthly?.hour ?? 0,
         minute: config?.report?.monthly?.minute ?? 0,
-        enabled: !!config?.report?.monthly?.enabled,
+        enabled: isEnabledMonthly,
         timeInterval: config?.report?.timeInterval || 60, // segundos
         task: async (startDate, endDate) => {
             await executeReportTask(startDate, endDate, "monthly");
