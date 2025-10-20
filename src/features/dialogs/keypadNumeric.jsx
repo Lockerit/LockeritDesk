@@ -838,7 +838,7 @@ export default function KeyPadModal({
           operation !== 'Reservado' ? (operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio' : 'gracias por utilizar nuestro servicio'
         }
         timeout={timeoutShowMessage}
-        backColor={operation === 'Retirar' ? 'primary.main' : operation === 'Guardar' ? 'error.main' : 'secondary.main'}
+        backColor={operation === 'Retirar' ? 'secondary.main' : operation === 'Guardar' ? 'primary.main' : 'info.main'}
         operation={operation}
         hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus

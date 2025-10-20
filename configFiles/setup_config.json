@@ -2,7 +2,7 @@
     "customer": "Tulocker",
     "pointName": "CC Outlet Factory",
     "pointId": "Sótano 1",
-    "sendSMS": true,
+    "sendSMS": false,
     "login": {
         "userOpera": "Operador",
         "passOpera": "250701",
@@ -63,7 +63,7 @@
         }
     },
     "reserve": {
-        "enabled": true,
+        "enabled": false,
         "porcentWeekly": 10,
         "porcentFortnightly": 20,
         "porcentMonthly": 30

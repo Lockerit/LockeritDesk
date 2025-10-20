@@ -657,7 +657,7 @@ export default function RegisterUserPeriod({
         title={'Casillero reservado:'}
         msg={'Datos registrados exitosamente'}
         timeout={timeoutShowMessage}
-        backColor={'secondary.main'}
+        backColor={'info.main'}
         hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus

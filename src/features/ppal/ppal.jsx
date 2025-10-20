@@ -18,6 +18,8 @@ import {
 } from '@mui/material';
 import {
     AddCircle,
+    Key,
+    LockReset,
     RemoveCircle,
     SensorOccupied
 } from '@mui/icons-material';
@@ -305,7 +307,7 @@ export default function Ppal() {
                             <Grid sx={{ flex: 1 }}>
                                 <ActionButton
                                     text="Reservado"
-                                    icon={<SensorOccupied sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                                    icon={<Key sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
                                     color="info"
                                     onClick={reserveLocker}
                                 />

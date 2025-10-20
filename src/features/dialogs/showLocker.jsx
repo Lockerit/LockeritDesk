@@ -26,7 +26,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const fileName = 'showLocker';
 
-export default function ShowLocker({ open, onConfirm, locker, title, msg, timeout = 15, backColor, operation }) {
+export default function ShowLocker({ open, onConfirm, locker, title, msg, timeout = 15, backColor = 'gray', operation }) {
 
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()

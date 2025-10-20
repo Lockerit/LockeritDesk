@@ -54,6 +54,16 @@ const AdminLockers = () => {
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
+    const [dataStatus, setDataStatus] = useState({
+        general: [
+            { status: "Libre", color: "success.main" },
+            { status: "Ocupado", color: "error.main" },
+            { status: "Reservado", color: "info.main" },
+            { status: "Deshabilitado", color: "gray" },
+            { status: "Asignado", color: "purple" },
+        ],
+    });
+
     const config = useElectronConfig();
 
     const {
@@ -143,23 +153,23 @@ const AdminLockers = () => {
 
         for (const locker of selectedLockers) {
             // if (locker.status.toLowerCase() !== 'reservado' ) {
-                try {
-                    const payloadOpen = {
-                        lockerCode: locker.lockerCode,
-                        setFree,
-                        openBy
-                    };
+            try {
+                const payloadOpen = {
+                    lockerCode: locker.lockerCode,
+                    setFree,
+                    openBy
+                };
 
-                    const resultOpen = await OpenByCodeLocker(payloadOpen);
+                const resultOpen = await OpenByCodeLocker(payloadOpen);
 
-                    if (resultOpen?.success) {
-                        successfulLockers.push(locker.lockerCode);
-                    } else {
-                        failedLockers.push(locker.lockerCode);
-                    }
-                } catch (err) {
+                if (resultOpen?.success) {
+                    successfulLockers.push(locker.lockerCode);
+                } else {
                     failedLockers.push(locker.lockerCode);
                 }
+            } catch (err) {
+                failedLockers.push(locker.lockerCode);
+            }
             // }
             // else {
             //     failedLockers.push(locker.lockerCode);
@@ -291,24 +301,9 @@ const AdminLockers = () => {
         }
     };
 
-    // Colores por estado
-    const getColorByStatus = (status) => {
-        switch (status.toLowerCase()) {
-            case 'libre':
-                return 'text.secondary';
-            case 'ocupado':
-                return 'error.main';
-            case 'reservado':
-                return 'text.primary';
-            case 'deshabilitado':
-                return '#757575'
-            default:
-                return '#757575'
-        }
-    };
-
-    const closeKeypad = () => {
+    const closeRegisterUserPeriod = () => {
         setRegisterUserPeriodOpen(false);
+        fetchData(); // Refrescar datos al cerrar el modal
     };
 
     return (
@@ -361,7 +356,8 @@ const AdminLockers = () => {
 
 
                 {/* Indicadores */}
-                <Box textAlign="center"
+                <Box
+                    textAlign="center"
                     sx={{
                         flex: "0 0 5%",
                         display: "flex",
@@ -370,25 +366,42 @@ const AdminLockers = () => {
                         width: "100%",
                     }}
                 >
-                    {data?.general?.map((item, idx) => (
-                        <Box key={item.status} sx={{ pb: 5 * scale }}>
-                            <Typography variant="h5" component="span"
-                                sx={{
-                                    fontWeight: 'bold',
-                                    color: getColorByStatus(item.status.toUpperCase())
-                                }}>
-                                {item.status.toUpperCase()}{': '}
-                            </Typography>
-                            <Typography variant="h5" component="span"
-                                sx={{
-                                    fontWeight: 'bold',
-                                    color: getColorByStatus(item.status.toUpperCase())
-                                }}>
-                                {item.total}
-                            </Typography>
-                        </Box>
-                    ))}
+                    {data?.general?.map((item) => {
+                        // Busca el color correspondiente en dataStatus
+                        const matchedStatus = dataStatus.general.find(
+                            (s) => s.status.toLowerCase() === item.status.toLowerCase()
+                        );
+
+                        const color = matchedStatus ? matchedStatus.color : "black"; // color por defecto si no encuentra coincidencia
+
+                        return (
+                            <Box key={matchedStatus.status} sx={{ pb: 5 * scale }}>
+                                <Typography
+                                    variant="h5"
+                                    component="span"
+                                    sx={{
+                                        fontWeight: "bold",
+                                        color: color,
+                                    }}
+                                >
+                                    {matchedStatus.status}
+                                    {": "}
+                                </Typography>
+                                <Typography
+                                    variant="h5"
+                                    component="span"
+                                    sx={{
+                                        fontWeight: "bold",
+                                        color: color,
+                                    }}
+                                >
+                                    {item.total}
+                                </Typography>
+                            </Box>
+                        );
+                    })}
                 </Box>
+
 
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: "100%", flex: "0 0 10%" }}>
                     <FormControl variant="standard" sx={{ width: '75%', mr: 5 * scale }}>
@@ -444,27 +457,49 @@ const AdminLockers = () => {
                             boxSizing: "border-box",
                         }}
                     >
-                        <Grid container spacing={1 * scale} justifyContent="center" sx={{ minHeight: '100%', width: '100%' }}>
+                        <Grid
+                            container
+                            spacing={1 * scale}
+                            justifyContent="center"
+                            sx={{ minHeight: "100%", width: "100%" }}
+                        >
                             {currentModule.lockers.map((locker) => {
                                 const selected = selectedLockers.some(
                                     (item) => item.lockerCode === locker.lockerCode
                                 );
+
+                                // 🔍 Busca el color según el status en dataStatus
+                                const matchedStatus = dataStatus.general.find(
+                                    (s) => s.status.toLowerCase() === locker.status.toLowerCase()
+                                );
+
+                                // Usa el color correspondiente o un fallback
+                                const color = matchedStatus ? matchedStatus.color : "gray";
+
                                 return (
-                                    <Grid size={2.4} key={locker.lockerCode} sx={{ maxHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
+                                    <Grid
+                                        key={locker.lockerCode}
+                                        size={2.4}
+                                        sx={{
+                                            maxHeight: "100%",
+                                            display: "flex",
+                                            alignItems: "stretch",
+                                        }}
+                                    >
                                         <Button
                                             variant="contained"
                                             onClick={() => handleLockerClick(locker)}
                                             sx={{
-                                                backgroundColor: getColorByStatus(locker.status),
-                                                border: selected ? `${5 * scale}px solid black` : 'none',
-                                                color: '#fff',
-                                                width: '100%',
-                                                height: '100%',
-                                                fontSize: `${32 * scale}px`
-                                                // '&:hover': {
-                                                //     backgroundColor: getHoverColorByStatus(locker.status),
-                                                //     color: '#fff'
-                                                // }
+                                                backgroundColor: color,
+                                                border: selected ? `${5 * scale}px solid black` : "none",
+                                                color: "#fff",
+                                                width: "100%",
+                                                height: "100%",
+                                                fontSize: `${32 * scale}px`,
+                                                "&:hover": {
+                                                    backgroundColor: color, // evita cambio al hacer hover
+                                                    opacity: 0.85, // leve efecto visual
+                                                },
                                             }}
                                         >
                                             {locker.lockerCode}
@@ -473,6 +508,7 @@ const AdminLockers = () => {
                                 );
                             })}
                         </Grid>
+
                     </Box>
                 )}
 
@@ -519,7 +555,7 @@ const AdminLockers = () => {
                                         open={menuOpen}
                                         onClose={handleMenuClose}
                                     >
-                                        {data.general
+                                        {dataStatus.general
                                             .filter(item => {
                                                 if (item.status.toLowerCase() === "ocupado" || item.status.toLowerCase() === "reservado") return false; // nunca mostrar "ocupado"
                                                 return true; // los demás pasan
@@ -527,9 +563,9 @@ const AdminLockers = () => {
                                             .map(item => (
                                                 <MenuItem
                                                     key={item.status}
-                                                    onClick={() => handleStatusChange(item.status)}
+                                                    onClick={() => handleStatusChange(item.status.toLocaleLowerCase())}
                                                     sx={{
-                                                        color: getColorByStatus(item.status),
+                                                        color: item.color,
                                                         fontWeight: 'bold',
                                                         fontSize: `${24 * scale}px`
                                                     }}
@@ -580,7 +616,7 @@ const AdminLockers = () => {
 
             <RegisterUserPeriod
                 open={registerUserPeriodOpen}
-                onClose={closeKeypad}
+                onClose={closeRegisterUserPeriod}
                 timeout={timeoutKeypad}
             />
         </>
