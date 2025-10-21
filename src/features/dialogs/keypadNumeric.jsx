@@ -23,10 +23,11 @@ import SnackBarAlert from '../bar/snackAlert.jsx';
 import ConfirmDialog from './confirmDialog.jsx';
 import InsertMoney from './insertMoney.jsx';
 import ShowErrorAPI from './showErrorAPI.jsx';
-import { paymentService } from '../apis/addAssignLocker.js';
-import LoadingScreen from '../dialogs/loading.jsx';
-import AssignLocker from './assignLocker.jsx';
+import { paymentService } from '../apis/assignLocker.js';
+import LoadingScreen from './loading.jsx';
+import ShowLocker from './showLocker.jsx';
 import OpenSessionLocker from '../apis/openSessionLocker.js';
+import OpenReserveLocker from '../apis/openReserveLocker.js';
 import {
   formatTime,
   phoneRegex,
@@ -40,7 +41,7 @@ import {
 import { useElectronConfig } from '../hooks/useConfig.js';
 import { getVoices, speak, stopSpeaking } from '../utils/speak.js'
 import { cancelObservable } from '../utils/cancelObservable.js';
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '../context/windowSizeContext.jsx'; // Hook para tamaño pantalla
 import { scaledDimension } from '../utils/scaledDimension.js';
 import { useModal } from "../context/modalContext.jsx";
 
@@ -84,9 +85,8 @@ export default function KeyPadModal({
     locker, setLocker,
     confirmDialogOpen, setConfirmDialogOpen,
     insertMoneyOpen, setInsertMoneyOpen,
-    assignLockerOpen, setAssignLockerOpen,
-    showErrorAPIOpen, setShowErrorAPIOpen,
-    closeAllModals,
+    showLockerOpen, setShowLockerOpen,
+    showErrorAPIOpen, setShowErrorAPIOpen
   } = useModal();
 
   // Refs para cambiar el foco
@@ -99,7 +99,7 @@ export default function KeyPadModal({
   const config = useElectronConfig();
 
 
-  const operationRet = operation === 'Retirar' ? true : false;
+  const operationRet = (operation === 'Retirar' || operation === 'Reservado') ? true : false;
   const isConfigReady = config && Object.keys(config).length > 0;
 
   useEffect(() => {
@@ -206,7 +206,7 @@ export default function KeyPadModal({
     if (activeInput === 'phone') {
       const trimmedPhone = phone.trim();
       const isEmpty = trimmedPhone === '';
-      const invalidFormat = !phoneRegex().test(trimmedPhone);
+      const invalidFormat = !phoneRegex.test(trimmedPhone);
       setErrorsEmpty(prev => ({ ...prev, phone: isEmpty || invalidFormat }));
       if (isEmpty) {
         const msg = 'Ingresa el número celular.';
@@ -269,7 +269,7 @@ export default function KeyPadModal({
 
     // Validación del celular
     const trimmedPhone = phone.trim();
-    const phoneInvalid = trimmedPhone === '' || !phoneRegex().test(trimmedPhone);
+    const phoneInvalid = trimmedPhone === '' || !phoneRegex.test(trimmedPhone);
     if (phoneInvalid) {
       const msg = trimmedPhone === '' ? 'Ingresa el número celular.' : 'Número celular inválido.';
       setMsgPhone(msg);
@@ -339,7 +339,6 @@ export default function KeyPadModal({
   };
 
   const accept = async () => {
-    // setAssignLockerOpen(false);
     setLoading(false);
     if (!operationRet) {
       setMessageLoading('Asignando Casilllero...');
@@ -359,7 +358,18 @@ export default function KeyPadModal({
         setLoading(true);
         speak(" ");
 
-        const result = await OpenSessionLocker(payload);
+        let result = null;
+        let message = '';
+
+        if (operation === 'Retirar') {
+          result = await OpenSessionLocker(payload);
+          message = config?.voice?.message?.openSessionLocker || "";
+        } else if (operation === 'Reservado') {
+          result = await OpenReserveLocker(payload);
+          message = config?.voice?.message?.openReserveLocker || "";
+        }
+
+        console.log("result: ", result)
 
         if (result?.success) {
 
@@ -367,23 +377,22 @@ export default function KeyPadModal({
           if (lockerCode) {
 
             if (config?.voice?.enabled) {
-              let message = config?.voice?.message?.openSessionLocker || "";
               // Reemplazo dinámico del placeholder
               message = message.replace("{{lockerCode}}", lockerCode || '');
               speak(message || "");
             }
 
             setLocker(lockerCode);
-            setAssignLockerOpen(true);
+            setShowLockerOpen(true);
           } else {
             setMessageErrorAPI('No se recibió código de casillero');
             setShowErrorAPIOpen(true);
           }
         } else {
           if (result?.status === 500) {
-            setMessageErrorAPI('No se pudo realizar el retiro del casillero, ¡Inténtalo nuevamente!');
+            setMessageErrorAPI('No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!');
           } else {
-            setMessageErrorAPI(result?.data?.message || 'No se pudo realizar el retiro del casillero, ¡Inténtalo nuevamente!');
+            setMessageErrorAPI(result?.data?.message || 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!');
           }
           setShowErrorAPIOpen(true);
         }
@@ -400,8 +409,6 @@ export default function KeyPadModal({
     }
 
     setLoading(false);
-    // clearInputs();
-    // onClose(); // o pasa los datos al padre
   };
 
   const clearInputs = () => {
@@ -434,7 +441,7 @@ export default function KeyPadModal({
   };
 
   const confirmSendData = async () => {
-    // setAssignLockerOpen(false);
+
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
@@ -466,7 +473,7 @@ export default function KeyPadModal({
           }
 
           setLocker(lockerCode);
-          setAssignLockerOpen(true);
+          setShowLockerOpen(true);
         }
       } else {
         if (result?.http?.status === 499) {
@@ -506,7 +513,7 @@ export default function KeyPadModal({
   };
 
   const confirmAssignLocker = () => {
-    setAssignLockerOpen(false);
+    setShowLockerOpen(false);
     clearInputs();
     closeWebSocket();
     cancel();
@@ -799,7 +806,7 @@ export default function KeyPadModal({
         onConfirm={confirmSendData}
         onCancel={cancelConfirmation}
         tittle={'Confirmar'}
-        mesg={'¡Vas a ' + operation + '!\n¿El número celular es correcto?'}
+        mesg={`¡Vas a ${operation}! ${config?.sendSMS ? '\nRecibirás un mensaje de texto con los datos ingresados.' : ''} \n¿El número celular es correcto?`}
         phone={formatNumberPhone(phone)}
         isPhone={true}
         hideBackdrop    // 👈 evita que bloquee clicks
@@ -822,13 +829,17 @@ export default function KeyPadModal({
         disableRestoreFocus
       />
 
-      <AssignLocker
-        open={assignLockerOpen}
+      <ShowLocker
+        open={showLockerOpen}
         onConfirm={confirmAssignLocker}
         locker={locker}
-        msg={(operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio.'}
+        title={'Tu casillero es el:'}
+        msg={
+          operation !== 'Reservado' ? (operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio' : 'gracias por utilizar nuestro servicio'
+        }
         timeout={timeoutShowMessage}
-        backColor={operationRet ? 'primary.main' : 'error.main'}
+        backColor={operation === 'Retirar' ? 'secondary.main' : operation === 'Guardar' ? 'primary.main' : 'info.main'}
+        operation={operation}
         hideBackdrop    // 👈 evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus

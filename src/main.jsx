@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import './fonts.css';
 import LoadingScreen from './features/dialogs/loading.jsx';
 import { ModalProvider } from './features/context/modalContext.jsx';
+import { KeyboardProvider } from './features/context/keyboardContext.jsx';
 
 const fileName = 'main-renderer';
 
@@ -93,10 +94,12 @@ function RootApp() {
 
       <UserProvider>
         <ModalProvider>
-          <ThemeProvider key={`theme-${size.factor}`} theme={theme}>
-            <CssBaseline />
-            <App />
-          </ThemeProvider>
+          <KeyboardProvider>
+            <ThemeProvider key={`theme-${size.factor}`} theme={theme}>
+              <CssBaseline />
+              <App />
+            </ThemeProvider>
+          </KeyboardProvider>
         </ModalProvider>
       </UserProvider>
     </>

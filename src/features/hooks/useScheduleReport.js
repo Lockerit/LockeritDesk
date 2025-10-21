@@ -53,7 +53,7 @@ function setExecutionDates(frequency, hour, minute, dayOfWeek, dayOfMonth) {
     return nextTarget;
 }
 
-function shouldRunNow(frequency) {
+function shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth) {
     const lastExec = getLastExecution(frequency);
     const nextTarget = getNextTarget(frequency);
     const now = dayjs();
@@ -63,7 +63,7 @@ function shouldRunNow(frequency) {
         `Ahora: ${now.format("YYYY-MM-DD HH:mm:ss")} | Próximo target: ${nextTarget ?? "N/A"} | Última ejecución: ${lastExec ?? "N/A"}`
     );
 
-    // 🚀 Primera ejecución → dispara inmediatamente
+    // 🚀 Si no hay registro previo, solo calcular el próximo target SIN ejecutar
     if (!lastExec || !nextTarget) {
         log("debug", "Primera ejecución detectada, disparando tarea inmediatamente");
         return true;
@@ -125,12 +125,12 @@ export function useSchedulerReport({
 
         log("debug", `Iniciando scheduler [${frequency}] con hora ${hour}:${minute}`);
 
-        if (shouldRunNow(frequency)) {
+        if (shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth)) {
             runTask();
         }
 
         const interval = setInterval(() => {
-            if (shouldRunNow(frequency)) {
+            if (shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth)) {
                 runTask();
             }
         }, timeInterval * 1000);

@@ -2,7 +2,7 @@ import axios from './axiosConfig.js';
 import API_ROUTES from '../router/pathService.js';
 import { getEnv, subscribeEnv } from '../hooks/envStore.js';
 
-const fileName = 'openLocker'; // Nombre del archivo para los logs
+const fileName = 'openByCodeLocker'; // Nombre del archivo para los logs
 
 const log = (level, message) => {
   if (typeof window !== 'undefined' && window.electronAPI?.log) {

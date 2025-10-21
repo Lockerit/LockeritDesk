@@ -2,7 +2,7 @@ import axios from './axiosConfig.js';
 import API_ROUTES from '../router/pathService.js';
 import { getEnv, subscribeEnv } from '../hooks/envStore.js';
 
-const fileName = 'openSessionLocker'; // Nombre del archivo para los logs
+const fileName = 'reserve'; // Nombre del archivo para los logs
 
 const log = (level, message) => {
   if (typeof window !== 'undefined' && window.electronAPI?.log) {
@@ -10,8 +10,8 @@ const log = (level, message) => {
   }
 };
 
-const OpenSessionLocker = async (payload) => {
-    log('info', 'Iniciando petición para abrir casillero y retirar');
+const Reserve = async (payload) => {
+    log('info', 'Iniciando petición para registrar usario en pago por periodo');
 
     const env = getEnv(); // Esto se actualiza si `.env` cambió
     const maxRetries = env?.apiBaseMaxRetries || 5;
@@ -24,10 +24,10 @@ const OpenSessionLocker = async (payload) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             log('info', `Intento ${attempt}: HOST -> ${axios.getUri()}`);
-            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.OPEN_SESSION_LOCKER}`);
+            log('info', `Intento ${attempt}: URL -> ${API_ROUTES.RESERVE_LOCKERS}`);
             log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
 
-            const response = await axios.post(API_ROUTES.OPEN_SESSION_LOCKER, payload, { timeout: effectiveTimeout });
+            const response = await axios.post(API_ROUTES.RESERVE_LOCKERS, payload, { timeout: effectiveTimeout });
 
             log('info', `Response. Status: ${response.status}`);
             log('info', `Response. Data: ${JSON.stringify(response.data)}`);
@@ -58,4 +58,4 @@ const OpenSessionLocker = async (payload) => {
     }
 };
 
-export default OpenSessionLocker;
+export default Reserve;

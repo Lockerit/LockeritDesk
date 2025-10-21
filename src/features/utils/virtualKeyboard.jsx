@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 
-export default function VirtualKeyboard({ inputValue, onChange }) {
+export default function VirtualKeyboard({ inputValue, onChange, onEnter, activeField }) {
     const keyboardRef = useRef(null);
     const [layoutName, setLayoutName] = useState("default"); // 🔹 estado para shift/lock
 
@@ -15,6 +15,18 @@ export default function VirtualKeyboard({ inputValue, onChange }) {
             const newLayout = layoutName === "default" ? "shift" : "default";
             setLayoutName(newLayout);
             keyboardRef.current.setOptions({ layoutName: newLayout });
+        }
+
+        if (button === "{enter}") {
+            const form = activeField?.inputRef?.current?.closest("form");
+
+            if (form) {
+                // Cierra el teclado primero
+                if (typeof onEnter === "function") onEnter();
+
+                // Dispara el submit nativo
+                form.requestSubmit();
+            }
         }
     };
 
@@ -40,12 +52,7 @@ export default function VirtualKeyboard({ inputValue, onChange }) {
             }}
             onChange={onChange}
             onKeyPress={onKeyPress}
-            buttonTheme={[
-                {
-                    class: "hg-button-large",  // aplica a todos los botones
-                    buttons: "{default}"       // todos los botones
-                }
-            ]}
+            input={inputValue}
         />
     );
 }

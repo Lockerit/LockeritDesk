@@ -1,4 +1,4 @@
-import axios from './axiosConfig';
+import axios from './axiosConfig.js';
 import API_ROUTES from '../router/pathService.js';
 import { getEnv, subscribeEnv } from '../hooks/envStore.js';
 import {
@@ -10,7 +10,7 @@ import {
 } from './websocket.js';
 import { cancelObservable } from '../utils/cancelObservable.js';
 
-const fileName = 'addAssignLocker';
+const fileName = 'assignLocker';
 let abortCancel = null; // Controla la cancelación de la petición
 
 const log = (level, message) => {
@@ -20,7 +20,7 @@ const log = (level, message) => {
 };
 
 
-const AddAssignLocker = async (payload, timeoutMs) => {
+const assignLocker = async (payload, timeoutMs) => {
     const env = getEnv();
     const maxRetries = env?.apiBaseMaxRetries || 5;
     const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
@@ -110,7 +110,7 @@ const AddAssignLocker = async (payload, timeoutMs) => {
     }
 };
 
-// addAssignLocker.js
+// assignLocker.js
 export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoading) => {
     if (onLoading && typeof onLoading === "function") {
         onLoading(false);
@@ -155,7 +155,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
         });
 
         // 4) HTTP principal
-        const httpPromise = AddAssignLocker(payload, effectiveTimeout)
+        const httpPromise = assignLocker(payload, effectiveTimeout)
             .then((res) => {
                 httpResponse = res;
 

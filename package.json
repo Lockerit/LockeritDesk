@@ -2,7 +2,7 @@
   "name": "lockerit",
   "private": true,
   "type": "commonjs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sistema de Asignación de Casilleros",
   "author": {
     "name": "Lockerit - Camilo Diaz",
@@ -44,6 +44,7 @@
     "dotenv": "^17.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-draggable": "^4.5.0",
     "react-router-dom": "^7.6.3",
     "react-simple-keyboard": "^3.8.120",
     "say": "^0.16.0",

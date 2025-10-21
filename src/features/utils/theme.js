@@ -533,7 +533,8 @@ export function createScaledTheme(factor = 1) {
           ".hg-button": {       // todos los botones de react-simple-keyboard
             fontSize: `${28 * factor}px`,   // tamaño de letra que quieras
             fontWeight: 'bold',
-            minHeight: `${70 * factor}px`
+            minHeight: `${70 * factor}px`,
+            border: `${1 * factor}px solid #0c315e`,
           }
         },
       },

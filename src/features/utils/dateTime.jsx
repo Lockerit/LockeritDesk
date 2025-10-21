@@ -33,7 +33,7 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
                 width: '100%',
                 alignContent: 'center',
                 alignItems: 'center',
-                px: 10 * scale,
+                px: 5 * scale,
             }}
         >
             <Typography
@@ -123,77 +123,97 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
     );
 };
 
-const DateTime = ({ label, value, onChange }) => {
-
+const DateTime = ({
+    label,
+    value,
+    onChange,
+    showTime = true,
+    disabled = false,
+    disablePastDates = false, // 👈 NUEVA PROP OPCIONAL
+}) => {
     const [open, setOpen] = useState(false);
+    const [tempValue, setTempValue] = useState(value); // estado temporal
     const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const scale = size.factor || 1;
+
+    useEffect(() => {
+        if (open) {
+            setTempValue(value); // resetea temporal al abrir
+        }
+    }, [open, value]);
+
+    // Función para deshabilitar días pasados si se requiere
+    const shouldDisableDate = (date) => {
+        if (!disablePastDates) return false; // ❌ no deshabilitar nada
+        return date.isBefore(dayjs().startOf("day")); // ✅ bloquea fechas anteriores al hoy
+    };
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='es'>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
             <DateTimePicker
+                disabled={disabled}
                 label={label}
                 value={value}
-                onChange={(newValue) => newValue && onChange(newValue)} // sincroniza el state
                 open={open}
                 onOpen={() => setOpen(true)}
                 onClose={() => setOpen(false)}
-                format='YYYY-MM-DD HH:mm'
+                format={showTime ? "YYYY-MM-DD HH:mm" : "YYYY-MM-DD"}
                 slots={{
                     layout: (props) => (
                         <Box>
-                            {/* Tabs */}
                             {props.tabs}
 
                             {/* Calendario + columnas */}
-                            <Box sx={{ display: 'flex', gap: 2 * scale, p: 2 * scale }}>
+                            <Box sx={{ display: "flex", gap: 2 * scale, p: 2 * scale }}>
                                 <DateCalendar
-                                    views={['year', 'month', 'day']}
-                                    openTo='day'
-                                    value={value}
+                                    views={["year", "month", "day"]}
+                                    openTo="day"
+                                    value={tempValue}
                                     onChange={(newDate) => {
                                         if (!newDate) return;
-                                        onChange(
-                                            newDate
-                                                .hour(value.hour())
-                                                .minute(value.minute())
-                                                .second(value.second())
+                                        setTempValue(
+                                            showTime
+                                                ? newDate
+                                                    .hour(tempValue?.hour() ?? 0)
+                                                    .minute(tempValue?.minute() ?? 0)
+                                                    .second(tempValue?.second() ?? 0)
+                                                : newDate.startOf("day")
                                         );
                                     }}
+                                    shouldDisableDate={shouldDisableDate} // 👈 aquí se aplica
                                 />
-                                <Box sx={{ display: 'flex', gap: 2 * scale, alignItems: 'center' }}>
-                                    <NumberColumn
-                                        label='Horas'
-                                        values={Array.from({ length: 24 }, (_, i) => i)}
-                                        selected={value.hour()}
-                                        onSelect={(h) => onChange(value.hour(h))}
-                                    />
-                                    <NumberColumn
-                                        label='Minutos'
-                                        values={Array.from({ length: 60 }, (_, i) => i)}
-                                        selected={value.minute()}
-                                        onSelect={(m) => onChange(value.minute(m))}
-                                    />
-                                    {/* <NumberColumn
-                                        label="Segundos"
-                                        values={Array.from({ length: 60 }, (_, i) => i)}
-                                        selected={value.second()}
-                                        onSelect={(s) => onChange(value.second(s))}
-                                    /> */}
-                                </Box>
+
+                                {showTime && (
+                                    <Box sx={{ display: "flex", gap: 2 * scale, alignItems: "center" }}>
+                                        <NumberColumn
+                                            label="Horas"
+                                            values={Array.from({ length: 24 }, (_, i) => i)}
+                                            selected={tempValue.hour()}
+                                            onSelect={(h) => setTempValue(tempValue.hour(h))}
+                                        />
+                                        <NumberColumn
+                                            label="Minutos"
+                                            values={Array.from({ length: 60 }, (_, i) => i)}
+                                            selected={tempValue.minute()}
+                                            onSelect={(m) => setTempValue(tempValue.minute(m))}
+                                        />
+                                    </Box>
+                                )}
                             </Box>
 
                             {/* Botones */}
                             <CustomActionBar
                                 onAccept={() => {
                                     props.onAccept?.();
-                                    setOpen(false)
+                                    onChange(tempValue);
+                                    setOpen(false);
                                 }}
                                 onCancel={() => {
                                     props.onCancel?.();
+                                    setTempValue(value);
                                     setOpen(false);
                                 }}
-                                setToday={() => onChange(dayjs())}
+                                setToday={() => setTempValue(dayjs())}
                             />
                         </Box>
                     ),
@@ -202,5 +222,7 @@ const DateTime = ({ label, value, onChange }) => {
         </LocalizationProvider>
     );
 };
+
+
 
 export default DateTime;

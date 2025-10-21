@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import TextFieldVirtKeyPad from "../utils/textFieldVirtKeyPad.jsx";
 dayjs.extend(utc);
 
 const fileName = 'tableReportLockers';
@@ -209,11 +210,12 @@ const ReportTable = ({ data, startDate, endDate }) => {
                     }}
                 >
                     <Box sx={{ flex: 1 }}>
-                        <TextField
+                        <TextFieldVirtKeyPad
                             label="Buscar"
                             variant="standard"
                             fullWidth
                             value={search}
+                            setValue={setSearch}
                             onChange={(e) => setSearch(e.target.value)}
                             InputProps={{
                                 endAdornment: (

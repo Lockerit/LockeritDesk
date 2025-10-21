@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import KeyPadModal from '../dialogs/keypad.jsx'
+import KeyPadModal from '../dialogs/keypadNumeric.jsx'
 import { useUser } from '../context/userContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useElectronConfig } from '../hooks/useConfig.js';
@@ -18,7 +18,10 @@ import {
 } from '@mui/material';
 import {
     AddCircle,
-    RemoveCircle
+    Key,
+    LockReset,
+    RemoveCircle,
+    SensorOccupied
 } from '@mui/icons-material';
 
 const fileName = 'ppal';
@@ -50,7 +53,7 @@ export default function Ppal() {
     const config = useElectronConfig();
     const location = useLocation();
     const {
-        modalOpen, setModalOpen, operation, setOperation
+        keypadOpen, setKeypadOpen, operation, setOperation
     } = useModal();
 
     const intervalRef = useRef(null);
@@ -77,7 +80,7 @@ export default function Ppal() {
         if (!config || !config?.voice?.enabled) return;
 
         // Si el modal está abierto, detener audio e intervalos
-        if (modalOpen) {
+        if (keypadOpen) {
             stopSpeaking();
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
@@ -108,7 +111,7 @@ export default function Ppal() {
             }
             stopSpeaking();
         };
-    }, [modalOpen, config?.voice?.enabled]);
+    }, [keypadOpen, config?.voice?.enabled]);
 
     useEffect(() => {
         fetchDataStatusLocker();
@@ -199,7 +202,7 @@ export default function Ppal() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 textTransform: 'none',
-                fontSize: 72 * scale,
+                fontSize: 52 * scale,
                 padding: 2 * scale,
                 width: '100%',
                 height: '100%',
@@ -218,16 +221,21 @@ export default function Ppal() {
 
     const saveLocker = () => {
         setOperation('Guardar');
-        setModalOpen(true);
+        setKeypadOpen(true);
     }
 
     const removeLocker = () => {
         setOperation('Retirar');
-        setModalOpen(true);
+        setKeypadOpen(true);
+    }
+
+    const reserveLocker = () => {
+        setOperation('Reservado');
+        setKeypadOpen(true);
     }
 
     const closeKeypad = () => {
-        setModalOpen(false);
+        setKeypadOpen(false);
         fetchDataStatusLocker();
     };
 
@@ -250,7 +258,7 @@ export default function Ppal() {
                     {config?.login?.logoPath && (<img
                         src={config?.login?.logoPath}
                         alt="Título"
-                        style={{ height: 200 * scale }}
+                        style={{ height: 180 * scale }}
                     />
                     )}
                 </Box>
@@ -286,15 +294,35 @@ export default function Ppal() {
                             disabled={disabledButton}
                         />
                     </Grid>
-                    <Grid size={6}>
-                        <ActionButton
-                            text="Retirar"
-                            icon={<RemoveCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
-                            color="secondary"
-                            onClick={removeLocker}
-                        />
-                    </Grid>
-
+                    {config?.reserve?.enabled ? (
+                        <Grid size={6} container direction="column">
+                            <Grid sx={{ flex: 1 }}>
+                                <ActionButton
+                                    text="Retirar"
+                                    icon={<RemoveCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                                    color="secondary"
+                                    onClick={removeLocker}
+                                />
+                            </Grid>
+                            <Grid sx={{ flex: 1 }}>
+                                <ActionButton
+                                    text="Reservado"
+                                    icon={<Key sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                                    color="info"
+                                    onClick={reserveLocker}
+                                />
+                            </Grid>
+                        </Grid>
+                    ) : (
+                        <Grid size={6}>
+                            <ActionButton
+                                text="Retirar"
+                                icon={<RemoveCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                                color="secondary"
+                                onClick={removeLocker}
+                            />
+                        </Grid>
+                    )}
                 </Grid>
 
                 {/* Indicadores */}
@@ -311,47 +339,50 @@ export default function Ppal() {
                     <Box>
                         {!disabledButton && (
                             <>
-                                <Typography variant="h2" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                                <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
                                     Casilleros disponibles:{' '}
                                 </Typography>
-                                <Typography variant="h2" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                                <Typography variant="h3" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
                                     {available || 0}
                                 </Typography>
                             </>
                         )}
                         {disabledButton && (
                             <>
-                                <Typography variant="h2" component="span" color="error" sx={{ fontWeight: 'bold' }}>
+                                <Typography variant="h3" component="span" color="error" sx={{ fontWeight: 'bold' }}>
                                     No hay casilleros disponibles
                                 </Typography>
                             </>
                         )}
                     </Box>
 
-                    {/* Imagen (alineada completamente a la derecha) */}
                     {config?.login?.QRPath && (
                         <Box
                             sx={{
-                                ml: 'auto',
-                                mt: 2 * scale,
+                                position: "fixed",
+                                bottom: 16 * scale,
+                                right: 16 * scale,
                                 height: scaledDimension(
                                     {
-                                        xs: { base: 140, min: 135, max: 145 }, // en % para mobile
-                                        sm: { base: 140, min: 135, max: 145 }, // tablet
-                                        md: { base: 160, min: 155, max: 165 }, // desktop medio
-                                        lg: { base: 180, min: 175, max: 185 }, // desktop grande
+                                        xs: { base: 140, min: 135, max: 145 },
+                                        sm: { base: 140, min: 135, max: 145 },
+                                        md: { base: 160, min: 155, max: 165 },
+                                        lg: { base: 170, min: 165, max: 175 },
                                     },
                                     scale,
                                     "px"
                                 ),
-                            }}>
+                                zIndex: 1000, // 👈 menor que el modal (1300), quedará atrás
+                                pointerEvents: "none", // 👈 evita bloquear clics en otros elementos
+                            }}
+                        >
                             <img
                                 src={config.login.QRPath}
                                 alt="QR"
                                 style={{
-                                    width: 'auto',
-                                    height: '100%',
-                                    objectFit: 'contain',
+                                    width: "auto",
+                                    height: "100%",
+                                    objectFit: "contain",
                                 }}
                             />
                         </Box>
@@ -360,7 +391,7 @@ export default function Ppal() {
             </Box >
 
             <KeyPadModal
-                open={modalOpen}
+                open={keypadOpen}
                 onClose={closeKeypad}
                 operation={operation}
                 timeout={timeoutKeypad}
