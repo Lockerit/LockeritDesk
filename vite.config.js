@@ -1,13 +1,18 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
+const { defineConfig } = require('vite');
+const react = require('@vitejs/plugin-react-swc');
+const path = require('node:path');
 
-export default defineConfig({
+module.exports = defineConfig({
   plugins: [react()],
   base: './',
-  build: {
-    outDir: 'dist',
-    rollupOptions: {
-      external: ['electron', 'path', 'fs', 'dotenv']
-    }
+  build: { outDir: 'dist' },
+  resolve: {
+    alias: {
+      '@app': path.resolve(process.cwd(), 'src/app'),
+      '@features': path.resolve(process.cwd(), 'src/features'),
+      '@shared': path.resolve(process.cwd(), 'src/shared'),
+      '@services': path.resolve(process.cwd(), 'src/services'),
+      '@assets': path.resolve(process.cwd(), 'src/assets'),
+    },
   },
 });

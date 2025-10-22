@@ -1,17 +1,16 @@
 import { StrictMode, useMemo, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './features/app/app.jsx';
-import { createScaledTheme } from './features/utils/theme.js';
+import { App } from '@app/app.jsx';
+import { createScaledTheme } from '@shared/theme/theme.js';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { UserProvider } from './features/context/userContext.jsx';
-import { useWindowSizeContext, WindowSizeProvider } from './features/context/windowSizeContext.jsx';
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
+import { UserProvider } from '@shared/context/userContext.jsx';
+import { useWindowSizeContext, WindowSizeProvider } from '@shared/context/windowSizeContext.jsx';
+import { Alert, Stack } from '@mui/material';
 import './fonts.css';
-import LoadingScreen from './features/dialogs/loading.jsx';
-import { ModalProvider } from './features/context/modalContext.jsx';
-import { KeyboardProvider } from './features/context/keyboardContext.jsx';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { ModalProvider } from '@shared/context/ModalContext.jsx';
+import { KeyboardProvider } from '@shared/context/KeyboardContext.jsx';
 
 const fileName = 'main-renderer';
 
@@ -21,7 +20,7 @@ const log = (level, message) => {
   }
 };
 
-function RootApp() {
+export const RootApp = () => {
   const [pendingCSP, setPendingCSP] = useState(null);
 
   // hook con valor inicial
@@ -68,7 +67,7 @@ function RootApp() {
   log('debug', `RootApp size ${JSON.stringify(size)}`);
 
   if (!size?.factor || size.factor <= 0) {
-    return <LoadingScreen open message="Cargando aplicación..." />;
+    return <Loading open message="Cargando aplicación..." />;
   }
 
   const theme = useMemo(() => createScaledTheme(size.factor), [size.factor]);
@@ -106,7 +105,7 @@ function RootApp() {
   );
 }
 
-async function bootstrap() {
+const bootstrap = async () => {
   const initialSize = await window.electronAPI.getScreenDataOnce();
 
   createRoot(document.getElementById("root")).render(

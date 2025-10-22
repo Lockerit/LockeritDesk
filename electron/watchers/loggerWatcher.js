@@ -1,4 +1,4 @@
-// preload/watchers/setupWatcher.js
+// electron/watchers/loggerWatcher.js
 const fs = require('fs');
 const path = require('path');
 const { logger } = require('../logger/logger');
@@ -6,15 +6,13 @@ const { logger } = require('../logger/logger');
 const fileName = path.parse(__filename).name;
 
 /**
- * Observa y emite cambios en el archivo logger_config.json al proceso principal.
- * También envía la configuración inicial.
- * 
- * @param {string} loggerPath - Ruta completa al archivo logger_config.json
- * @param {Electron.IpcRenderer} ipcRenderer - ipcRenderer para enviar eventos
+ * Observa y emite cambios en logger_config.json.
+ * @param {string} loggerPath
+ * @param {{ send: (channel: string, payload: any) => void }} messenger
  */
-function watchLoggerConfig(loggerPath, ipcRenderer) {
+function watchLoggerConfig(loggerPath, messenger) {
     if (!fs.existsSync(loggerPath)) {
-        logger.error(`[${fileName}] Archivo logger_config.json NO encontrado en: ${loggerPath}`);
+        logger.error(`[${fileName}] logger_config.json NO encontrado en: ${loggerPath}`);
         return;
     }
 
@@ -22,36 +20,26 @@ function watchLoggerConfig(loggerPath, ipcRenderer) {
         try {
             const updatedRaw = fs.readFileSync(loggerPath, 'utf8');
             const updatedLogger = JSON.parse(updatedRaw);
-
-            logger.debug(`[${fileName}] Contenido logger_config.json parseado: ${JSON.stringify(updatedLogger)}`);
-            logger.info(`[${fileName}] Archivo logger_config.json cargado correctamente`);
-
-            ipcRenderer.send('logger-updated', updatedLogger);
+            logger.debug(`[${fileName}] logger_config.json: ${JSON.stringify(updatedLogger)}`);
+            messenger.send('logger-updated', updatedLogger);
         } catch (err) {
             logger.error(`[${fileName}] Error al cargar logger_config.json: ${err.message}`);
         }
     };
 
-    logger.info(`[${fileName}] Observando archivo logger_config.json en: ${loggerPath}`);
-    logger.debug(`[${fileName}] Cargando configuración inicial`);
+    logger.info(`[${fileName}] Observando: ${loggerPath}`);
     loadAndSendLogger();
 
     try {
         fs.watch(loggerPath, (eventType) => {
-            if (eventType === 'change') {
-                logger.debug(`[${fileName}] Cambio detectado por fs.watch`);
-                loadAndSendLogger();
-            }
+            if (eventType === 'change') loadAndSendLogger();
         });
-    } catch (err) {
-        logger.warn(`[${fileName}] fs.watch falló, usando fs.watchFile como respaldo`);
+    } catch {
+        logger.warn(`[${fileName}] fs.watch falló, usando fs.watchFile`);
     }
 
     fs.watchFile(loggerPath, { interval: 1000 }, (curr, prev) => {
-        if (curr.mtime !== prev.mtime) {
-            logger.debug(`[${fileName}] Cambio detectado por fs.watchFile`);
-            loadAndSendLogger();
-        }
+        if (curr.mtime !== prev.mtime) loadAndSendLogger();
     });
 }
 

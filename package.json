@@ -9,7 +9,7 @@
     "email": "lockerit0625@gmail.com",
     "url": "https://www.tu-sitio-web.com"
   },
-  "main": "main.js",
+  "main": "electron/main/main.js",
   "homepage": ".",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
@@ -25,9 +25,11 @@
     "docker:linux": "docker-compose run --rm electron-builder npm run build:linux",
     "docker:win": "docker-compose run --rm electron-builder npm run build:win",
     "docker:all": "docker-compose run --rm electron-builder npm run build:all",
-    "lint": "eslint .",
     "preview": "vite preview",
-    "test:range": "node ./src/features/utils/testGetDateRange.js"
+    "test:range": "node ./src/features/utils/testGetDateRange.js",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier -w ."
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -55,7 +57,7 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
+    "@eslint/js": "^9.38.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react-swc": "^3.10.2",
@@ -65,11 +67,19 @@
     "electron": "^37.2.2",
     "electron-builder": "^26.0.12",
     "electronmon": "^2.0.3",
-    "eslint": "^9.29.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.2.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2",
     "vite": "^7.0.0",
     "wait-on": "^8.0.3"
   },
@@ -83,11 +93,10 @@
     },
     "files": [
       "dist/**/*",
-      "main.js",
-      "preload.js",
-      "src/assets/**",
       "electron/**",
-      "configFiles/**"
+      "src/assets/**",
+      "configFiles/**",
+      "package.json"
     ],
     "extraResources": [
       "configFiles/.env",

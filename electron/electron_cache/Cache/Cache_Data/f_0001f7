@@ -1,0 +1,350 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/shared/components/time/DateTime.jsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=e10b181b"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=e10b181b"; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"]; const React = __vite__cjsImport3_react["React"];
+import { AdapterDayjs } from "/node_modules/.vite/deps/@mui_x-date-pickers_AdapterDayjs.js?v=e10b181b";
+import { LocalizationProvider } from "/node_modules/.vite/deps/@mui_x-date-pickers_LocalizationProvider.js?v=e10b181b";
+import { DateTimePicker } from "/node_modules/.vite/deps/@mui_x-date-pickers_DateTimePicker.js?v=e10b181b";
+import { DateCalendar } from "/node_modules/.vite/deps/@mui_x-date-pickers_DateCalendar.js?v=e10b181b";
+import { useWindowSizeContext } from "/src/shared/context/WindowSizeContext.jsx";
+import { Box, List, ListItem, ListItemButton, Typography } from "/node_modules/.vite/deps/@mui_material.js?v=e10b181b";
+import __vite__cjsImport10_dayjs from "/node_modules/.vite/deps/dayjs.js?v=e10b181b"; const dayjs = __vite__cjsImport10_dayjs.__esModule ? __vite__cjsImport10_dayjs.default : __vite__cjsImport10_dayjs;
+import "/node_modules/.vite/deps/dayjs_locale_es.js?v=e10b181b";
+import __vite__cjsImport12_dayjs_plugin_utc from "/node_modules/.vite/deps/dayjs_plugin_utc.js?v=e10b181b"; const utc = __vite__cjsImport12_dayjs_plugin_utc.__esModule ? __vite__cjsImport12_dayjs_plugin_utc.default : __vite__cjsImport12_dayjs_plugin_utc;
+dayjs.extend(utc);
+const CustomActionBar = ({ onAccept, onCancel, setToday })=>{
+    _s();
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    return /*#__PURE__*/ _jsxDEV(Box, {
+        sx: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            padding: `${8 * scale}px ${16 * scale}px`,
+            borderTop: `${1 * scale}px solid #ddd`,
+            mt: 1 * scale,
+            width: '100%',
+            alignContent: 'center',
+            alignItems: 'center',
+            px: 5 * scale
+        },
+        children: [
+            /*#__PURE__*/ _jsxDEV(Typography, {
+                onClick: onCancel,
+                color: "secondary",
+                sx: {
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': {
+                        color: 'primary.main'
+                    }
+                },
+                children: "Cancelar"
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                lineNumber: 39,
+                columnNumber: 13
+            }, this),
+            /*#__PURE__*/ _jsxDEV(Typography, {
+                onClick: setToday,
+                color: "secondary",
+                sx: {
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': {
+                        color: 'primary.main'
+                    }
+                },
+                children: "Ahora"
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                lineNumber: 50,
+                columnNumber: 13
+            }, this),
+            /*#__PURE__*/ _jsxDEV(Typography, {
+                onClick: onAccept,
+                color: "secondary",
+                sx: {
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': {
+                        color: 'primary.main'
+                    }
+                },
+                children: "Aceptar"
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                lineNumber: 61,
+                columnNumber: 13
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+        lineNumber: 26,
+        columnNumber: 9
+    }, this);
+};
+_s(CustomActionBar, "iqD9GI4XYCi7kDdfmNRkcym4Dl8=", false, function() {
+    return [
+        useWindowSizeContext
+    ];
+});
+_c = CustomActionBar;
+const NumberColumn = ({ label, values, selected, onSelect })=>{
+    _s1();
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    return /*#__PURE__*/ _jsxDEV(Box, {
+        sx: {
+            flex: 1,
+            maxHeight: 300 * scale,
+            border: `${1 * scale}px solid #ddd`,
+            borderRadius: 2 * scale,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+        },
+        children: [
+            /*#__PURE__*/ _jsxDEV(Typography, {
+                variant: "subtitle2",
+                sx: {
+                    p: 1,
+                    fontWeight: 'bold',
+                    borderBottom: `${1 * scale}px solid #eee`,
+                    color: 'primary.main'
+                },
+                children: label
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                lineNumber: 96,
+                columnNumber: 13
+            }, this),
+            /*#__PURE__*/ _jsxDEV(List, {
+                dense: true,
+                sx: {
+                    width: '100%'
+                },
+                children: values.map((val)=>/*#__PURE__*/ _jsxDEV(ListItem, {
+                        disablePadding: true,
+                        children: /*#__PURE__*/ _jsxDEV(ListItemButton, {
+                            selected: val === selected,
+                            onClick: ()=>onSelect(val),
+                            sx: {
+                                textAlign: 'center'
+                            },
+                            children: val.toString().padStart(2, '0')
+                        }, void 0, false, {
+                            fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                            lineNumber: 112,
+                            columnNumber: 25
+                        }, this)
+                    }, val, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                        lineNumber: 111,
+                        columnNumber: 21
+                    }, this))
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                lineNumber: 109,
+                columnNumber: 13
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+        lineNumber: 82,
+        columnNumber: 9
+    }, this);
+};
+_s1(NumberColumn, "iqD9GI4XYCi7kDdfmNRkcym4Dl8=", false, function() {
+    return [
+        useWindowSizeContext
+    ];
+});
+_c1 = NumberColumn;
+export const DateTime = ({ label, value, onChange, showTime = true, disabled = false, disablePastDates = false })=>{
+    _s2();
+    const [open, setOpen] = useState(false);
+    const [tempValue, setTempValue] = useState(value); // estado temporal
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
+    useEffect(()=>{
+        if (open) {
+            setTempValue(value); // resetea temporal al abrir
+        }
+    }, [
+        open,
+        value
+    ]);
+    // Función para deshabilitar días pasados si se requiere
+    const shouldDisableDate = (date)=>{
+        if (!disablePastDates) return false; // ❌ no deshabilitar nada
+        return date.isBefore(dayjs().startOf("day")); // ✅ bloquea fechas anteriores al hoy
+    };
+    return /*#__PURE__*/ _jsxDEV(LocalizationProvider, {
+        dateAdapter: AdapterDayjs,
+        adapterLocale: "es",
+        children: /*#__PURE__*/ _jsxDEV(DateTimePicker, {
+            disabled: disabled,
+            label: label,
+            value: value,
+            open: open,
+            onOpen: ()=>setOpen(true),
+            onClose: ()=>setOpen(false),
+            format: showTime ? "YYYY-MM-DD HH:mm" : "YYYY-MM-DD",
+            slots: {
+                layout: (props)=>/*#__PURE__*/ _jsxDEV(Box, {
+                        children: [
+                            props.tabs,
+                            /*#__PURE__*/ _jsxDEV(Box, {
+                                sx: {
+                                    display: "flex",
+                                    gap: 2 * scale,
+                                    p: 2 * scale
+                                },
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(DateCalendar, {
+                                        views: [
+                                            "year",
+                                            "month",
+                                            "day"
+                                        ],
+                                        openTo: "day",
+                                        value: tempValue,
+                                        onChange: (newDate)=>{
+                                            if (!newDate) return;
+                                            setTempValue(showTime ? newDate.hour(tempValue?.hour() ?? 0).minute(tempValue?.minute() ?? 0).second(tempValue?.second() ?? 0) : newDate.startOf("day"));
+                                        },
+                                        shouldDisableDate: shouldDisableDate
+                                    }, void 0, false, {
+                                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                                        lineNumber: 168,
+                                        columnNumber: 33
+                                    }, void 0),
+                                    showTime && /*#__PURE__*/ _jsxDEV(Box, {
+                                        sx: {
+                                            display: "flex",
+                                            gap: 2 * scale,
+                                            alignItems: "center"
+                                        },
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV(NumberColumn, {
+                                                label: "Horas",
+                                                values: Array.from({
+                                                    length: 24
+                                                }, (_, i)=>i),
+                                                selected: tempValue.hour(),
+                                                onSelect: (h)=>setTempValue(tempValue.hour(h))
+                                            }, void 0, false, {
+                                                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                                                lineNumber: 188,
+                                                columnNumber: 41
+                                            }, void 0),
+                                            /*#__PURE__*/ _jsxDEV(NumberColumn, {
+                                                label: "Minutos",
+                                                values: Array.from({
+                                                    length: 60
+                                                }, (_, i)=>i),
+                                                selected: tempValue.minute(),
+                                                onSelect: (m)=>setTempValue(tempValue.minute(m))
+                                            }, void 0, false, {
+                                                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                                                lineNumber: 194,
+                                                columnNumber: 41
+                                            }, void 0)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                                        lineNumber: 187,
+                                        columnNumber: 37
+                                    }, void 0)
+                                ]
+                            }, void 0, true, {
+                                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                                lineNumber: 167,
+                                columnNumber: 29
+                            }, void 0),
+                            /*#__PURE__*/ _jsxDEV(CustomActionBar, {
+                                onAccept: ()=>{
+                                    props.onAccept?.();
+                                    onChange(tempValue);
+                                    setOpen(false);
+                                },
+                                onCancel: ()=>{
+                                    props.onCancel?.();
+                                    setTempValue(value);
+                                    setOpen(false);
+                                },
+                                setToday: ()=>setTempValue(dayjs())
+                            }, void 0, false, {
+                                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                                lineNumber: 205,
+                                columnNumber: 29
+                            }, void 0)
+                        ]
+                    }, void 0, true, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+                        lineNumber: 163,
+                        columnNumber: 25
+                    }, void 0)
+            }
+        }, void 0, false, {
+            fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+            lineNumber: 153,
+            columnNumber: 13
+        }, this)
+    }, void 0, false, {
+        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx",
+        lineNumber: 152,
+        columnNumber: 9
+    }, this);
+};
+_s2(DateTime, "gDxTvV31CU3P+l11P15Y+cv4Zmo=", false, function() {
+    return [
+        useWindowSizeContext
+    ];
+});
+_c2 = DateTime;
+var _c, _c1, _c2;
+$RefreshReg$(_c, "CustomActionBar");
+$RefreshReg$(_c1, "NumberColumn");
+$RefreshReg$(_c2, "DateTime");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/time/DateTime.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRhdGVUaW1lLmpzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyB1c2VTdGF0ZSwgdXNlRWZmZWN0LCBSZWFjdCB9IGZyb20gJ3JlYWN0JztcclxuaW1wb3J0IHsgQWRhcHRlckRheWpzIH0gZnJvbSBcIkBtdWkveC1kYXRlLXBpY2tlcnMvQWRhcHRlckRheWpzXCI7XHJcbmltcG9ydCB7IExvY2FsaXphdGlvblByb3ZpZGVyIH0gZnJvbSBcIkBtdWkveC1kYXRlLXBpY2tlcnMvTG9jYWxpemF0aW9uUHJvdmlkZXJcIjtcclxuaW1wb3J0IHsgRGF0ZVRpbWVQaWNrZXIgfSBmcm9tIFwiQG11aS94LWRhdGUtcGlja2Vycy9EYXRlVGltZVBpY2tlclwiO1xyXG5pbXBvcnQgeyBEYXRlQ2FsZW5kYXIgfSBmcm9tIFwiQG11aS94LWRhdGUtcGlja2Vycy9EYXRlQ2FsZW5kYXJcIjtcclxuaW1wb3J0IHsgdXNlV2luZG93U2l6ZUNvbnRleHQgfSBmcm9tICdAc2hhcmVkL2NvbnRleHQvV2luZG93U2l6ZUNvbnRleHQuanN4JztcclxuaW1wb3J0IHtcclxuICAgIEJveCxcclxuICAgIExpc3QsXHJcbiAgICBMaXN0SXRlbSxcclxuICAgIExpc3RJdGVtQnV0dG9uLFxyXG4gICAgVHlwb2dyYXBoeVxyXG59IGZyb20gXCJAbXVpL21hdGVyaWFsXCI7XHJcbmltcG9ydCBkYXlqcyBmcm9tIFwiZGF5anNcIjtcclxuaW1wb3J0IFwiZGF5anMvbG9jYWxlL2VzXCI7XHJcbmltcG9ydCB1dGMgZnJvbSBcImRheWpzL3BsdWdpbi91dGNcIjtcclxuZGF5anMuZXh0ZW5kKHV0Yyk7XHJcblxyXG5cclxuY29uc3QgQ3VzdG9tQWN0aW9uQmFyID0gKHsgb25BY2NlcHQsIG9uQ2FuY2VsLCBzZXRUb2RheSB9KSA9PiB7XHJcblxyXG4gICAgY29uc3Qgc2l6ZSA9IHVzZVdpbmRvd1NpemVDb250ZXh0KCk7XHJcbiAgICBjb25zdCBzY2FsZSA9IHNpemUuZmFjdG9yIHx8IDE7IC8vIGRlIHR1IGhvb2sgdXNlRWxlY3Ryb25TY3JlZW5EYXRhKClcclxuXHJcbiAgICByZXR1cm4gKFxyXG4gICAgICAgIDxCb3hcclxuICAgICAgICAgICAgc3g9e3tcclxuICAgICAgICAgICAgICAgIGRpc3BsYXk6ICdmbGV4JyxcclxuICAgICAgICAgICAgICAgIGp1c3RpZnlDb250ZW50OiAnc3BhY2UtYmV0d2VlbicsXHJcbiAgICAgICAgICAgICAgICBwYWRkaW5nOiBgJHs4ICogc2NhbGV9cHggJHsxNiAqIHNjYWxlfXB4YCxcclxuICAgICAgICAgICAgICAgIGJvcmRlclRvcDogYCR7MSAqIHNjYWxlfXB4IHNvbGlkICNkZGRgLFxyXG4gICAgICAgICAgICAgICAgbXQ6IDEgKiBzY2FsZSxcclxuICAgICAgICAgICAgICAgIHdpZHRoOiAnMTAwJScsXHJcbiAgICAgICAgICAgICAgICBhbGlnbkNvbnRlbnQ6ICdjZW50ZXInLFxyXG4gICAgICAgICAgICAgICAgYWxpZ25JdGVtczogJ2NlbnRlcicsXHJcbiAgICAgICAgICAgICAgICBweDogNSAqIHNjYWxlLFxyXG4gICAgICAgICAgICB9fVxyXG4gICAgICAgID5cclxuICAgICAgICAgICAgPFR5cG9ncmFwaHlcclxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9e29uQ2FuY2VsfVxyXG4gICAgICAgICAgICAgICAgY29sb3I9J3NlY29uZGFyeSdcclxuICAgICAgICAgICAgICAgIHN4PXt7XHJcbiAgICAgICAgICAgICAgICAgICAgZm9udFdlaWdodDogJ2JvbGQnLFxyXG4gICAgICAgICAgICAgICAgICAgIGN1cnNvcjogJ3BvaW50ZXInLFxyXG4gICAgICAgICAgICAgICAgICAgICcmOmhvdmVyJzogeyBjb2xvcjogJ3ByaW1hcnkubWFpbicgfSxcclxuICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgIENhbmNlbGFyXHJcbiAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgPFR5cG9ncmFwaHlcclxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9e3NldFRvZGF5fVxyXG4gICAgICAgICAgICAgICAgY29sb3I9J3NlY29uZGFyeSdcclxuICAgICAgICAgICAgICAgIHN4PXt7XHJcbiAgICAgICAgICAgICAgICAgICAgZm9udFdlaWdodDogJ2JvbGQnLFxyXG4gICAgICAgICAgICAgICAgICAgIGN1cnNvcjogJ3BvaW50ZXInLFxyXG4gICAgICAgICAgICAgICAgICAgICcmOmhvdmVyJzogeyBjb2xvcjogJ3ByaW1hcnkubWFpbicgfSxcclxuICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgIEFob3JhXHJcbiAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgPFR5cG9ncmFwaHlcclxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9e29uQWNjZXB0fVxyXG4gICAgICAgICAgICAgICAgY29sb3I9J3NlY29uZGFyeSdcclxuICAgICAgICAgICAgICAgIHN4PXt7XHJcbiAgICAgICAgICAgICAgICAgICAgZm9udFdlaWdodDogJ2JvbGQnLFxyXG4gICAgICAgICAgICAgICAgICAgIGN1cnNvcjogJ3BvaW50ZXInLFxyXG4gICAgICAgICAgICAgICAgICAgICcmOmhvdmVyJzogeyBjb2xvcjogJ3ByaW1hcnkubWFpbicgfSxcclxuICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgIEFjZXB0YXJcclxuICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvQm94PlxyXG4gICAgKTtcclxufTtcclxuXHJcbmNvbnN0IE51bWJlckNvbHVtbiA9ICh7IGxhYmVsLCB2YWx1ZXMsIHNlbGVjdGVkLCBvblNlbGVjdCB9KSA9PiB7XHJcblxyXG4gICAgY29uc3Qgc2l6ZSA9IHVzZVdpbmRvd1NpemVDb250ZXh0KCk7XHJcbiAgICBjb25zdCBzY2FsZSA9IHNpemUuZmFjdG9yIHx8IDE7IC8vIGRlIHR1IGhvb2sgdXNlRWxlY3Ryb25TY3JlZW5EYXRhKClcclxuXHJcbiAgICByZXR1cm4gKFxyXG4gICAgICAgIDxCb3hcclxuICAgICAgICAgICAgc3g9e3tcclxuICAgICAgICAgICAgICAgIGZsZXg6IDEsXHJcbiAgICAgICAgICAgICAgICBtYXhIZWlnaHQ6IDMwMCAqIHNjYWxlLFxyXG4gICAgICAgICAgICAgICAgYm9yZGVyOiBgJHsxICogc2NhbGV9cHggc29saWQgI2RkZGAsXHJcbiAgICAgICAgICAgICAgICBib3JkZXJSYWRpdXM6IDIgKiBzY2FsZSxcclxuICAgICAgICAgICAgICAgIG92ZXJmbG93WTogJ2F1dG8nLFxyXG4gICAgICAgICAgICAgICAgb3ZlcmZsb3dYOiAnaGlkZGVuJyxcclxuICAgICAgICAgICAgICAgIGRpc3BsYXk6ICdmbGV4JyxcclxuICAgICAgICAgICAgICAgIGZsZXhEaXJlY3Rpb246ICdjb2x1bW4nLFxyXG4gICAgICAgICAgICAgICAgYWxpZ25JdGVtczogJ2NlbnRlcicsXHJcbiAgICAgICAgICAgIH19XHJcbiAgICAgICAgPlxyXG4gICAgICAgICAgICB7LyogVMOtdHVsbyBkZSBsYSBjb2x1bW5hICovfVxyXG4gICAgICAgICAgICA8VHlwb2dyYXBoeVxyXG4gICAgICAgICAgICAgICAgdmFyaWFudD0nc3VidGl0bGUyJ1xyXG4gICAgICAgICAgICAgICAgc3g9e3tcclxuICAgICAgICAgICAgICAgICAgICBwOiAxLFxyXG4gICAgICAgICAgICAgICAgICAgIGZvbnRXZWlnaHQ6ICdib2xkJyxcclxuICAgICAgICAgICAgICAgICAgICBib3JkZXJCb3R0b206IGAkezEgKiBzY2FsZX1weCBzb2xpZCAjZWVlYCxcclxuICAgICAgICAgICAgICAgICAgICBjb2xvcjogJ3ByaW1hcnkubWFpbicsXHJcbiAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICB7bGFiZWx9XHJcbiAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuXHJcbiAgICAgICAgICAgIHsvKiBMaXN0YSBkZSBuw7ptZXJvcyAqL31cclxuICAgICAgICAgICAgPExpc3QgZGVuc2Ugc3g9e3sgd2lkdGg6ICcxMDAlJyB9fT5cclxuICAgICAgICAgICAgICAgIHt2YWx1ZXMubWFwKCh2YWwpID0+IChcclxuICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0ga2V5PXt2YWx9IGRpc2FibGVQYWRkaW5nPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW1CdXR0b25cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNlbGVjdGVkPXt2YWwgPT09IHNlbGVjdGVkfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gb25TZWxlY3QodmFsKX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN4PXt7IHRleHRBbGlnbjogJ2NlbnRlcicgfX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAge3ZhbC50b1N0cmluZygpLnBhZFN0YXJ0KDIsICcwJyl9XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW1CdXR0b24+XHJcbiAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICkpfVxyXG4gICAgICAgICAgICA8L0xpc3Q+XHJcbiAgICAgICAgPC9Cb3g+XHJcbiAgICApO1xyXG59O1xyXG5cclxuZXhwb3J0IGNvbnN0IERhdGVUaW1lID0gKHtcclxuICAgIGxhYmVsLFxyXG4gICAgdmFsdWUsXHJcbiAgICBvbkNoYW5nZSxcclxuICAgIHNob3dUaW1lID0gdHJ1ZSxcclxuICAgIGRpc2FibGVkID0gZmFsc2UsXHJcbiAgICBkaXNhYmxlUGFzdERhdGVzID0gZmFsc2UsIC8vIPCfkYggTlVFVkEgUFJPUCBPUENJT05BTFxyXG59KSA9PiB7XHJcbiAgICBjb25zdCBbb3Blbiwgc2V0T3Blbl0gPSB1c2VTdGF0ZShmYWxzZSk7XHJcbiAgICBjb25zdCBbdGVtcFZhbHVlLCBzZXRUZW1wVmFsdWVdID0gdXNlU3RhdGUodmFsdWUpOyAvLyBlc3RhZG8gdGVtcG9yYWxcclxuICAgIGNvbnN0IHNpemUgPSB1c2VXaW5kb3dTaXplQ29udGV4dCgpO1xyXG4gICAgY29uc3Qgc2NhbGUgPSBzaXplLmZhY3RvciB8fCAxO1xyXG5cclxuICAgIHVzZUVmZmVjdCgoKSA9PiB7XHJcbiAgICAgICAgaWYgKG9wZW4pIHtcclxuICAgICAgICAgICAgc2V0VGVtcFZhbHVlKHZhbHVlKTsgLy8gcmVzZXRlYSB0ZW1wb3JhbCBhbCBhYnJpclxyXG4gICAgICAgIH1cclxuICAgIH0sIFtvcGVuLCB2YWx1ZV0pO1xyXG5cclxuICAgIC8vIEZ1bmNpw7NuIHBhcmEgZGVzaGFiaWxpdGFyIGTDrWFzIHBhc2Fkb3Mgc2kgc2UgcmVxdWllcmVcclxuICAgIGNvbnN0IHNob3VsZERpc2FibGVEYXRlID0gKGRhdGUpID0+IHtcclxuICAgICAgICBpZiAoIWRpc2FibGVQYXN0RGF0ZXMpIHJldHVybiBmYWxzZTsgLy8g4p2MIG5vIGRlc2hhYmlsaXRhciBuYWRhXHJcbiAgICAgICAgcmV0dXJuIGRhdGUuaXNCZWZvcmUoZGF5anMoKS5zdGFydE9mKFwiZGF5XCIpKTsgLy8g4pyFIGJsb3F1ZWEgZmVjaGFzIGFudGVyaW9yZXMgYWwgaG95XHJcbiAgICB9O1xyXG5cclxuICAgIHJldHVybiAoXHJcbiAgICAgICAgPExvY2FsaXphdGlvblByb3ZpZGVyIGRhdGVBZGFwdGVyPXtBZGFwdGVyRGF5anN9IGFkYXB0ZXJMb2NhbGU9XCJlc1wiPlxyXG4gICAgICAgICAgICA8RGF0ZVRpbWVQaWNrZXJcclxuICAgICAgICAgICAgICAgIGRpc2FibGVkPXtkaXNhYmxlZH1cclxuICAgICAgICAgICAgICAgIGxhYmVsPXtsYWJlbH1cclxuICAgICAgICAgICAgICAgIHZhbHVlPXt2YWx1ZX1cclxuICAgICAgICAgICAgICAgIG9wZW49e29wZW59XHJcbiAgICAgICAgICAgICAgICBvbk9wZW49eygpID0+IHNldE9wZW4odHJ1ZSl9XHJcbiAgICAgICAgICAgICAgICBvbkNsb3NlPXsoKSA9PiBzZXRPcGVuKGZhbHNlKX1cclxuICAgICAgICAgICAgICAgIGZvcm1hdD17c2hvd1RpbWUgPyBcIllZWVktTU0tREQgSEg6bW1cIiA6IFwiWVlZWS1NTS1ERFwifVxyXG4gICAgICAgICAgICAgICAgc2xvdHM9e3tcclxuICAgICAgICAgICAgICAgICAgICBsYXlvdXQ6IChwcm9wcykgPT4gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8Qm94PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAge3Byb3BzLnRhYnN9XHJcblxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgey8qIENhbGVuZGFyaW8gKyBjb2x1bW5hcyAqL31cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxCb3ggc3g9e3sgZGlzcGxheTogXCJmbGV4XCIsIGdhcDogMiAqIHNjYWxlLCBwOiAyICogc2NhbGUgfX0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPERhdGVDYWxlbmRhclxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB2aWV3cz17W1wieWVhclwiLCBcIm1vbnRoXCIsIFwiZGF5XCJdfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBvcGVuVG89XCJkYXlcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB2YWx1ZT17dGVtcFZhbHVlfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBvbkNoYW5nZT17KG5ld0RhdGUpID0+IHtcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmICghbmV3RGF0ZSkgcmV0dXJuO1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2V0VGVtcFZhbHVlKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNob3dUaW1lXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgID8gbmV3RGF0ZVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLmhvdXIodGVtcFZhbHVlPy5ob3VyKCkgPz8gMClcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC5taW51dGUodGVtcFZhbHVlPy5taW51dGUoKSA/PyAwKVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLnNlY29uZCh0ZW1wVmFsdWU/LnNlY29uZCgpID8/IDApXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDogbmV3RGF0ZS5zdGFydE9mKFwiZGF5XCIpXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICApO1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzaG91bGREaXNhYmxlRGF0ZT17c2hvdWxkRGlzYWJsZURhdGV9IC8vIPCfkYggYXF1w60gc2UgYXBsaWNhXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLz5cclxuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAge3Nob3dUaW1lICYmIChcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEJveCBzeD17eyBkaXNwbGF5OiBcImZsZXhcIiwgZ2FwOiAyICogc2NhbGUsIGFsaWduSXRlbXM6IFwiY2VudGVyXCIgfX0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TnVtYmVyQ29sdW1uXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGFiZWw9XCJIb3Jhc1wiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdmFsdWVzPXtBcnJheS5mcm9tKHsgbGVuZ3RoOiAyNCB9LCAoXywgaSkgPT4gaSl9XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2VsZWN0ZWQ9e3RlbXBWYWx1ZS5ob3VyKCl9XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgb25TZWxlY3Q9eyhoKSA9PiBzZXRUZW1wVmFsdWUodGVtcFZhbHVlLmhvdXIoaCkpfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxOdW1iZXJDb2x1bW5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBsYWJlbD1cIk1pbnV0b3NcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHZhbHVlcz17QXJyYXkuZnJvbSh7IGxlbmd0aDogNjAgfSwgKF8sIGkpID0+IGkpfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNlbGVjdGVkPXt0ZW1wVmFsdWUubWludXRlKCl9XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgb25TZWxlY3Q9eyhtKSA9PiBzZXRUZW1wVmFsdWUodGVtcFZhbHVlLm1pbnV0ZShtKSl9XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0JveD5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICApfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9Cb3g+XHJcblxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgey8qIEJvdG9uZXMgKi99XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8Q3VzdG9tQWN0aW9uQmFyXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgb25BY2NlcHQ9eygpID0+IHtcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcHJvcHMub25BY2NlcHQ/LigpO1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBvbkNoYW5nZSh0ZW1wVmFsdWUpO1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzZXRPcGVuKGZhbHNlKTtcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG9uQ2FuY2VsPXsoKSA9PiB7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHByb3BzLm9uQ2FuY2VsPy4oKTtcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2V0VGVtcFZhbHVlKHZhbHVlKTtcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2V0T3BlbihmYWxzZSk7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzZXRUb2RheT17KCkgPT4gc2V0VGVtcFZhbHVlKGRheWpzKCkpfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9Cb3g+XHJcbiAgICAgICAgICAgICAgICAgICAgKSxcclxuICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgIC8+XHJcbiAgICAgICAgPC9Mb2NhbGl6YXRpb25Qcm92aWRlcj5cclxuICAgICk7XHJcbn07Il0sIm5hbWVzIjpbInVzZVN0YXRlIiwidXNlRWZmZWN0IiwiUmVhY3QiLCJBZGFwdGVyRGF5anMiLCJMb2NhbGl6YXRpb25Qcm92aWRlciIsIkRhdGVUaW1lUGlja2VyIiwiRGF0ZUNhbGVuZGFyIiwidXNlV2luZG93U2l6ZUNvbnRleHQiLCJCb3giLCJMaXN0IiwiTGlzdEl0ZW0iLCJMaXN0SXRlbUJ1dHRvbiIsIlR5cG9ncmFwaHkiLCJkYXlqcyIsInV0YyIsImV4dGVuZCIsIkN1c3RvbUFjdGlvbkJhciIsIm9uQWNjZXB0Iiwib25DYW5jZWwiLCJzZXRUb2RheSIsInNpemUiLCJzY2FsZSIsImZhY3RvciIsInN4IiwiZGlzcGxheSIsImp1c3RpZnlDb250ZW50IiwicGFkZGluZyIsImJvcmRlclRvcCIsIm10Iiwid2lkdGgiLCJhbGlnbkNvbnRlbnQiLCJhbGlnbkl0ZW1zIiwicHgiLCJvbkNsaWNrIiwiY29sb3IiLCJmb250V2VpZ2h0IiwiY3Vyc29yIiwiTnVtYmVyQ29sdW1uIiwibGFiZWwiLCJ2YWx1ZXMiLCJzZWxlY3RlZCIsIm9uU2VsZWN0IiwiZmxleCIsIm1heEhlaWdodCIsImJvcmRlciIsImJvcmRlclJhZGl1cyIsIm92ZXJmbG93WSIsIm92ZXJmbG93WCIsImZsZXhEaXJlY3Rpb24iLCJ2YXJpYW50IiwicCIsImJvcmRlckJvdHRvbSIsImRlbnNlIiwibWFwIiwidmFsIiwiZGlzYWJsZVBhZGRpbmciLCJ0ZXh0QWxpZ24iLCJ0b1N0cmluZyIsInBhZFN0YXJ0IiwiRGF0ZVRpbWUiLCJ2YWx1ZSIsIm9uQ2hhbmdlIiwic2hvd1RpbWUiLCJkaXNhYmxlZCIsImRpc2FibGVQYXN0RGF0ZXMiLCJvcGVuIiwic2V0T3BlbiIsInRlbXBWYWx1ZSIsInNldFRlbXBWYWx1ZSIsInNob3VsZERpc2FibGVEYXRlIiwiZGF0ZSIsImlzQmVmb3JlIiwic3RhcnRPZiIsImRhdGVBZGFwdGVyIiwiYWRhcHRlckxvY2FsZSIsIm9uT3BlbiIsIm9uQ2xvc2UiLCJmb3JtYXQiLCJzbG90cyIsImxheW91dCIsInByb3BzIiwidGFicyIsImdhcCIsInZpZXdzIiwib3BlblRvIiwibmV3RGF0ZSIsImhvdXIiLCJtaW51dGUiLCJzZWNvbmQiLCJBcnJheSIsImZyb20iLCJsZW5ndGgiLCJfIiwiaSIsImgiLCJtIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxTQUFTQSxRQUFRLEVBQUVDLFNBQVMsRUFBRUMsS0FBSyxRQUFRLFFBQVE7QUFDbkQsU0FBU0MsWUFBWSxRQUFRLG1DQUFtQztBQUNoRSxTQUFTQyxvQkFBb0IsUUFBUSwyQ0FBMkM7QUFDaEYsU0FBU0MsY0FBYyxRQUFRLHFDQUFxQztBQUNwRSxTQUFTQyxZQUFZLFFBQVEsbUNBQW1DO0FBQ2hFLFNBQVNDLG9CQUFvQixRQUFRLHdDQUF3QztBQUM3RSxTQUNJQyxHQUFHLEVBQ0hDLElBQUksRUFDSkMsUUFBUSxFQUNSQyxjQUFjLEVBQ2RDLFVBQVUsUUFDUCxnQkFBZ0I7QUFDdkIsT0FBT0MsV0FBVyxRQUFRO0FBQzFCLE9BQU8sa0JBQWtCO0FBQ3pCLE9BQU9DLFNBQVMsbUJBQW1CO0FBQ25DRCxNQUFNRSxNQUFNLENBQUNEO0FBR2IsTUFBTUUsa0JBQWtCLENBQUMsRUFBRUMsUUFBUSxFQUFFQyxRQUFRLEVBQUVDLFFBQVEsRUFBRTs7SUFFckQsTUFBTUMsT0FBT2I7SUFDYixNQUFNYyxRQUFRRCxLQUFLRSxNQUFNLElBQUksR0FBRyxxQ0FBcUM7SUFFckUscUJBQ0ksUUFBQ2Q7UUFDR2UsSUFBSTtZQUNBQyxTQUFTO1lBQ1RDLGdCQUFnQjtZQUNoQkMsU0FBUyxHQUFHLElBQUlMLE1BQU0sR0FBRyxFQUFFLEtBQUtBLE1BQU0sRUFBRSxDQUFDO1lBQ3pDTSxXQUFXLEdBQUcsSUFBSU4sTUFBTSxhQUFhLENBQUM7WUFDdENPLElBQUksSUFBSVA7WUFDUlEsT0FBTztZQUNQQyxjQUFjO1lBQ2RDLFlBQVk7WUFDWkMsSUFBSSxJQUFJWDtRQUNaOzswQkFFQSxRQUFDVDtnQkFDR3FCLFNBQVNmO2dCQUNUZ0IsT0FBTTtnQkFDTlgsSUFBSTtvQkFDQVksWUFBWTtvQkFDWkMsUUFBUTtvQkFDUixXQUFXO3dCQUFFRixPQUFPO29CQUFlO2dCQUN2QzswQkFDSDs7Ozs7OzBCQUdELFFBQUN0QjtnQkFDR3FCLFNBQVNkO2dCQUNUZSxPQUFNO2dCQUNOWCxJQUFJO29CQUNBWSxZQUFZO29CQUNaQyxRQUFRO29CQUNSLFdBQVc7d0JBQUVGLE9BQU87b0JBQWU7Z0JBQ3ZDOzBCQUNIOzs7Ozs7MEJBR0QsUUFBQ3RCO2dCQUNHcUIsU0FBU2hCO2dCQUNUaUIsT0FBTTtnQkFDTlgsSUFBSTtvQkFDQVksWUFBWTtvQkFDWkMsUUFBUTtvQkFDUixXQUFXO3dCQUFFRixPQUFPO29CQUFlO2dCQUN2QzswQkFDSDs7Ozs7Ozs7Ozs7O0FBS2I7R0F0RE1sQjs7UUFFV1Q7OztLQUZYUztBQXdETixNQUFNcUIsZUFBZSxDQUFDLEVBQUVDLEtBQUssRUFBRUMsTUFBTSxFQUFFQyxRQUFRLEVBQUVDLFFBQVEsRUFBRTs7SUFFdkQsTUFBTXJCLE9BQU9iO0lBQ2IsTUFBTWMsUUFBUUQsS0FBS0UsTUFBTSxJQUFJLEdBQUcscUNBQXFDO0lBRXJFLHFCQUNJLFFBQUNkO1FBQ0dlLElBQUk7WUFDQW1CLE1BQU07WUFDTkMsV0FBVyxNQUFNdEI7WUFDakJ1QixRQUFRLEdBQUcsSUFBSXZCLE1BQU0sYUFBYSxDQUFDO1lBQ25Dd0IsY0FBYyxJQUFJeEI7WUFDbEJ5QixXQUFXO1lBQ1hDLFdBQVc7WUFDWHZCLFNBQVM7WUFDVHdCLGVBQWU7WUFDZmpCLFlBQVk7UUFDaEI7OzBCQUdBLFFBQUNuQjtnQkFDR3FDLFNBQVE7Z0JBQ1IxQixJQUFJO29CQUNBMkIsR0FBRztvQkFDSGYsWUFBWTtvQkFDWmdCLGNBQWMsR0FBRyxJQUFJOUIsTUFBTSxhQUFhLENBQUM7b0JBQ3pDYSxPQUFPO2dCQUNYOzBCQUVDSTs7Ozs7OzBCQUlMLFFBQUM3QjtnQkFBSzJDLEtBQUs7Z0JBQUM3QixJQUFJO29CQUFFTSxPQUFPO2dCQUFPOzBCQUMzQlUsT0FBT2MsR0FBRyxDQUFDLENBQUNDLG9CQUNULFFBQUM1Qzt3QkFBbUI2QyxjQUFjO2tDQUM5QixjQUFBLFFBQUM1Qzs0QkFDRzZCLFVBQVVjLFFBQVFkOzRCQUNsQlAsU0FBUyxJQUFNUSxTQUFTYTs0QkFDeEIvQixJQUFJO2dDQUFFaUMsV0FBVzs0QkFBUztzQ0FFekJGLElBQUlHLFFBQVEsR0FBR0MsUUFBUSxDQUFDLEdBQUc7Ozs7Ozt1QkFOckJKOzs7Ozs7Ozs7Ozs7Ozs7O0FBYW5DO0lBaERNakI7O1FBRVc5Qjs7O01BRlg4QjtBQWtETixPQUFPLE1BQU1zQixXQUFXLENBQUMsRUFDckJyQixLQUFLLEVBQ0xzQixLQUFLLEVBQ0xDLFFBQVEsRUFDUkMsV0FBVyxJQUFJLEVBQ2ZDLFdBQVcsS0FBSyxFQUNoQkMsbUJBQW1CLEtBQUssRUFDM0I7O0lBQ0csTUFBTSxDQUFDQyxNQUFNQyxRQUFRLEdBQUdsRSxTQUFTO0lBQ2pDLE1BQU0sQ0FBQ21FLFdBQVdDLGFBQWEsR0FBR3BFLFNBQVM0RCxRQUFRLGtCQUFrQjtJQUNyRSxNQUFNeEMsT0FBT2I7SUFDYixNQUFNYyxRQUFRRCxLQUFLRSxNQUFNLElBQUk7SUFFN0JyQixVQUFVO1FBQ04sSUFBSWdFLE1BQU07WUFDTkcsYUFBYVIsUUFBUSw0QkFBNEI7UUFDckQ7SUFDSixHQUFHO1FBQUNLO1FBQU1MO0tBQU07SUFFaEIsd0RBQXdEO0lBQ3hELE1BQU1TLG9CQUFvQixDQUFDQztRQUN2QixJQUFJLENBQUNOLGtCQUFrQixPQUFPLE9BQU8seUJBQXlCO1FBQzlELE9BQU9NLEtBQUtDLFFBQVEsQ0FBQzFELFFBQVEyRCxPQUFPLENBQUMsU0FBUyxxQ0FBcUM7SUFDdkY7SUFFQSxxQkFDSSxRQUFDcEU7UUFBcUJxRSxhQUFhdEU7UUFBY3VFLGVBQWM7a0JBQzNELGNBQUEsUUFBQ3JFO1lBQ0cwRCxVQUFVQTtZQUNWekIsT0FBT0E7WUFDUHNCLE9BQU9BO1lBQ1BLLE1BQU1BO1lBQ05VLFFBQVEsSUFBTVQsUUFBUTtZQUN0QlUsU0FBUyxJQUFNVixRQUFRO1lBQ3ZCVyxRQUFRZixXQUFXLHFCQUFxQjtZQUN4Q2dCLE9BQU87Z0JBQ0hDLFFBQVEsQ0FBQ0Msc0JBQ0wsUUFBQ3hFOzs0QkFDSXdFLE1BQU1DLElBQUk7MENBR1gsUUFBQ3pFO2dDQUFJZSxJQUFJO29DQUFFQyxTQUFTO29DQUFRMEQsS0FBSyxJQUFJN0Q7b0NBQU82QixHQUFHLElBQUk3QjtnQ0FBTTs7a0RBQ3JELFFBQUNmO3dDQUNHNkUsT0FBTzs0Q0FBQzs0Q0FBUTs0Q0FBUzt5Q0FBTTt3Q0FDL0JDLFFBQU87d0NBQ1B4QixPQUFPTzt3Q0FDUE4sVUFBVSxDQUFDd0I7NENBQ1AsSUFBSSxDQUFDQSxTQUFTOzRDQUNkakIsYUFDSU4sV0FDTXVCLFFBQ0dDLElBQUksQ0FBQ25CLFdBQVdtQixVQUFVLEdBQzFCQyxNQUFNLENBQUNwQixXQUFXb0IsWUFBWSxHQUM5QkMsTUFBTSxDQUFDckIsV0FBV3FCLFlBQVksS0FDakNILFFBQVFiLE9BQU8sQ0FBQzt3Q0FFOUI7d0NBQ0FILG1CQUFtQkE7Ozs7OztvQ0FHdEJQLDBCQUNHLFFBQUN0RDt3Q0FBSWUsSUFBSTs0Q0FBRUMsU0FBUzs0Q0FBUTBELEtBQUssSUFBSTdEOzRDQUFPVSxZQUFZO3dDQUFTOzswREFDN0QsUUFBQ007Z0RBQ0dDLE9BQU07Z0RBQ05DLFFBQVFrRCxNQUFNQyxJQUFJLENBQUM7b0RBQUVDLFFBQVE7Z0RBQUcsR0FBRyxDQUFDQyxHQUFHQyxJQUFNQTtnREFDN0NyRCxVQUFVMkIsVUFBVW1CLElBQUk7Z0RBQ3hCN0MsVUFBVSxDQUFDcUQsSUFBTTFCLGFBQWFELFVBQVVtQixJQUFJLENBQUNROzs7Ozs7MERBRWpELFFBQUN6RDtnREFDR0MsT0FBTTtnREFDTkMsUUFBUWtELE1BQU1DLElBQUksQ0FBQztvREFBRUMsUUFBUTtnREFBRyxHQUFHLENBQUNDLEdBQUdDLElBQU1BO2dEQUM3Q3JELFVBQVUyQixVQUFVb0IsTUFBTTtnREFDMUI5QyxVQUFVLENBQUNzRCxJQUFNM0IsYUFBYUQsVUFBVW9CLE1BQU0sQ0FBQ1E7Ozs7Ozs7Ozs7Ozs7Ozs7OzswQ0FPL0QsUUFBQy9FO2dDQUNHQyxVQUFVO29DQUNOK0QsTUFBTS9ELFFBQVE7b0NBQ2Q0QyxTQUFTTTtvQ0FDVEQsUUFBUTtnQ0FDWjtnQ0FDQWhELFVBQVU7b0NBQ044RCxNQUFNOUQsUUFBUTtvQ0FDZGtELGFBQWFSO29DQUNiTSxRQUFRO2dDQUNaO2dDQUNBL0MsVUFBVSxJQUFNaUQsYUFBYXZEOzs7Ozs7Ozs7Ozs7WUFJN0M7Ozs7Ozs7Ozs7O0FBSWhCLEVBQUU7SUFsR1c4Qzs7UUFVSXBEOzs7TUFWSm9EIn0=

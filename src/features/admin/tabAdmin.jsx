@@ -4,9 +4,11 @@ import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { useWindowSizeContext } from '../context/windowSizeContext';
-import AdminLockers from './adminLockers.jsx';
-import ReportLockers from './reportLockers.jsx';
+import { useWindowSizeContext } from '@shared/context/windowSizeContext.jsx';
+import { AdminLockers } from './AdminLockers.jsx';
+import { ReportLockers } from './ReportLockers.jsx';
+
+const fileName = 'TabAdmin';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -15,7 +17,7 @@ const log = (level, message) => {
     }
 };
 
-const Tabadmin = () => {
+export const TabAdmin = () => {
     const [value, setValue] = useState('1');
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
@@ -73,5 +75,3 @@ const Tabadmin = () => {
         </Box>
     );
 };
-
-export default Tabadmin;

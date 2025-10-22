@@ -1,0 +1,13 @@
+// src/constants/apiRoutes.js
+
+export const API_ROUTES = {
+    ASSIGN_LOCKER: '/api/lockers/assign',
+    GET_ALL_STATUS_LOCKERS: '/api/lockers/get-all-status',
+    OPEN_SESSION_LOCKER: '/api/lockers/open-session',
+    OPEN_BY_CODE_LOCKER: '/api/lockers/open-by-code',
+    OPEN_RESERVE_LOCKER: '/api/lockers/open-reservation',
+    SET_STATUS_LOCKER: '/api/lockers/set-status',
+    REPORT_LOCKERS: '/api/lockers/report',
+    RESERVE_LOCKERS: '/api/lockers/reserve',
+    // Agrega más rutas aquí
+};

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useUser } from '../context/userContext.jsx';
-import SnackBarAlert from '../bar/snackAlert.jsx';
-import logo from '../../assets/Logo.png';
-import { useElectronConfig } from '../hooks/useConfig.js';
-import { useWindowSizeContext } from '../context/windowSizeContext';
-import { scaledDimension } from '../utils/scaledDimension.js';
-import TextFieldVirtKeyPad from '../utils/textFieldVirtKeyPad.jsx';
+import { useUser } from '@shared/context/UserContext.jsx';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+import logo from '@assets/Logo.png';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { TextFieldVirtKeyPad } from '@shared/components/inputs/textFieldVirtKeyPad.jsx';
 import {
     Box,
     Button,
@@ -28,7 +28,7 @@ import {
 } from '@mui/icons-material';
 
 const USER_STORAGE_KEY = 'userInit';
-const fileName = 'login';
+const fileName = 'Login';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -37,7 +37,7 @@ const log = (level, message) => {
     }
 };
 
-export default function Login() {
+export const Login = () => {
     const { userInit, setUserInit } = useUser();
     const [userName, setUserName] = useState('');
     const [pass, setPass] = useState('');
@@ -482,7 +482,7 @@ export default function Login() {
             )
             }
 
-            <SnackBarAlert
+            <SnackAlert
                 open={snackbarOpen}
                 message={snackbarMessage}
                 severity={snackbarSeverity}

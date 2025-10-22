@@ -1,4 +1,4 @@
-// preload/watchers/authWatcher.js
+// electron/watchers/authWatcher.js
 const fs = require('fs');
 const path = require('path');
 const { logger } = require('../logger/logger');
@@ -6,13 +6,11 @@ const { logger } = require('../logger/logger');
 const fileName = path.parse(__filename).name;
 
 /**
- * Observa y emite cambios en el archivo auth_key.json al proceso principal.
- * También envía la configuración inicial.
- * 
- * @param {string} authPath - Ruta completa al archivo auth_key.json
- * @param {Electron.IpcRenderer} ipcRenderer - ipcRenderer para enviar eventos
+ * Observa y emite cambios en auth_key.json.
+ * @param {string} authPath
+ * @param {{ send: (channel: string, payload: any) => void }} messenger
  */
-function watchAuthKey(authPath, ipcRenderer) {
+function watchAuthKey(authPath, messenger) {
     if (!fs.existsSync(authPath)) {
         logger.error(`[${fileName}] auth_key.json NO encontrado: ${authPath}`);
         return;
@@ -22,39 +20,26 @@ function watchAuthKey(authPath, ipcRenderer) {
         try {
             const raw = fs.readFileSync(authPath, 'utf8');
             const parsed = JSON.parse(raw);
-
-            logger.debug(`[${fileName}] Contenido del archivo: ${raw}`);
-            logger.info(`[${fileName}] auth_key.json actualizado correctamente`);
-
-            ipcRenderer.send('auth-updated', parsed);
+            logger.debug(`[${fileName}] auth_key.json: ${raw}`);
+            messenger.send('auth-updated', parsed);
         } catch (err) {
-            logger.error(`[${fileName}] Error al leer o parsear auth_key.json: ${err.message}`);
+            logger.error(`[${fileName}] Error al leer/parsear auth_key.json: ${err.message}`);
         }
     };
 
-    // Cargar config inicial
-    logger.info(`[${fileName}] Observando archivo auth_key.json en: ${authPath}`);
-    logger.debug(`[${fileName}] Cargando configuración inicial`);
+    logger.info(`[${fileName}] Observando: ${authPath}`);
     loadAndSendAuth();
 
-    // Observación principal con fs.watch
     try {
         fs.watch(authPath, (eventType) => {
-            if (eventType === 'change') {
-                logger.debug(`[${fileName}] fs.watch detectó cambio en auth_key.json`);
-                loadAndSendAuth();
-            }
+            if (eventType === 'change') loadAndSendAuth();
         });
     } catch (err) {
-        logger.warn(`[${fileName}] fs.watch falló: ${err.message}, usando fs.watchFile como respaldo`);
+        logger.warn(`[${fileName}] fs.watch falló: ${err.message}, usando fs.watchFile`);
     }
 
-    // Respaldo con fs.watchFile
     fs.watchFile(authPath, { interval: 1000 }, (curr, prev) => {
-        if (curr.mtime !== prev.mtime) {
-            logger.debug(`[${fileName}] fs.watchFile detectó cambio en auth_key.json`);
-            loadAndSendAuth();
-        }
+        if (curr.mtime !== prev.mtime) loadAndSendAuth();
     });
 }
 

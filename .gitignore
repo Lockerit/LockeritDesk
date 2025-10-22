@@ -1,4 +1,6 @@
-node_modules
-dist
-logs
-release
+/node_modules/
+/dist/
+/release/
+/out/
+/electron/electron_cache/
+/*.log

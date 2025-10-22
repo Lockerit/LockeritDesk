@@ -1,0 +1,289 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/shared/components/dialogs/ShowErrorAPI.jsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=e10b181b"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=e10b181b"; const useState = __vite__cjsImport3_react["useState"]; const forwardRef = __vite__cjsImport3_react["forwardRef"]; const useEffect = __vite__cjsImport3_react["useEffect"];
+import { useWindowSizeContext } from "/src/shared/context/WindowSizeContext.jsx"; // Hook para tamaño pantalla
+import { scaledDimension } from "/src/shared/utils/scaledDimension.js";
+import { formatTime } from "/src/shared/utils/utils.js";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton } from "/node_modules/.vite/deps/@mui_material.js?v=e10b181b";
+import { Close, ErrorOutline, CheckCircleOutline } from "/node_modules/.vite/deps/@mui_icons-material.js?v=e10b181b";
+const Transition = /*#__PURE__*/ forwardRef(_c = function Transition(props, ref) {
+    return /*#__PURE__*/ _jsxDEV(Slide, {
+        direction: "up",
+        ref: ref,
+        ...props
+    }, void 0, false, {
+        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+        lineNumber: 23,
+        columnNumber: 12
+    }, this);
+});
+_c1 = Transition;
+const fileName = 'ShowErrorAPI';
+export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = true })=>{
+    _s();
+    const [secondsLeft, setSecondsLeft] = useState(timeout);
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
+    useEffect(()=>{
+        if (open) {
+            setSecondsLeft(timeout);
+        }
+    }, [
+        open,
+        timeout
+    ]);
+    // Manejar conteo regresivo
+    useEffect(()=>{
+        if (!open || secondsLeft <= 0) return;
+        const interval = setInterval(()=>{
+            setSecondsLeft((prev)=>prev - 1);
+        }, 1000);
+        return ()=>clearInterval(interval);
+    }, [
+        open,
+        secondsLeft
+    ]);
+    // Cerrar automáticamente al llegar a 0
+    useEffect(()=>{
+        if (open && secondsLeft === 0) {
+            setSecondsLeft(timeout);
+            onConfirm();
+        }
+    }, [
+        open,
+        secondsLeft,
+        onConfirm
+    ]);
+    return /*#__PURE__*/ _jsxDEV(Dialog, {
+        open: open,
+        onClose: ()=>{},
+        keepMounted: false,
+        hideBackdrop: true,
+        disableEscapeKeyDown: true,
+        disableEnforceFocus: true,
+        disableAutoFocus: true,
+        disableRestoreFocus: true,
+        sx: {
+            pointerEvents: "auto",
+            zIndex: 1500
+        },
+        PaperProps: {
+            sx: {
+                width: scaledDimension({
+                    xs: {
+                        base: 70,
+                        min: 65,
+                        max: 75
+                    },
+                    sm: {
+                        base: 70,
+                        min: 65,
+                        max: 75
+                    },
+                    md: {
+                        base: 50,
+                        min: 45,
+                        max: 55
+                    },
+                    lg: {
+                        base: 40,
+                        min: 35,
+                        max: 45
+                    }
+                }, scale),
+                height: 'auto',
+                borderRadius: `${Math.max(8, 16 * scale)}px`,
+                p: 2 * scale
+            }
+        },
+        slots: {
+            transition: Transition
+        },
+        children: [
+            /*#__PURE__*/ _jsxDEV(Box, {
+                sx: {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2 * scale,
+                    position: 'relative'
+                },
+                children: [
+                    /*#__PURE__*/ _jsxDEV(Box, {
+                        sx: {
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            gap: 1 * scale,
+                            position: 'absolute',
+                            right: 8 * scale,
+                            top: 8 * scale
+                        },
+                        children: [
+                            /*#__PURE__*/ _jsxDEV(Typography, {
+                                variant: "body2",
+                                children: formatTime(secondsLeft)
+                            }, void 0, false, {
+                                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                                lineNumber: 103,
+                                columnNumber: 21
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV(IconButton, {
+                                onClick: onConfirm,
+                                children: /*#__PURE__*/ _jsxDEV(Close, {}, void 0, false, {
+                                    fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                                    lineNumber: 107,
+                                    columnNumber: 25
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                                lineNumber: 106,
+                                columnNumber: 21
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                        lineNumber: 92,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(DialogTitle, {
+                        children: "Información"
+                    }, void 0, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                        lineNumber: 111,
+                        columnNumber: 17
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                lineNumber: 90,
+                columnNumber: 13
+            }, this),
+            /*#__PURE__*/ _jsxDEV(DialogContent, {
+                sx: {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    gap: 2 * scale
+                },
+                children: [
+                    isError ? /*#__PURE__*/ _jsxDEV(ErrorOutline, {
+                        color: "error",
+                        sx: {
+                            fontSize: 75 * scale
+                        }
+                    }, void 0, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                        lineNumber: 124,
+                        columnNumber: 21
+                    }, this) : /*#__PURE__*/ _jsxDEV(CheckCircleOutline, {
+                        color: "success",
+                        sx: {
+                            fontSize: 75 * scale
+                        }
+                    }, void 0, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                        lineNumber: 126,
+                        columnNumber: 21
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(Typography, {
+                        variant: "h3",
+                        component: "span",
+                        color: "text.primary",
+                        sx: {
+                            fontWeight: 'bold'
+                        },
+                        children: typeof msg === 'string' ? msg : msg?.message || JSON.stringify(msg)
+                    }, void 0, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                        lineNumber: 128,
+                        columnNumber: 17
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                lineNumber: 114,
+                columnNumber: 13
+            }, this),
+            /*#__PURE__*/ _jsxDEV(DialogActions, {
+                sx: {
+                    display: 'flex',
+                    justifyContent: 'center',
+                    width: '100%'
+                },
+                children: /*#__PURE__*/ _jsxDEV(Button, {
+                    onClick: onConfirm,
+                    color: "primary",
+                    variant: "contained",
+                    fullWidth: true,
+                    sx: {
+                        mx: 3 * scale,
+                        p: 3 * scale
+                    },
+                    children: "Aceptar"
+                }, void 0, false, {
+                    fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                    lineNumber: 140,
+                    columnNumber: 17
+                }, this)
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+                lineNumber: 133,
+                columnNumber: 13
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx",
+        lineNumber: 59,
+        columnNumber: 9
+    }, this);
+};
+_s(ShowErrorAPI, "NCh0GW7cMka0IRrGDEEwkIpijwY=", false, function() {
+    return [
+        useWindowSizeContext
+    ];
+});
+_c2 = ShowErrorAPI;
+var _c, _c1, _c2;
+$RefreshReg$(_c, "Transition$forwardRef");
+$RefreshReg$(_c1, "Transition");
+$RefreshReg$(_c2, "ShowErrorAPI");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/User/Documents/Personal/LockeritDesk/src/shared/components/dialogs/ShowErrorAPI.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlNob3dFcnJvckFQSS5qc3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdXNlU3RhdGUsIGZvcndhcmRSZWYsIHVzZUVmZmVjdCB9IGZyb20gJ3JlYWN0JztcclxuaW1wb3J0IHsgdXNlV2luZG93U2l6ZUNvbnRleHQgfSBmcm9tICdAc2hhcmVkL2NvbnRleHQvV2luZG93U2l6ZUNvbnRleHQuanN4JzsgLy8gSG9vayBwYXJhIHRhbWHDsW8gcGFudGFsbGFcclxuaW1wb3J0IHsgc2NhbGVkRGltZW5zaW9uIH0gZnJvbSAnQHNoYXJlZC91dGlscy9zY2FsZWREaW1lbnNpb24uanMnO1xyXG5pbXBvcnQgeyBmb3JtYXRUaW1lIH0gZnJvbSAnQHNoYXJlZC91dGlscy91dGlscy5qcyc7XHJcbmltcG9ydCB7XHJcbiAgICBEaWFsb2csXHJcbiAgICBEaWFsb2dUaXRsZSxcclxuICAgIERpYWxvZ0NvbnRlbnQsXHJcbiAgICBEaWFsb2dBY3Rpb25zLFxyXG4gICAgVHlwb2dyYXBoeSxcclxuICAgIEJ1dHRvbixcclxuICAgIEJveCxcclxuICAgIFNsaWRlLFxyXG4gICAgSWNvbkJ1dHRvbixcclxufSBmcm9tICdAbXVpL21hdGVyaWFsJztcclxuaW1wb3J0IHtcclxuICAgIENsb3NlLFxyXG4gICAgRXJyb3JPdXRsaW5lLFxyXG4gICAgQ2hlY2tDaXJjbGVPdXRsaW5lXHJcbn0gZnJvbSAnQG11aS9pY29ucy1tYXRlcmlhbCc7XHJcblxyXG5jb25zdCBUcmFuc2l0aW9uID0gZm9yd2FyZFJlZihmdW5jdGlvbiBUcmFuc2l0aW9uKHByb3BzLCByZWYpIHtcclxuICAgIHJldHVybiA8U2xpZGUgZGlyZWN0aW9uPVwidXBcIiByZWY9e3JlZn0gey4uLnByb3BzfSAvPjtcclxufSk7XHJcblxyXG5jb25zdCBmaWxlTmFtZSA9ICdTaG93RXJyb3JBUEknO1xyXG5cclxuZXhwb3J0IGNvbnN0IFNob3dFcnJvckFQSSA9ICh7IG9wZW4sIG9uQ29uZmlybSwgbXNnLCB0aW1lb3V0ID0gMTUsIGlzRXJyb3IgPSB0cnVlIH0pID0+IHtcclxuICAgIGNvbnN0IFtzZWNvbmRzTGVmdCwgc2V0U2Vjb25kc0xlZnRdID0gdXNlU3RhdGUodGltZW91dCk7XHJcbiAgICBjb25zdCBzaXplID0gdXNlV2luZG93U2l6ZUNvbnRleHQoKTtcclxuICAgIGNvbnN0IHNjYWxlID0gc2l6ZS5mYWN0b3IgfHwgMTtcclxuXHJcbiAgICB1c2VFZmZlY3QoKCkgPT4ge1xyXG4gICAgICAgIGlmIChvcGVuKSB7XHJcbiAgICAgICAgICAgIHNldFNlY29uZHNMZWZ0KHRpbWVvdXQpO1xyXG4gICAgICAgIH1cclxuICAgIH0sIFtvcGVuLCB0aW1lb3V0XSk7XHJcblxyXG4gICAgLy8gTWFuZWphciBjb250ZW8gcmVncmVzaXZvXHJcbiAgICB1c2VFZmZlY3QoKCkgPT4ge1xyXG4gICAgICAgIGlmICghb3BlbiB8fCBzZWNvbmRzTGVmdCA8PSAwKSByZXR1cm47XHJcblxyXG4gICAgICAgIGNvbnN0IGludGVydmFsID0gc2V0SW50ZXJ2YWwoKCkgPT4ge1xyXG4gICAgICAgICAgICBzZXRTZWNvbmRzTGVmdChwcmV2ID0+IHByZXYgLSAxKTtcclxuICAgICAgICB9LCAxMDAwKTtcclxuXHJcbiAgICAgICAgcmV0dXJuICgpID0+IGNsZWFySW50ZXJ2YWwoaW50ZXJ2YWwpO1xyXG4gICAgfSwgW29wZW4sIHNlY29uZHNMZWZ0XSk7XHJcblxyXG4gICAgLy8gQ2VycmFyIGF1dG9tw6F0aWNhbWVudGUgYWwgbGxlZ2FyIGEgMFxyXG4gICAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgICAgICBpZiAob3BlbiAmJiBzZWNvbmRzTGVmdCA9PT0gMCkge1xyXG4gICAgICAgICAgICBzZXRTZWNvbmRzTGVmdCh0aW1lb3V0KTtcclxuICAgICAgICAgICAgb25Db25maXJtKCk7XHJcbiAgICAgICAgfVxyXG4gICAgfSwgW29wZW4sIHNlY29uZHNMZWZ0LCBvbkNvbmZpcm1dKTtcclxuXHJcbiAgICByZXR1cm4gKFxyXG4gICAgICAgIDxEaWFsb2dcclxuICAgICAgICAgICAgb3Blbj17b3Blbn1cclxuICAgICAgICAgICAgb25DbG9zZT17KCkgPT4geyB9fVxyXG4gICAgICAgICAgICBrZWVwTW91bnRlZD17ZmFsc2V9XHJcbiAgICAgICAgICAgIGhpZGVCYWNrZHJvcCAgICAgICAgICAgICAgIC8vIPCfkYggZXZpdGEgYmxvcXVlYXIgY2xpY3MgZW4gZWwgZm9uZG9cclxuICAgICAgICAgICAgZGlzYWJsZUVzY2FwZUtleURvd25cclxuICAgICAgICAgICAgZGlzYWJsZUVuZm9yY2VGb2N1cyAgICAgICAgLy8g8J+RiCBubyBmdWVyemEgZWwgZm9jbyBhbCBtb2RhbFxyXG4gICAgICAgICAgICBkaXNhYmxlQXV0b0ZvY3VzXHJcbiAgICAgICAgICAgIGRpc2FibGVSZXN0b3JlRm9jdXNcclxuICAgICAgICAgICAgc3g9e3tcclxuICAgICAgICAgICAgICAgIHBvaW50ZXJFdmVudHM6IFwiYXV0b1wiLCAgIC8vIPCfkYggYXNlZ3VyYSBxdWUgYm90b25lcyBzZWFuIGNsaWNrZWFibGVzXHJcbiAgICAgICAgICAgICAgICB6SW5kZXg6IDE1MDAsICAgICAgICAgICAgLy8gZW5jaW1hIGRlbCBrZXlwYWRcclxuICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgUGFwZXJQcm9wcz17e1xyXG4gICAgICAgICAgICAgICAgc3g6IHtcclxuICAgICAgICAgICAgICAgICAgICB3aWR0aDogc2NhbGVkRGltZW5zaW9uKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICB7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICB4czogeyBiYXNlOiA3MCwgbWluOiA2NSwgbWF4OiA3NSB9LFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgc206IHsgYmFzZTogNzAsIG1pbjogNjUsIG1heDogNzUgfSxcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIG1kOiB7IGJhc2U6IDUwLCBtaW46IDQ1LCBtYXg6IDU1IH0sXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBsZzogeyBiYXNlOiA0MCwgbWluOiAzNSwgbWF4OiA0NSB9LFxyXG4gICAgICAgICAgICAgICAgICAgICAgICB9LFxyXG4gICAgICAgICAgICAgICAgICAgICAgICBzY2FsZVxyXG4gICAgICAgICAgICAgICAgICAgICksXHJcbiAgICAgICAgICAgICAgICAgICAgaGVpZ2h0OiAnYXV0bycsXHJcbiAgICAgICAgICAgICAgICAgICAgYm9yZGVyUmFkaXVzOiBgJHtNYXRoLm1heCg4LCAxNiAqIHNjYWxlKX1weGAsXHJcbiAgICAgICAgICAgICAgICAgICAgcDogMiAqIHNjYWxlLFxyXG4gICAgICAgICAgICAgICAgfSxcclxuICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgc2xvdHM9e3sgdHJhbnNpdGlvbjogVHJhbnNpdGlvbiB9fVxyXG4gICAgICAgID5cclxuICAgICAgICAgICAgPEJveCBzeD17eyBkaXNwbGF5OiAnZmxleCcsIGZsZXhEaXJlY3Rpb246ICdjb2x1bW4nLCBnYXA6IDIgKiBzY2FsZSwgcG9zaXRpb246ICdyZWxhdGl2ZScgfX0+XHJcbiAgICAgICAgICAgICAgICB7LyogRW5jYWJlemFkbyBzdXBlcmlvciAqL31cclxuICAgICAgICAgICAgICAgIDxCb3hcclxuICAgICAgICAgICAgICAgICAgICBzeD17e1xyXG4gICAgICAgICAgICAgICAgICAgICAgICBkaXNwbGF5OiAnZmxleCcsXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIGp1c3RpZnlDb250ZW50OiAnZmxleC1lbmQnLFxyXG4gICAgICAgICAgICAgICAgICAgICAgICBhbGlnbkl0ZW1zOiAnY2VudGVyJyxcclxuICAgICAgICAgICAgICAgICAgICAgICAgZ2FwOiAxICogc2NhbGUsXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxyXG4gICAgICAgICAgICAgICAgICAgICAgICByaWdodDogOCAqIHNjYWxlLFxyXG4gICAgICAgICAgICAgICAgICAgICAgICB0b3A6IDggKiBzY2FsZSxcclxuICAgICAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MlwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICB7Zm9ybWF0VGltZShzZWNvbmRzTGVmdCl9XHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgIDxJY29uQnV0dG9uIG9uQ2xpY2s9e29uQ29uZmlybX0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxDbG9zZSAvPlxyXG4gICAgICAgICAgICAgICAgICAgIDwvSWNvbkJ1dHRvbj5cclxuICAgICAgICAgICAgICAgIDwvQm94PlxyXG5cclxuICAgICAgICAgICAgICAgIDxEaWFsb2dUaXRsZT5JbmZvcm1hY2nDs248L0RpYWxvZ1RpdGxlPlxyXG4gICAgICAgICAgICA8L0JveD5cclxuXHJcbiAgICAgICAgICAgIDxEaWFsb2dDb250ZW50XHJcbiAgICAgICAgICAgICAgICBzeD17e1xyXG4gICAgICAgICAgICAgICAgICAgIGRpc3BsYXk6ICdmbGV4JyxcclxuICAgICAgICAgICAgICAgICAgICBmbGV4RGlyZWN0aW9uOiAnY29sdW1uJyxcclxuICAgICAgICAgICAgICAgICAgICBhbGlnbkl0ZW1zOiAnY2VudGVyJyxcclxuICAgICAgICAgICAgICAgICAgICB0ZXh0QWxpZ246ICdjZW50ZXInLFxyXG4gICAgICAgICAgICAgICAgICAgIGdhcDogMiAqIHNjYWxlLFxyXG4gICAgICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAge2lzRXJyb3IgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgPEVycm9yT3V0bGluZSBjb2xvcj1cImVycm9yXCIgc3g9e3sgZm9udFNpemU6IDc1ICogc2NhbGUgfX0gLz5cclxuICAgICAgICAgICAgICAgICkgOiAoXHJcbiAgICAgICAgICAgICAgICAgICAgPENoZWNrQ2lyY2xlT3V0bGluZSBjb2xvcj1cInN1Y2Nlc3NcIiBzeD17eyBmb250U2l6ZTogNzUgKiBzY2FsZSB9fSAvPlxyXG4gICAgICAgICAgICAgICAgKX1cclxuICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoM1wiIGNvbXBvbmVudD1cInNwYW5cIiBjb2xvcj1cInRleHQucHJpbWFyeVwiIHN4PXt7IGZvbnRXZWlnaHQ6ICdib2xkJyB9fT5cclxuICAgICAgICAgICAgICAgICAgICB7dHlwZW9mIG1zZyA9PT0gJ3N0cmluZycgPyBtc2cgOiBtc2c/Lm1lc3NhZ2UgfHwgSlNPTi5zdHJpbmdpZnkobXNnKX1cclxuICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgPC9EaWFsb2dDb250ZW50PlxyXG5cclxuICAgICAgICAgICAgPERpYWxvZ0FjdGlvbnNcclxuICAgICAgICAgICAgICAgIHN4PXt7XHJcbiAgICAgICAgICAgICAgICAgICAgZGlzcGxheTogJ2ZsZXgnLFxyXG4gICAgICAgICAgICAgICAgICAgIGp1c3RpZnlDb250ZW50OiAnY2VudGVyJyxcclxuICAgICAgICAgICAgICAgICAgICB3aWR0aDogJzEwMCUnLFxyXG4gICAgICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgPEJ1dHRvblxyXG4gICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9e29uQ29uZmlybX1cclxuICAgICAgICAgICAgICAgICAgICBjb2xvcj1cInByaW1hcnlcIlxyXG4gICAgICAgICAgICAgICAgICAgIHZhcmlhbnQ9XCJjb250YWluZWRcIlxyXG4gICAgICAgICAgICAgICAgICAgIGZ1bGxXaWR0aFxyXG4gICAgICAgICAgICAgICAgICAgIHN4PXt7IG14OiAzICogc2NhbGUsIHA6IDMgKiBzY2FsZSB9fVxyXG4gICAgICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgICAgIEFjZXB0YXJcclxuICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgICAgICA8L0RpYWxvZ0FjdGlvbnM+XHJcbiAgICAgICAgPC9EaWFsb2c+XHJcbiAgICApO1xyXG59Il0sIm5hbWVzIjpbInVzZVN0YXRlIiwiZm9yd2FyZFJlZiIsInVzZUVmZmVjdCIsInVzZVdpbmRvd1NpemVDb250ZXh0Iiwic2NhbGVkRGltZW5zaW9uIiwiZm9ybWF0VGltZSIsIkRpYWxvZyIsIkRpYWxvZ1RpdGxlIiwiRGlhbG9nQ29udGVudCIsIkRpYWxvZ0FjdGlvbnMiLCJUeXBvZ3JhcGh5IiwiQnV0dG9uIiwiQm94IiwiU2xpZGUiLCJJY29uQnV0dG9uIiwiQ2xvc2UiLCJFcnJvck91dGxpbmUiLCJDaGVja0NpcmNsZU91dGxpbmUiLCJUcmFuc2l0aW9uIiwicHJvcHMiLCJyZWYiLCJkaXJlY3Rpb24iLCJmaWxlTmFtZSIsIlNob3dFcnJvckFQSSIsIm9wZW4iLCJvbkNvbmZpcm0iLCJtc2ciLCJ0aW1lb3V0IiwiaXNFcnJvciIsInNlY29uZHNMZWZ0Iiwic2V0U2Vjb25kc0xlZnQiLCJzaXplIiwic2NhbGUiLCJmYWN0b3IiLCJpbnRlcnZhbCIsInNldEludGVydmFsIiwicHJldiIsImNsZWFySW50ZXJ2YWwiLCJvbkNsb3NlIiwia2VlcE1vdW50ZWQiLCJoaWRlQmFja2Ryb3AiLCJkaXNhYmxlRXNjYXBlS2V5RG93biIsImRpc2FibGVFbmZvcmNlRm9jdXMiLCJkaXNhYmxlQXV0b0ZvY3VzIiwiZGlzYWJsZVJlc3RvcmVGb2N1cyIsInN4IiwicG9pbnRlckV2ZW50cyIsInpJbmRleCIsIlBhcGVyUHJvcHMiLCJ3aWR0aCIsInhzIiwiYmFzZSIsIm1pbiIsIm1heCIsInNtIiwibWQiLCJsZyIsImhlaWdodCIsImJvcmRlclJhZGl1cyIsIk1hdGgiLCJwIiwic2xvdHMiLCJ0cmFuc2l0aW9uIiwiZGlzcGxheSIsImZsZXhEaXJlY3Rpb24iLCJnYXAiLCJwb3NpdGlvbiIsImp1c3RpZnlDb250ZW50IiwiYWxpZ25JdGVtcyIsInJpZ2h0IiwidG9wIiwidmFyaWFudCIsIm9uQ2xpY2siLCJ0ZXh0QWxpZ24iLCJjb2xvciIsImZvbnRTaXplIiwiY29tcG9uZW50IiwiZm9udFdlaWdodCIsIm1lc3NhZ2UiLCJKU09OIiwic3RyaW5naWZ5IiwiZnVsbFdpZHRoIiwibXgiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQVNBLFFBQVEsRUFBRUMsVUFBVSxFQUFFQyxTQUFTLFFBQVEsUUFBUTtBQUN4RCxTQUFTQyxvQkFBb0IsUUFBUSx3Q0FBd0MsQ0FBQyw0QkFBNEI7QUFDMUcsU0FBU0MsZUFBZSxRQUFRLG1DQUFtQztBQUNuRSxTQUFTQyxVQUFVLFFBQVEseUJBQXlCO0FBQ3BELFNBQ0lDLE1BQU0sRUFDTkMsV0FBVyxFQUNYQyxhQUFhLEVBQ2JDLGFBQWEsRUFDYkMsVUFBVSxFQUNWQyxNQUFNLEVBQ05DLEdBQUcsRUFDSEMsS0FBSyxFQUNMQyxVQUFVLFFBQ1AsZ0JBQWdCO0FBQ3ZCLFNBQ0lDLEtBQUssRUFDTEMsWUFBWSxFQUNaQyxrQkFBa0IsUUFDZixzQkFBc0I7QUFFN0IsTUFBTUMsMkJBQWFqQixnQkFBVyxTQUFTaUIsV0FBV0MsS0FBSyxFQUFFQyxHQUFHO0lBQ3hELHFCQUFPLFFBQUNQO1FBQU1RLFdBQVU7UUFBS0QsS0FBS0E7UUFBTSxHQUFHRCxLQUFLOzs7Ozs7QUFDcEQ7O0FBRUEsTUFBTUcsV0FBVztBQUVqQixPQUFPLE1BQU1DLGVBQWUsQ0FBQyxFQUFFQyxJQUFJLEVBQUVDLFNBQVMsRUFBRUMsR0FBRyxFQUFFQyxVQUFVLEVBQUUsRUFBRUMsVUFBVSxJQUFJLEVBQUU7O0lBQy9FLE1BQU0sQ0FBQ0MsYUFBYUMsZUFBZSxHQUFHOUIsU0FBUzJCO0lBQy9DLE1BQU1JLE9BQU81QjtJQUNiLE1BQU02QixRQUFRRCxLQUFLRSxNQUFNLElBQUk7SUFFN0IvQixVQUFVO1FBQ04s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

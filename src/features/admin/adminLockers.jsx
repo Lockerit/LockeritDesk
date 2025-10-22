@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import LoadingScreen from '../dialogs/loading.jsx';
-import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
-import OpenByCodeLocker from '../apis/openByCodeLocker.js';
-import { useElectronConfig } from '../hooks/useConfig.js';
-import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import SetStatusLocker from '../apis/setStatusLocker.js';
-import SnackBarAlert from '../bar/snackAlert.jsx';
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
-import RegisterUserPeriod from '../dialogs/registerUserPeriod.jsx';
-import { useModal } from "../context/modalContext.jsx";
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
+import { OpenByCodeLocker } from '@services/apis/openByCodeLocker.js';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { SetStatusLocker } from '@services/apis/setStatusLocker.js';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
+import { useModal } from "@shared/context/ModalContext.jsx";
 import {
     Box,
     Typography,
@@ -27,7 +27,7 @@ import {
 } from '@mui/material';
 import { Payment, Sync } from '@mui/icons-material';
 
-const fileName = 'adminLockers';
+const fileName = 'AdminLockers';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -36,7 +36,7 @@ const log = (level, message) => {
     }
 };
 
-const AdminLockers = () => {
+export const AdminLockers = () => {
     const [data, setData] = useState(null);
     const [selectedModule, setSelectedModule] = useState('');
     const [selectedLockers, setSelectedLockers] = useState([]);
@@ -593,7 +593,7 @@ const AdminLockers = () => {
                     </Box>
                 )}
             </Box>
-            {loading && (<LoadingScreen
+            {loading && (<Loading
                 message={messageLoading}
             />)}
 
@@ -607,7 +607,7 @@ const AdminLockers = () => {
                 disableRestoreFocus
             />
 
-            <SnackBarAlert
+            <SnackAlert
                 open={snackbarOpen}
                 message={snackbarMessage}
                 severity={snackbarSeverity}
@@ -622,5 +622,3 @@ const AdminLockers = () => {
         </>
     );
 };
-
-export default AdminLockers;

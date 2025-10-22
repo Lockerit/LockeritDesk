@@ -1,4 +1,13 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { formatCurrency } from "@shared/utils/utils.js";
+import { GetReportLockers } from "@services/apis/report.js";
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { TextFieldVirtKeyPad } from "@shared/components/inputs/TextFieldVirtKeyPad.jsx";
+import utc from "dayjs/plugin/utc";
+import dayjs from "dayjs";
 import {
     Table,
     TableBody,
@@ -17,22 +26,13 @@ import {
     InputAdornment,
     TableSortLabel
 } from "@mui/material";
-import { useWindowSizeContext } from '../context/windowSizeContext';
-import { formatCurrency } from "../utils/utils.js";
-import GetReportLockers from "../apis/report.js";
-import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import LoadingScreen from '../dialogs/loading.jsx';
-import { useElectronConfig } from '../hooks/useConfig.js';
 import {
     ManageSearch,
     ForwardToInbox
 } from '@mui/icons-material';
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import TextFieldVirtKeyPad from "../utils/textFieldVirtKeyPad.jsx";
 dayjs.extend(utc);
 
-const fileName = 'tableReportLockers';
+const fileName = 'TableReportTableLockers';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -41,7 +41,7 @@ const log = (level, message) => {
     }
 };
 
-const ReportTable = ({ data, startDate, endDate }) => {
+export const TableReportTableLockers = ({ data, startDate, endDate }) => {
 
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
@@ -417,7 +417,7 @@ const ReportTable = ({ data, startDate, endDate }) => {
                 </Paper>
             </Box>
 
-            {loading && <LoadingScreen message={'Enviando...'} />}
+            {loading && <Loading message={'Enviando...'} />}
 
             {showErrorAPIOpen && (
                 <ShowErrorAPI
@@ -435,4 +435,3 @@ const ReportTable = ({ data, startDate, endDate }) => {
     );
 };
 
-export default ReportTable;

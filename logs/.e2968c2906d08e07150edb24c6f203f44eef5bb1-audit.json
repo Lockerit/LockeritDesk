@@ -1,0 +1,30 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 15
+    },
+    "auditLog": "C:\\Users\\User\\Documents\\Personal\\LockeritDesk\\logs\\.e2968c2906d08e07150edb24c6f203f44eef5bb1-audit.json",
+    "files": [
+        {
+            "date": 1760571696665,
+            "name": "C:\\Users\\User\\Documents\\Personal\\LockeritDesk\\logs\\lockerit-2025-10-15.log",
+            "hash": "2d99ed4c28b3f0c3b9e95df600142e7c214c6eb72bdf40e262c2eee81aa30c6a"
+        },
+        {
+            "date": 1760656890778,
+            "name": "C:\\Users\\User\\Documents\\Personal\\LockeritDesk\\logs\\lockerit-2025-10-16.log",
+            "hash": "3bea81a6b8b81713fed52c7cab769374799c18d2ccd01e439415b3d3ec09a7b6"
+        },
+        {
+            "date": 1760677209006,
+            "name": "C:\\Users\\User\\Documents\\Personal\\LockeritDesk\\logs\\lockerit-2025-10-17.log",
+            "hash": "51661e93f3f76aa3f3a2d5d013d09a30d3690bb0a8f2727b29a99d09a38c8a8e"
+        },
+        {
+            "date": 1761070806550,
+            "name": "C:\\Users\\User\\Documents\\Personal\\LockeritDesk\\logs\\lockerit-2025-10-21.log",
+            "hash": "62e1800f0dd7f9593895651c6ed9aabb5b0d7bd99d00d0bd354e193c36954e15"
+        }
+    ],
+    "hashType": "sha256"
+}

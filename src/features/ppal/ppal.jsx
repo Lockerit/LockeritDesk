@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import KeyPadModal from '../dialogs/keypadNumeric.jsx'
-import { useUser } from '../context/userContext.jsx';
+import { KeypadNumeric } from '@shared/components/dialogs/KeypadNumeric.jsx'
+import { useUser } from '@shared/context/UserContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useElectronConfig } from '../hooks/useConfig.js';
-import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
-import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import LoadingScreen from '../dialogs/loading.jsx';
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
-import { useModal } from "../context/modalContext.jsx";
-import { scaledDimension } from '../utils/scaledDimension.js';
-import { speak, stopSpeaking, getVoices } from '../utils/speak.js';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useModal } from '@shared/context/ModalContext.jsx';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { speak, stopSpeaking, getVoices } from '@shared/utils/speak.js';
 import {
     Typography,
     Box,
@@ -24,7 +24,7 @@ import {
     SensorOccupied
 } from '@mui/icons-material';
 
-const fileName = 'ppal';
+const fileName = 'Ppal';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -33,7 +33,7 @@ const log = (level, message) => {
     }
 };
 
-export default function Ppal() {
+export const Ppal = () => {
 
     const [showErrorAPIOpenPpal, setShowErrorAPIOpenPpal] = useState(false);
     const { userInit, setUserInit } = useUser();
@@ -390,7 +390,7 @@ export default function Ppal() {
                 </Box>
             </Box >
 
-            <KeyPadModal
+            <KeypadNumeric
                 open={keypadOpen}
                 onClose={closeKeypad}
                 operation={operation}
@@ -407,7 +407,7 @@ export default function Ppal() {
                 disableRestoreFocus
             />
 
-            {loading && (<LoadingScreen />)}
+            {loading && (<Loading />)}
 
         </>
     );

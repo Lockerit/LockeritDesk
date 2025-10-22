@@ -1,0 +1,279 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/admin/ReportLockers.jsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=e10b181b"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=e10b181b"; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"];
+import DateTime from "/src/shared/components/time/DateTime.jsx";
+import { useWindowSizeContext } from "/src/shared/context/WindowSizeContext.jsx";
+import GetReportLockers from "/src/services/apis/report.js?t=1761091988405";
+import ShowErrorAPI from "/src/shared/components/dialogs/ShowErrorAPI.jsx";
+import LoadingScreen from "/src/shared/components/dialogs/Loading.jsx";
+import TableReportTableLockers from "/src/features/admin/TableReportLockers.jsx?t=1761091988405";
+import { useElectronConfig } from "/src/shared/hooks/useConfig.js";
+import { Summarize } from "/node_modules/.vite/deps/@mui_icons-material.js?v=e10b181b";
+import { Box, Button, TextField } from "/node_modules/.vite/deps/@mui_material.js?v=e10b181b";
+import __vite__cjsImport13_dayjs from "/node_modules/.vite/deps/dayjs.js?v=e10b181b"; const dayjs = __vite__cjsImport13_dayjs.__esModule ? __vite__cjsImport13_dayjs.default : __vite__cjsImport13_dayjs;
+import __vite__cjsImport14_dayjs_plugin_utc from "/node_modules/.vite/deps/dayjs_plugin_utc.js?v=e10b181b"; const utc = __vite__cjsImport14_dayjs_plugin_utc.__esModule ? __vite__cjsImport14_dayjs_plugin_utc.default : __vite__cjsImport14_dayjs_plugin_utc;
+dayjs.extend(utc);
+const fileName = 'ReportLockers';
+// Logging centralizado
+const log = (level, message)=>{
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
+};
+export const ReportLockers = ()=>{
+    _s();
+    const [endDate, setEndDate] = useState(dayjs());
+    const [startDate, setStartDate] = useState(dayjs().hour(0).minute(0).second(0));
+    const size = useWindowSizeContext();
+    const scale = size.factor || 1;
+    const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
+    const [isErrorMsj, setIsErrorMsj] = useState(true);
+    const [messageErrorAPI, setMessageErrorAPI] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [reportData, setReportData] = useState([]);
+    const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+    const config = useElectronConfig();
+    let formatter = (d)=>dayjs(d); // por defecto local
+    useEffect(()=>{
+        fetchDataReportLocker(false);
+    }, []);
+    useEffect(()=>{
+        if (!config) return;
+        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
+            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
+        }
+        let timezoneMode = config?.report?.timezoneMode || "local";
+        formatter = timezoneMode === "utc" ? (d)=>dayjs(d).utc() : (d)=>dayjs(d);
+    }, [
+        config
+    ]);
+    const fetchDataReportLocker = async (showMsg = false)=>{
+        setIsErrorMsj(true);
+        setLoading(true);
+        const formatUTC = (d, isEnd = false)=>dayjs(d).utc().set("second", isEnd ? 59 : 0).format("YYYY-MM-DD HH:mm:ss");
+        const payload = {
+            startDate: formatUTC(startDate),
+            endDate: formatUTC(endDate, true),
+            sendEmail: false
+        };
+        try {
+            const result = await GetReportLockers(payload);
+            if (result?.success) {
+                setReportData(result?.data || []);
+                if (showMsg) {
+                    let msg = '';
+                    if (!result?.data) {
+                        msg = 'No se encontraron resultados';
+                        setIsErrorMsj(true);
+                    } else {
+                        msg = 'Reporte generado con éxito';
+                        setIsErrorMsj(false);
+                    }
+                    log('info', msg);
+                    setMessageErrorAPI(msg);
+                    ;
+                    setShowErrorAPIOpen(true);
+                } else {
+                    setShowErrorAPIOpen(false);
+                }
+            } else {
+                const msg = typeof result?.data === 'string' ? result.data : result?.data?.message || 'Error al obtener reporte';
+                setMessageErrorAPI(msg);
+                setShowErrorAPIOpen(true);
+            }
+        } catch (err) {
+            setMessageErrorAPI(err.message || 'Error al obtener reporte');
+            setShowErrorAPIOpen(true);
+        } finally{
+            setLoading(false);
+        }
+    };
+    return /*#__PURE__*/ _jsxDEV(Box, {
+        sx: {
+            height: "100%",
+            display: "flex",
+            flexDirection: "column"
+        },
+        children: [
+            /*#__PURE__*/ _jsxDEV(Box, {
+                sx: {
+                    flex: "0 0 3%",
+                    display: "flex",
+                    gap: 3 * scale,
+                    alignItems: "flex-end",
+                    p: 2 * scale
+                },
+                children: [
+                    /*#__PURE__*/ _jsxDEV(Box, {
+                        sx: {
+                            flex: 1
+                        },
+                        children: /*#__PURE__*/ _jsxDEV(DateTime, {
+                            label: "Fecha y hora inicial",
+                            value: startDate,
+                            onChange: setStartDate,
+                            showTime: true
+                        }, void 0, false, {
+                            fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                            lineNumber: 134,
+                            columnNumber: 21
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                        lineNumber: 133,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(Box, {
+                        sx: {
+                            flex: 1
+                        },
+                        children: /*#__PURE__*/ _jsxDEV(DateTime, {
+                            label: "Fecha y hora final",
+                            value: endDate,
+                            onChange: setEndDate,
+                            showTime: true
+                        }, void 0, false, {
+                            fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                            lineNumber: 142,
+                            columnNumber: 21
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                        lineNumber: 141,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(Box, {
+                        children: /*#__PURE__*/ _jsxDEV(Button, {
+                            variant: "outlined",
+                            color: "primary",
+                            sx: {
+                                height: `${60 * scale}px`,
+                                fontSize: `${24 * scale}px`,
+                                fontWeight: 'normal'
+                            },
+                            onClick: ()=>fetchDataReportLocker(true),
+                            children: [
+                                "Generar reporte",
+                                /*#__PURE__*/ _jsxDEV(Summarize, {
+                                    sx: {
+                                        fontSize: 28 * scale,
+                                        ml: 3 * scale
+                                    }
+                                }, void 0, false, {
+                                    fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                                    lineNumber: 161,
+                                    columnNumber: 25
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                            lineNumber: 150,
+                            columnNumber: 21
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                        lineNumber: 149,
+                        columnNumber: 17
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                lineNumber: 124,
+                columnNumber: 13
+            }, this),
+            /*#__PURE__*/ _jsxDEV(Box, {
+                sx: {
+                    display: "flex",
+                    flexDirection: "column",
+                    flex: "1 1 95%",
+                    p: 2 * scale,
+                    minHeight: 0
+                },
+                children: /*#__PURE__*/ _jsxDEV(TableReportTableLockers, {
+                    data: reportData,
+                    startDate: startDate,
+                    endDate: endDate
+                }, void 0, false, {
+                    fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                    lineNumber: 176,
+                    columnNumber: 17
+                }, this)
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                lineNumber: 167,
+                columnNumber: 13
+            }, this),
+            loading && /*#__PURE__*/ _jsxDEV(LoadingScreen, {}, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                lineNumber: 179,
+                columnNumber: 25
+            }, this),
+            showErrorAPIOpen && /*#__PURE__*/ _jsxDEV(ShowErrorAPI, {
+                open: showErrorAPIOpen,
+                onConfirm: ()=>setShowErrorAPIOpen(false),
+                msg: messageErrorAPI,
+                timeout: timeoutShowMessage,
+                isError: isErrorMsj,
+                disableEnforceFocus: true,
+                disableAutoFocus: true,
+                disableRestoreFocus: true
+            }, void 0, false, {
+                fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+                lineNumber: 182,
+                columnNumber: 17
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx",
+        lineNumber: 121,
+        columnNumber: 9
+    }, this);
+};
+_s(ReportLockers, "rLPkuUi8DHAQW/dtLPPirttMzvQ=", false, function() {
+    return [
+        useWindowSizeContext,
+        useElectronConfig
+    ];
+});
+_c = ReportLockers;
+var _c;
+$RefreshReg$(_c, "ReportLockers");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/User/Documents/Personal/LockeritDesk/src/features/admin/ReportLockers.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlJlcG9ydExvY2tlcnMuanN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZVN0YXRlLCB1c2VFZmZlY3QgfSBmcm9tIFwicmVhY3RcIjtcclxuaW1wb3J0IERhdGVUaW1lIGZyb20gXCJAc2hhcmVkL2NvbXBvbmVudHMvdGltZS9EYXRlVGltZS5qc3hcIjtcclxuaW1wb3J0IHsgdXNlV2luZG93U2l6ZUNvbnRleHQgfSBmcm9tICdAc2hhcmVkL2NvbnRleHQvV2luZG93U2l6ZUNvbnRleHQuanN4JztcclxuaW1wb3J0IEdldFJlcG9ydExvY2tlcnMgZnJvbSBcIkBzZXJ2aWNlcy9hcGlzL3JlcG9ydC5qc1wiO1xyXG5pbXBvcnQgU2hvd0Vycm9yQVBJIGZyb20gJ0BzaGFyZWQvY29tcG9uZW50cy9kaWFsb2dzL1Nob3dFcnJvckFQSS5qc3gnO1xyXG5pbXBvcnQgTG9hZGluZ1NjcmVlbiBmcm9tICdAc2hhcmVkL2NvbXBvbmVudHMvZGlhbG9ncy9Mb2FkaW5nLmpzeCc7XHJcbmltcG9ydCBUYWJsZVJlcG9ydFRhYmxlTG9ja2VycyBmcm9tIFwiLi9UYWJsZVJlcG9ydExvY2tlcnMuanN4XCI7XHJcbmltcG9ydCB7IHVzZUVsZWN0cm9uQ29uZmlnIH0gZnJvbSAnQHNoYXJlZC9ob29rcy91c2VDb25maWcuanMnO1xyXG5pbXBvcnQge1xyXG4gICAgU3VtbWFyaXplXHJcbn0gZnJvbSAnQG11aS9pY29ucy1tYXRlcmlhbCc7XHJcbmltcG9ydCB7XHJcbiAgICBCb3gsXHJcbiAgICBCdXR0b24sXHJcbiAgICBUZXh0RmllbGRcclxufSBmcm9tIFwiQG11aS9tYXRlcmlhbFwiO1xyXG5pbXBvcnQgZGF5anMgZnJvbSBcImRheWpzXCI7XHJcbmltcG9ydCB1dGMgZnJvbSBcImRheWpzL3BsdWdpbi91dGNcIjtcclxuZGF5anMuZXh0ZW5kKHV0Yyk7XHJcblxyXG5jb25zdCBmaWxlTmFtZSA9ICdSZXBvcnRMb2NrZXJzJztcclxuXHJcbi8vIExvZ2dpbmcgY2VudHJhbGl6YWRvXHJcbmNvbnN0IGxvZyA9IChsZXZlbCwgbWVzc2FnZSkgPT4ge1xyXG4gICAgaWYgKHR5cGVvZiB3aW5kb3cgIT09ICd1bmRlZmluZWQnICYmIHdpbmRvdy5lbGVjdHJvbkFQST8ubG9nKSB7XHJcbiAgICAgICAgd2luZG93LmVsZWN0cm9uQVBJLmxvZyhsZXZlbCwgYFske2ZpbGVOYW1lfV0gJHttZXNzYWdlfWApO1xyXG4gICAgfVxyXG59O1xyXG5cclxuZXhwb3J0IGNvbnN0IFJlcG9ydExvY2tlcnMgPSAoKSA9PiB7XHJcbiAgICBjb25zdCBbZW5kRGF0ZSwgc2V0RW5kRGF0ZV0gPSB1c2VTdGF0ZShkYXlqcygpKTtcclxuICAgIGNvbnN0IFtzdGFydERhdGUsIHNldFN0YXJ0RGF0ZV0gPSB1c2VTdGF0ZShkYXlqcygpLmhvdXIoMCkubWludXRlKDApLnNlY29uZCgwKSk7XHJcbiAgICBjb25zdCBzaXplID0gdXNlV2luZG93U2l6ZUNvbnRleHQoKTtcclxuICAgIGNvbnN0IHNjYWxlID0gc2l6ZS5mYWN0b3IgfHwgMTtcclxuXHJcbiAgICBjb25zdCBbc2hvd0Vycm9yQVBJT3Blbiwgc2V0U2hvd0Vycm9yQVBJT3Blbl0gPSB1c2VTdGF0ZShmYWxzZSk7XHJcbiAgICBjb25zdCBbaXNFcnJvck1zaiwgc2V0SXNFcnJvck1zal0gPSB1c2VTdGF0ZSh0cnVlKTtcclxuICAgIGNvbnN0IFttZXNzYWdlRXJyb3JBUEksIHNldE1lc3NhZ2VFcnJvckFQSV0gPSB1c2VTdGF0ZSgnJyk7XHJcbiAgICBjb25zdCBbbG9hZGluZywgc2V0TG9hZGluZ10gPSB1c2VTdGF0ZSh0cnVlKTtcclxuICAgIGNvbnN0IFtyZXBvcnREYXRhLCBzZXRSZXBvcnREYXRhXSA9IHVzZVN0YXRlKFtdKTtcclxuICAgIGNvbnN0IFt0aW1lb3V0U2hvd01lc3NhZ2UsIHNldFRpbWVvdXRTaG93TWVzc2FnZV0gPSB1c2VTdGF0ZSgpO1xyXG4gICAgY29uc3QgY29uZmlnID0gdXNlRWxlY3Ryb25Db25maWcoKTtcclxuICAgIGxldCBmb3JtYXR0ZXIgPSAoZCkgPT4gZGF5anMoZCk7IC8vIHBvciBkZWZlY3RvIGxvY2FsXHJcblxyXG4gICAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgICAgICBmZXRjaERhdGFSZXBvcnRMb2NrZXIoZmFsc2UpO1xyXG4gICAgfSwgW10pO1xyXG5cclxuICAgIHVzZUVmZmVjdCgoKSA9PiB7XHJcbiAgICAgICAgaWYgKCFjb25maWcpIHJldHVybjtcclxuXHJcbiAgICAgICAgaWYgKGNvbmZpZz8ucGFyYW1zSHRtbD8ubW9kYWxUaW1lb3V0cz8udGltZW91dEtleXBhZCkge1xyXG4gICAgICAgICAgICBzZXRUaW1lb3V0U2hvd01lc3NhZ2UoY29uZmlnPy5wYXJhbXNIdG1sPy5tb2RhbFRpbWVvdXRzPy50aW1lb3V0U2hvd01lc3NhZ2UpO1xyXG4gICAgICAgIH1cclxuXHJcbiAgICAgICAgbGV0IHRpbWV6b25lTW9kZSA9IGNvbmZpZz8ucmVwb3J0Py50aW1lem9uZU1vZGUgfHwgXCJsb2NhbFwiO1xyXG5cclxuICAgICAgICBmb3JtYXR0ZXIgPSB0aW1lem9uZU1vZGUgPT09IFwidXRjXCJcclxuICAgICAgICAgICAgPyAoZCkgPT4gZGF5anMoZCkudXRjKClcclxuICAgICAgICAgICAgOiAoZCkgPT4gZGF5anMoZCk7XHJcblxyXG4gICAgfSwgW2NvbmZpZ10pXHJcblxyXG4gICAgY29uc3QgZmV0Y2hEYXRhUmVwb3J0TG9ja2VyID0gYXN5bmMgKHNob3dNc2cgPSBmYWxzZSkgPT4ge1xyXG4gICAgICAgIHNldElzRXJyb3JNc2oodHJ1ZSk7XHJcbiAgICAgICAgc2V0TG9hZGluZyh0cnVlKTtcclxuXHJcbiAgICAgICAgY29uc3QgZm9ybWF0VVRDID0gKGQsIGlzRW5kID0gZmFsc2UpID0+XHJcbiAgICAgICAgICAgIGRheWpzKGQpXHJcbiAgICAgICAgICAgICAgICAudXRjKClcclxuICAgICAgICAgICAgICAgIC5zZXQoXCJzZWNvbmRcIiwgaXNFbmQgPyA1OSA6IDApXHJcbiAgICAgICAgICAgICAgICAuZm9ybWF0KFwiWVlZWS1NTS1ERCBISDptbTpzc1wiKTtcclxuXHJcbiAgICAgICAgY29uc3QgcGF5bG9hZCA9IHtcclxuICAgICAgICAgICAgc3RhcnREYXRlOiBmb3JtYXRVVEMoc3RhcnREYXRlKSwgICAgICAgIC8vIHNlZ3VuZG9zIGVuIDAwXHJcbiAgICAgICAgICAgIGVuZERhdGU6IGZvcm1hdFVUQyhlbmREYXRlLCB0cnVlKSwgICAgICAvLyBzZWd1bmRvcyBlbiA1OVxyXG4gICAgICAgICAgICBzZW5kRW1haWw6IGZhbHNlLFxyXG4gICAgICAgIH07XHJcblxyXG4gICAgICAgIHRyeSB7XHJcbiAgICAgICAgICAgIGNvbnN0IHJlc3VsdCA9IGF3YWl0IEdldFJlcG9ydExvY2tlcnMocGF5bG9hZCk7XHJcblxyXG4gICAgICAgICAgICBpZiAocmVzdWx0Py5zdWNjZXNzKSB7XHJcbiAgICAgICAgICAgICAgICBzZXRSZXBvcnREYXRhKHJlc3VsdD8uZGF0YSB8fCBbXSk7XHJcblxyXG4gICAgICAgICAgICAgICAgaWYgKHNob3dNc2cpIHtcclxuXHJcbiAgICAgICAgICAgICAgICAgICAgbGV0IG1zZyA9ICcnO1xyXG5cclxuICAgICAgICAgICAgICAgICAgICBpZiAoIXJlc3VsdD8uZGF0YSkge1xyXG4gICAgICAgICAgICAgICAgICAgICAgICBtc2cgPSAnTm8gc2UgZW5jb250cmFyb24gcmVzdWx0YWRvcyc7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHNldElzRXJyb3JNc2oodHJ1ZSk7XHJcbiAgICAgICAgICAgICAgICAgICAgfSBlbHNlIHtcclxuICAgICAgICAgICAgICAgICAgICAgICAgbXNnID0gJ1JlcG9ydGUgZ2VuZXJhZG8gY29uIMOpeGl0byc7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHNldElzRXJyb3JNc2ooZmFsc2UpO1xyXG4gICAgICAgICAgICAgICAgICAgIH1cclxuICAgICAgICAgICAgICAgICAgICBsb2coJ2luZm8nLCBtc2cpO1xyXG4gICAgICAgICAgICAgICAgICAgIHNldE1lc3NhZ2VFcnJvckFQSShtc2cpOztcclxuICAgICAgICAgICAgICAgICAgICBzZXRTaG93RXJyb3JBUElPcGVuKHRydWUpO1xyXG4gICAgICAgICAgICAgICAgfSBlbHNlIHtcclxuICAgICAgICAgICAgICAgICAgICBzZXRTaG93RXJyb3JBUElPcGVuKGZhbHNlKTtcclxuICAgICAgICAgICAgICAgIH1cclxuICAgICAgICAgICAgfSBlbHNlIHtcclxuICAgICAgICAgICAgICAgIGNvbnN0IG1zZyA9IHR5cGVvZiByZXN1bHQ/LmRhdGEgPT09ICdzdHJpbmcnXHJcbiAgICAgICAgICAgICAgICAgICAgPyByZXN1bHQuZGF0YVxyXG4gICAgICAgICAgICAgICAgICAgIDogcmVzdWx0Py5kYXRhPy5tZXNzYWdlIHx8ICdFcnJvciBhbCBvYnRlbmVyIHJlcG9ydGUnO1xyXG5cclxuICAgICAgICAgICAgICAgIHNldE1lc3NhZ2VFcnJvckFQSShtc2cpO1xyXG4gICAgICAgICAgICAgICAgc2V0U2hvd0Vycm9yQVBJT3Blbih0cnVlKTtcclxuICAgICAgICAgICAgfVxyXG5cclxuICAgICAgICB9IGNhdGNoIChlcnIpIHtcclxuICAgICAgICAgICAgc2V0TWVzc2FnZUVycm9yQVBJKGVyci5tZXNzYWdlIHx8ICdFcnJvciBhbCBvYnRlbmVyIHJlcG9ydGUnKTtcclxuICAgICAgICAgICAgc2V0U2hvd0Vycm9yQVBJT3Blbih0cnVlKTtcclxuICAgICAgICB9IGZpbmFsbHkge1xyXG4gICAgICAgICAgICBzZXRMb2FkaW5nKGZhbHNlKTtcclxuICAgICAgICB9XHJcbiAgICB9O1xyXG5cclxuICAgIHJldHVybiAoXHJcbiAgICAgICAgPEJveCBzeD17eyBoZWlnaHQ6IFwiMTAwJVwiLCBkaXNwbGF5OiBcImZsZXhcIiwgZmxleERpcmVjdGlvbjogXCJjb2x1bW5cIiB9fT5cclxuXHJcbiAgICAgICAgICAgIHsvKiDwn5S5IFNlY2Npw7NuIGZpbHRyb3MgKDIwJSkgKi99XHJcbiAgICAgICAgICAgIDxCb3hcclxuICAgICAgICAgICAgICAgIHN4PXt7XHJcbiAgICAgICAgICAgICAgICAgICAgZmxleDogXCIwIDAgMyVcIiwgLy8gMjAlIGRlbCBhbHRvIGZpam9cclxuICAgICAgICAgICAgICAgICAgICBkaXNwbGF5OiBcImZsZXhcIixcclxuICAgICAgICAgICAgICAgICAgICBnYXA6IDMgKiBzY2FsZSxcclxuICAgICAgICAgICAgICAgICAgICBhbGlnbkl0ZW1zOiBcImZsZXgtZW5kXCIsXHJcbiAgICAgICAgICAgICAgICAgICAgcDogMiAqIHNjYWxlLFxyXG4gICAgICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgPEJveCBzeD17eyBmbGV4OiAxIH19PlxyXG4gICAgICAgICAgICAgICAgICAgIDxEYXRlVGltZVxyXG4gICAgICAgICAgICAgICAgICAgICAgICBsYWJlbD1cIkZlY2hhIHkgaG9yYSBpbmljaWFsXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgdmFsdWU9e3N0YXJ0RGF0ZX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgb25DaGFuZ2U9e3NldFN0YXJ0RGF0ZX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgc2hvd1RpbWU9e3RydWV9XHJcbiAgICAgICAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICAgIDwvQm94PlxyXG4gICAgICAgICAgICAgICAgPEJveCBzeD17eyBmbGV4OiAxIH19PlxyXG4gICAgICAgICAgICAgICAgICAgIDxEYXRlVGltZVxyXG4gICAgICAgICAgICAgICAgICAgICAgICBsYWJlbD1cIkZlY2hhIHkgaG9yYSBmaW5hbFwiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHZhbHVlPXtlbmREYXRlfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICBvbkNoYW5nZT17c2V0RW5kRGF0ZX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgc2hvd1RpbWU9e3RydWV9XHJcbiAgICAgICAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICAgIDwvQm94PlxyXG4gICAgICAgICAgICAgICAgPEJveD5cclxuICAgICAgICAgICAgICAgICAgICA8QnV0dG9uXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lZFwiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIGNvbG9yPVwicHJpbWFyeVwiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHN4PXt7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBoZWlnaHQ6IGAkezYwICogc2NhbGV9cHhgLFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgZm9udFNpemU6IGAkezI0ICogc2NhbGV9cHhgLFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgZm9udFdlaWdodDogJ25vcm1hbCcsXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IGZldGNoRGF0YVJlcG9ydExvY2tlcih0cnVlKX1cclxuICAgICAgICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIEdlbmVyYXIgcmVwb3J0ZVxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8U3VtbWFyaXplIHN4PXt7IGZvbnRTaXplOiAyOCAqIHNjYWxlLCBtbDogMyAqIHNjYWxlIH19IC8+XHJcbiAgICAgICAgICAgICAgICAgICAgPC9CdXR0b24+XHJcbiAgICAgICAgICAgICAgICA8L0JveD5cclxuICAgICAgICAgICAgPC9Cb3g+XHJcblxyXG4gICAgICAgICAgICB7LyogU2VjY2nDs24gdGFibGEgKDgwJSkgKi99XHJcbiAgICAgICAgICAgIDxCb3hcclxuICAgICAgICAgICAgICAgIHN4PXt7XHJcbiAgICAgICAgICAgICAgICAgICAgZGlzcGxheTogXCJmbGV4XCIsXHJcbiAgICAgICAgICAgICAgICAgICAgZmxleERpcmVjdGlvbjogXCJjb2x1bW5cIixcclxuICAgICAgICAgICAgICAgICAgICBmbGV4OiBcIjEgMSA5NSVcIixcclxuICAgICAgICAgICAgICAgICAgICBwOiAyICogc2NhbGUsXHJcbiAgICAgICAgICAgICAgICAgICAgbWluSGVpZ2h0OiAwLCAvLyBldml0YSBxdWUgbG9zIGhpam9zIGRlc2JvcmRlblxyXG4gICAgICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgPFRhYmxlUmVwb3J0VGFibGVMb2NrZXJzIGRhdGE9e3JlcG9ydERhdGF9IHN0YXJ0RGF0ZT17c3RhcnREYXRlfSBlbmREYXRlPXtlbmREYXRlfSAvPlxyXG4gICAgICAgICAgICA8L0JveD5cclxuXHJcbiAgICAgICAgICAgIHtsb2FkaW5nICYmIDxMb2FkaW5nU2NyZWVuIC8+fVxyXG5cclxuICAgICAgICAgICAge3Nob3dFcnJvckFQSU9wZW4gJiYgKFxyXG4gICAgICAgICAgICAgICAgPFNob3dFcnJvckFQSVxyXG4gICAgICAgICAgICAgICAgICAgIG9wZW49e3Nob3dFcnJvckFQSU9wZW59XHJcbiAgICAgICAgICAgICAgICAgICAgb25Db25maXJtPXsoKSA9PiBzZXRTaG93RXJyb3JBUElPcGVuKGZhbHNlKX1cclxuICAgICAgICAgICAgICAgICAgICBtc2c9e21lc3NhZ2VFcnJvckFQSX1cclxuICAgICAgICAgICAgICAgICAgICB0aW1lb3V0PXt0aW1lb3V0U2hvd01lc3NhZ2V9XHJcbiAgICAgICAgICAgICAgICAgICAgaXNFcnJvcj17aXNFcnJvck1zan1cclxuICAgICAgICAgICAgICAgICAgICBkaXNhYmxlRW5mb3JjZUZvY3VzXHJcbiAgICAgICAgICAgICAgICAgICAgZGlzYWJsZUF1dG9Gb2N1c1xyXG4gICAgICAgICAgICAgICAgICAgIGRpc2FibGVSZXN0b3JlRm9jdXNcclxuICAgICAgICAgICAgICAgIC8+XHJcbiAgICAgICAgICAgICl9XHJcbiAgICAgICAgPC9Cb3g+XHJcbiAgICApO1xyXG59O1xyXG5cclxuIl0sIm5hbWVzIjpbInVzZVN0YXRlIiwidXNlRWZmZWN0IiwiRGF0ZVRpbWUiLCJ1c2VXaW5kb3dTaXplQ29udGV4dCIsIkdldFJlcG9ydExvY2tlcnMiLCJTaG93RXJyb3JBUEkiLCJMb2FkaW5nU2NyZWVuIiwiVGFibGVSZXBvcnRUYWJsZUxvY2tlcnMiLCJ1c2VFbGVjdHJvbkNvbmZpZyIsIlN1bW1hcml6ZSIsIkJveCIsIkJ1dHRvbiIsIlRleHRGaWVsZCIsImRheWpzIiwidXRjIiwiZXh0ZW5kIiwiZmlsZU5hbWUiLCJsb2ciLCJsZXZlbCIsIm1lc3NhZ2UiLCJ3aW5kb3ciLCJlbGVjdHJvbkFQSSIsIlJlcG9ydExvY2tlcnMiLCJlbmREYXRlIiwic2V0RW5kRGF0ZSIsInN0YXJ0RGF0ZSIsInNldFN0YXJ0RGF0ZSIsImhvdXIiLCJtaW51dGUiLCJzZWNvbmQiLCJzaXplIiwic2NhbGUiLCJmYWN0b3IiLCJzaG93RXJyb3JBUElPcGVuIiwic2V0U2hvd0Vycm9yQVBJT3BlbiIsImlzRXJyb3JNc2oiLCJzZXRJc0Vycm9yTXNqIiwibWVzc2FnZUVycm9yQVBJIiwic2V0TWVzc2FnZUVycm9yQVBJIiwibG9hZGluZyIsInNldExvYWRpbmciLCJyZXBvcnREYXRhIiwic2V0UmVwb3J0RGF0YSIsInRpbWVvdXRTaG93TWVzc2FnZSIsInNldFRpbWVvdXRTaG93TWVzc2FnZSIsImNvbmZpZyIsImZvcm1hdHRlciIsImQiLCJmZXRjaERhdGFSZXBvcnRMb2NrZXIiLCJwYXJhbXNIdG1sIiwibW9kYWxUaW1lb3V0cyIsInRpbWVvdXRLZXlwYWQiLCJ0aW1lem9uZU1vZGUiLCJyZXBvcnQiLCJzaG93TXNnIiwiZm9ybWF0VVRDIiwiaXNFbmQiLCJzZXQiLCJmb3JtYXQiLCJwYXlsb2FkIiwic2VuZEVtYWlsIiwicmVzdWx0Iiwic3VjY2VzcyIsImRhdGEiLCJtc2ciLCJlcnIiLCJzeCIsImhlaWdodCIsImRpc3BsYXkiLCJmbGV4RGlyZWN0aW9uIiwiZmxleCIsImdhcCIsImFsaWduSXRlbXMiLCJwIiwibGFiZWwiLCJ2YWx1ZSIsIm9uQ2hhbmdlIiwic2hvd1RpbWUiLCJ2YXJpYW50IiwiY29sb3IiLCJmb250U2l6ZSIsImZvbnRXZWlnaHQiLCJvbkNsaWNrIiwibWwiLCJtaW5IZWlnaHQiLCJvcGVuIiwib25Db25maXJtIiwidGltZW91dCIsImlzRXJyb3IiLCJkaXNhYmxlRW5mb3JjZUZvY3VzIiwiZGlzYWJsZUF1dG9Gb2N1cyIsImRpc2FibGVSZXN0b3JlRm9jdXMiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQVNBLFFBQVEsRUFBRUMsU0FBUyxRQUFRLFFBQVE7QUFDNUMsT0FBT0MsY0FBYyx1Q0FBdUM7QUFDNUQsU0FBU0Msb0JBQW9CLFFBQVEsd0NBQXdDO0FBQzdFLE9BQU9DLHNCQUFzQiwyQkFBMkI7QUFDeEQsT0FBT0Msa0JBQWtCLDhDQUE4QztBQUN2RSxPQUFPQyxtQkFBbUIseUNBQXlDO0FBQ25FLE9BQU9DLDZCQUE2QiwyQkFBMkI7QUFDL0QsU0FBU0MsaUJBQWlCLFFBQVEsNkJBQTZCO0FBQy9ELFNBQ0lDLFNBQVMsUUFDTixzQkFBc0I7QUFDN0IsU0FDSUMsR0FBRyxFQUNIQyxNQUFNLEVBQ05DLFNBQVMsUUFDTixnQkFBZ0I7QUFDdkIsT0FBT0MsV0FBVyxRQUFRO0FBQzFCLE9BQU9DLFNBQVMsbUJBQW1CO0FBQ25DRCxNQUFNRSxNQUFNLENBQUNEO0FBRWIsTUFBTUUsV0FBVztBQUVqQix1QkFBdUI7QUFDdkIsTUFBTUMsTUFBTSxDQUFDQyxPQUFPQztJQUNoQixJQUFJLE9BQU9DLFdBQVcsZUFBZUEsT0FBT0MsV0FBVyxFQUFFSixLQUFLO1FBQzFERyxPQUFPQyxXQUFXLENBQUNKLEdBQUcsQ0FBQ0MsT0FBTyxDQUFDLENBQUMsRUFBRUYsU0FBUyxFQUFFLEVBQUVHLFNBQVM7SUFDNUQ7QUFDSjtBQUVBLE9BQU8sTUFBTUcsZ0JBQWdCOztJQUN6QixN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

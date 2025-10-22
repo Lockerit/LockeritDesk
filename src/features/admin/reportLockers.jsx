@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import DateTime from "../utils/dateTime"; // tu componente personalizado
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
-import GetReportLockers from "../apis/report.js";
-import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import LoadingScreen from '../dialogs/loading.jsx';
-import ReportTable from "./tableReportLockers.jsx";
-import { useElectronConfig } from '../hooks/useConfig.js';
+import { DateTime } from "@shared/components/time/DateTime.jsx";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { GetReportLockers } from "@services/apis/report.js";
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { TableReportTableLockers } from "./TableReportLockers.jsx";
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import {
     Summarize
 } from '@mui/icons-material';
@@ -18,7 +18,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
-const fileName = 'reportLockers';
+const fileName = 'ReportLockers';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -27,7 +27,7 @@ const log = (level, message) => {
     }
 };
 
-const ReportLockers = () => {
+export const ReportLockers = () => {
     const [endDate, setEndDate] = useState(dayjs());
     const [startDate, setStartDate] = useState(dayjs().hour(0).minute(0).second(0));
     const size = useWindowSizeContext();
@@ -173,10 +173,10 @@ const ReportLockers = () => {
                     minHeight: 0, // evita que los hijos desborden
                 }}
             >
-                <ReportTable data={reportData} startDate={startDate} endDate={endDate} />
+                <TableReportTableLockers data={reportData} startDate={startDate} endDate={endDate} />
             </Box>
 
-            {loading && <LoadingScreen />}
+            {loading && <Loading />}
 
             {showErrorAPIOpen && (
                 <ShowErrorAPI
@@ -194,4 +194,3 @@ const ReportLockers = () => {
     );
 };
 
-export default ReportLockers;
