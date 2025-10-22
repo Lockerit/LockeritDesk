@@ -50,6 +50,754 @@ C:.
 |           TuLockerIcono.jpg
 |           
 +---electron
+|   +---electron_cache
+|   |   |   .gitkeep
+|   |   |   DIPS
+|   |   |   DIPS-wal
+|   |   |   Preferences
+|   |   |   SharedStorage
+|   |   |   SharedStorage-wal
+|   |   |   
+|   |   +---blob_storage
+|   |   |   \---305299a9-39b8-427d-a9e9-fcd1a95d1f76
+|   |   +---Cache
+|   |   |   \---Cache_Data
+|   |   |           data_0
+|   |   |           data_1
+|   |   |           data_2
+|   |   |           data_3
+|   |   |           f_000002
+|   |   |           f_000008
+|   |   |           f_00000a
+|   |   |           f_00000b
+|   |   |           f_00000e
+|   |   |           f_000010
+|   |   |           f_000011
+|   |   |           f_000012
+|   |   |           f_000013
+|   |   |           f_000014
+|   |   |           f_000015
+|   |   |           f_000016
+|   |   |           f_000017
+|   |   |           f_000018
+|   |   |           f_000019
+|   |   |           f_00001a
+|   |   |           f_00001b
+|   |   |           f_00001c
+|   |   |           f_00001d
+|   |   |           f_00001e
+|   |   |           f_00001f
+|   |   |           f_000020
+|   |   |           f_000021
+|   |   |           f_000022
+|   |   |           f_000023
+|   |   |           f_000024
+|   |   |           f_000025
+|   |   |           f_000026
+|   |   |           f_000027
+|   |   |           f_000028
+|   |   |           f_000029
+|   |   |           f_00002a
+|   |   |           f_00002b
+|   |   |           f_00002c
+|   |   |           f_00002d
+|   |   |           f_00002e
+|   |   |           f_00002f
+|   |   |           f_000030
+|   |   |           f_000031
+|   |   |           f_000032
+|   |   |           f_000033
+|   |   |           f_000034
+|   |   |           f_000035
+|   |   |           f_000036
+|   |   |           f_000037
+|   |   |           f_000038
+|   |   |           f_000039
+|   |   |           f_00003a
+|   |   |           f_00003b
+|   |   |           f_00003c
+|   |   |           f_00003d
+|   |   |           f_00003e
+|   |   |           f_00003f
+|   |   |           f_000040
+|   |   |           f_000041
+|   |   |           f_000042
+|   |   |           f_000043
+|   |   |           f_000044
+|   |   |           f_000045
+|   |   |           f_000046
+|   |   |           f_000047
+|   |   |           f_000048
+|   |   |           f_000049
+|   |   |           f_00004a
+|   |   |           f_00004b
+|   |   |           f_00004c
+|   |   |           f_00004d
+|   |   |           f_00004e
+|   |   |           f_00004f
+|   |   |           f_000050
+|   |   |           f_000051
+|   |   |           f_000052
+|   |   |           f_000053
+|   |   |           f_000054
+|   |   |           f_000055
+|   |   |           f_000056
+|   |   |           f_000057
+|   |   |           f_000058
+|   |   |           f_000059
+|   |   |           f_00005a
+|   |   |           f_00005b
+|   |   |           f_00005c
+|   |   |           f_00005d
+|   |   |           f_00005e
+|   |   |           f_00005f
+|   |   |           f_000060
+|   |   |           f_000061
+|   |   |           f_000062
+|   |   |           f_000063
+|   |   |           f_000064
+|   |   |           f_000065
+|   |   |           f_000066
+|   |   |           f_000067
+|   |   |           f_000068
+|   |   |           f_000069
+|   |   |           f_00006a
+|   |   |           f_00006b
+|   |   |           f_00006c
+|   |   |           f_00006d
+|   |   |           f_00006e
+|   |   |           f_00006f
+|   |   |           f_000070
+|   |   |           f_000071
+|   |   |           f_000072
+|   |   |           f_000073
+|   |   |           f_000074
+|   |   |           f_000075
+|   |   |           f_000076
+|   |   |           f_000077
+|   |   |           f_000078
+|   |   |           f_000079
+|   |   |           f_00007a
+|   |   |           f_00007b
+|   |   |           f_00007c
+|   |   |           f_00007d
+|   |   |           f_00007e
+|   |   |           f_00007f
+|   |   |           f_000080
+|   |   |           f_000081
+|   |   |           f_000082
+|   |   |           f_000083
+|   |   |           f_000084
+|   |   |           f_000085
+|   |   |           f_000086
+|   |   |           f_000087
+|   |   |           f_000088
+|   |   |           f_000089
+|   |   |           f_00008a
+|   |   |           f_00008b
+|   |   |           f_00008c
+|   |   |           f_00008d
+|   |   |           f_00008e
+|   |   |           f_00008f
+|   |   |           f_000090
+|   |   |           f_000091
+|   |   |           f_000092
+|   |   |           f_000093
+|   |   |           f_000094
+|   |   |           f_000095
+|   |   |           f_000096
+|   |   |           f_000097
+|   |   |           f_000098
+|   |   |           f_000099
+|   |   |           f_00009a
+|   |   |           f_00009b
+|   |   |           f_00009c
+|   |   |           f_00009d
+|   |   |           f_00009e
+|   |   |           f_00009f
+|   |   |           f_0000a0
+|   |   |           f_0000a1
+|   |   |           f_0000a2
+|   |   |           f_0000a3
+|   |   |           f_0000a4
+|   |   |           f_0000a5
+|   |   |           f_0000a6
+|   |   |           f_0000a7
+|   |   |           f_0000a8
+|   |   |           f_0000a9
+|   |   |           f_0000aa
+|   |   |           f_0000ab
+|   |   |           f_0000ac
+|   |   |           f_0000ad
+|   |   |           f_0000ae
+|   |   |           f_0000af
+|   |   |           f_0000b0
+|   |   |           f_0000b1
+|   |   |           f_0000b2
+|   |   |           f_0000b3
+|   |   |           f_0000b4
+|   |   |           f_0000b5
+|   |   |           f_0000b6
+|   |   |           f_0000b7
+|   |   |           f_0000b8
+|   |   |           f_0000b9
+|   |   |           f_0000ba
+|   |   |           f_0000bb
+|   |   |           f_0000bc
+|   |   |           f_0000bd
+|   |   |           f_0000be
+|   |   |           f_0000c0
+|   |   |           f_0000c1
+|   |   |           f_0000c5
+|   |   |           f_0000c6
+|   |   |           f_0000c7
+|   |   |           f_0000c8
+|   |   |           f_0000c9
+|   |   |           f_0000ca
+|   |   |           f_0000cb
+|   |   |           f_0000cc
+|   |   |           f_0000cd
+|   |   |           f_0000ce
+|   |   |           f_0000cf
+|   |   |           f_0000d0
+|   |   |           f_0000d1
+|   |   |           f_0000d2
+|   |   |           f_0000d3
+|   |   |           f_0000d4
+|   |   |           f_0000d5
+|   |   |           f_0000d6
+|   |   |           f_0000d7
+|   |   |           f_0000d8
+|   |   |           f_0000d9
+|   |   |           f_0000da
+|   |   |           f_0000db
+|   |   |           f_0000dc
+|   |   |           f_0000dd
+|   |   |           f_0000de
+|   |   |           f_0000df
+|   |   |           f_0000e0
+|   |   |           f_0000e1
+|   |   |           f_0000e2
+|   |   |           f_0000e3
+|   |   |           f_0000e4
+|   |   |           f_0000e5
+|   |   |           f_0000e6
+|   |   |           f_0000e7
+|   |   |           f_0000e8
+|   |   |           f_0000e9
+|   |   |           f_0000ea
+|   |   |           f_0000eb
+|   |   |           f_0000ec
+|   |   |           f_0000ed
+|   |   |           f_0000ee
+|   |   |           f_0000ef
+|   |   |           f_0000f0
+|   |   |           f_0000f1
+|   |   |           f_0000f2
+|   |   |           f_0000f3
+|   |   |           f_0000f4
+|   |   |           f_0000f5
+|   |   |           f_0000f6
+|   |   |           f_0000f7
+|   |   |           f_0000f8
+|   |   |           f_0000f9
+|   |   |           f_0000fa
+|   |   |           f_0000fb
+|   |   |           f_0000fc
+|   |   |           f_0000fd
+|   |   |           f_0000fe
+|   |   |           f_0000ff
+|   |   |           f_000100
+|   |   |           f_000101
+|   |   |           f_000102
+|   |   |           f_000103
+|   |   |           f_000104
+|   |   |           f_000105
+|   |   |           f_000106
+|   |   |           f_000107
+|   |   |           f_000108
+|   |   |           f_000109
+|   |   |           f_00010a
+|   |   |           f_00010b
+|   |   |           f_00010c
+|   |   |           f_00010d
+|   |   |           f_00010e
+|   |   |           f_00010f
+|   |   |           f_000110
+|   |   |           f_000111
+|   |   |           f_000112
+|   |   |           f_000113
+|   |   |           f_000114
+|   |   |           f_000115
+|   |   |           f_000116
+|   |   |           f_000117
+|   |   |           f_000118
+|   |   |           f_000119
+|   |   |           f_00011a
+|   |   |           f_00011b
+|   |   |           f_00011c
+|   |   |           f_00011d
+|   |   |           f_00011e
+|   |   |           f_00011f
+|   |   |           f_000120
+|   |   |           f_000121
+|   |   |           f_000122
+|   |   |           f_000123
+|   |   |           f_000124
+|   |   |           f_000125
+|   |   |           f_000126
+|   |   |           f_000127
+|   |   |           f_000128
+|   |   |           f_000129
+|   |   |           f_00012a
+|   |   |           f_00012b
+|   |   |           f_00012c
+|   |   |           f_00012d
+|   |   |           f_00012e
+|   |   |           f_00012f
+|   |   |           f_000130
+|   |   |           f_000131
+|   |   |           f_000132
+|   |   |           f_000133
+|   |   |           f_000134
+|   |   |           f_000135
+|   |   |           f_000136
+|   |   |           f_000137
+|   |   |           f_000138
+|   |   |           f_000139
+|   |   |           f_00013a
+|   |   |           f_00013b
+|   |   |           f_00013c
+|   |   |           f_00013d
+|   |   |           f_00013e
+|   |   |           f_00013f
+|   |   |           f_000140
+|   |   |           f_000141
+|   |   |           f_000142
+|   |   |           f_000143
+|   |   |           f_000144
+|   |   |           f_000145
+|   |   |           f_000146
+|   |   |           f_000147
+|   |   |           f_000148
+|   |   |           f_000149
+|   |   |           f_00014a
+|   |   |           f_00014b
+|   |   |           f_00014c
+|   |   |           f_00014d
+|   |   |           f_00014e
+|   |   |           f_00014f
+|   |   |           f_000150
+|   |   |           f_000151
+|   |   |           f_000152
+|   |   |           f_000153
+|   |   |           f_000154
+|   |   |           f_000155
+|   |   |           f_000156
+|   |   |           f_000157
+|   |   |           f_000158
+|   |   |           f_000159
+|   |   |           f_00015a
+|   |   |           f_00015b
+|   |   |           f_00015c
+|   |   |           f_00015d
+|   |   |           f_00015e
+|   |   |           f_00015f
+|   |   |           f_000160
+|   |   |           f_000161
+|   |   |           f_000162
+|   |   |           f_000163
+|   |   |           f_000164
+|   |   |           f_000165
+|   |   |           f_000166
+|   |   |           f_000167
+|   |   |           f_000168
+|   |   |           f_000169
+|   |   |           f_00016a
+|   |   |           f_00016b
+|   |   |           f_00016c
+|   |   |           f_00016d
+|   |   |           f_00016e
+|   |   |           f_00016f
+|   |   |           f_000170
+|   |   |           f_000171
+|   |   |           f_000172
+|   |   |           f_000173
+|   |   |           f_000174
+|   |   |           f_000175
+|   |   |           f_000176
+|   |   |           f_000177
+|   |   |           f_000178
+|   |   |           f_000179
+|   |   |           f_00017a
+|   |   |           f_00017b
+|   |   |           f_00017c
+|   |   |           f_00017d
+|   |   |           f_00017e
+|   |   |           f_00017f
+|   |   |           f_000180
+|   |   |           f_000181
+|   |   |           f_000182
+|   |   |           f_000183
+|   |   |           f_000184
+|   |   |           f_000185
+|   |   |           f_000186
+|   |   |           f_000187
+|   |   |           f_000188
+|   |   |           f_000189
+|   |   |           f_00018a
+|   |   |           f_00018b
+|   |   |           f_00018c
+|   |   |           f_00018d
+|   |   |           f_00018e
+|   |   |           f_00018f
+|   |   |           f_000190
+|   |   |           f_000191
+|   |   |           f_000192
+|   |   |           f_000193
+|   |   |           f_000194
+|   |   |           f_000195
+|   |   |           f_000196
+|   |   |           f_000197
+|   |   |           f_000198
+|   |   |           f_000199
+|   |   |           f_00019a
+|   |   |           f_00019c
+|   |   |           f_00019d
+|   |   |           f_00019e
+|   |   |           f_00019f
+|   |   |           f_0001a0
+|   |   |           f_0001a1
+|   |   |           f_0001a2
+|   |   |           f_0001a3
+|   |   |           f_0001a4
+|   |   |           f_0001a5
+|   |   |           f_0001a6
+|   |   |           f_0001a7
+|   |   |           f_0001a8
+|   |   |           f_0001a9
+|   |   |           f_0001aa
+|   |   |           f_0001ab
+|   |   |           f_0001ac
+|   |   |           f_0001ad
+|   |   |           f_0001ae
+|   |   |           f_0001af
+|   |   |           f_0001b0
+|   |   |           f_0001b1
+|   |   |           f_0001b2
+|   |   |           f_0001b3
+|   |   |           f_0001b4
+|   |   |           f_0001b5
+|   |   |           f_0001b6
+|   |   |           f_0001b7
+|   |   |           f_0001b8
+|   |   |           f_0001b9
+|   |   |           f_0001ba
+|   |   |           f_0001bb
+|   |   |           f_0001bc
+|   |   |           f_0001bd
+|   |   |           f_0001be
+|   |   |           f_0001bf
+|   |   |           f_0001c0
+|   |   |           f_0001c1
+|   |   |           f_0001c2
+|   |   |           f_0001c3
+|   |   |           f_0001c5
+|   |   |           f_0001c6
+|   |   |           f_0001c7
+|   |   |           f_0001c8
+|   |   |           f_0001c9
+|   |   |           f_0001ca
+|   |   |           f_0001cb
+|   |   |           f_0001cc
+|   |   |           f_0001cd
+|   |   |           f_0001ce
+|   |   |           f_0001cf
+|   |   |           f_0001d1
+|   |   |           f_0001d2
+|   |   |           f_0001d3
+|   |   |           f_0001d4
+|   |   |           f_0001d5
+|   |   |           f_0001d6
+|   |   |           f_0001d7
+|   |   |           f_0001d8
+|   |   |           f_0001d9
+|   |   |           f_0001da
+|   |   |           f_0001db
+|   |   |           f_0001dc
+|   |   |           f_0001dd
+|   |   |           f_0001de
+|   |   |           f_0001df
+|   |   |           f_0001e0
+|   |   |           f_0001e1
+|   |   |           f_0001e2
+|   |   |           f_0001e4
+|   |   |           f_0001e5
+|   |   |           f_0001e6
+|   |   |           f_0001e7
+|   |   |           f_0001ee
+|   |   |           f_0001f1
+|   |   |           f_0001f5
+|   |   |           f_0001f7
+|   |   |           f_0001f9
+|   |   |           f_0001fa
+|   |   |           f_0001fb
+|   |   |           f_000204
+|   |   |           f_000206
+|   |   |           f_00020c
+|   |   |           f_00020e
+|   |   |           f_000210
+|   |   |           f_000212
+|   |   |           f_00021c
+|   |   |           f_00021d
+|   |   |           f_00021e
+|   |   |           f_00021f
+|   |   |           f_000220
+|   |   |           f_000221
+|   |   |           f_000222
+|   |   |           f_000224
+|   |   |           f_000225
+|   |   |           f_000226
+|   |   |           f_000227
+|   |   |           f_000228
+|   |   |           f_000229
+|   |   |           f_00022c
+|   |   |           f_000231
+|   |   |           f_000232
+|   |   |           f_000233
+|   |   |           f_000234
+|   |   |           f_00023c
+|   |   |           f_00023e
+|   |   |           f_00023f
+|   |   |           f_000243
+|   |   |           f_000244
+|   |   |           f_000247
+|   |   |           index
+|   |   |           
+|   |   +---Code Cache
+|   |   |   +---js
+|   |   |   |   |   00ad9772e20180ee_0
+|   |   |   |   |   046a721bcfe4f22c_0
+|   |   |   |   |   05285760ef8c4914_0
+|   |   |   |   |   06ccefadcccee60d_0
+|   |   |   |   |   0833424e0cf7730c_0
+|   |   |   |   |   097bfe4940fe6e3b_0
+|   |   |   |   |   0b2fe420248814da_0
+|   |   |   |   |   0b885c280605fe79_0
+|   |   |   |   |   0d612b98276a4bce_0
+|   |   |   |   |   0f0263be191caad8_0
+|   |   |   |   |   0fdc12b8b9b32f39_0
+|   |   |   |   |   1036cae8e552a87a_0
+|   |   |   |   |   11a405f940e262ac_0
+|   |   |   |   |   1381e466098e7daa_0
+|   |   |   |   |   1512374a090ab458_0
+|   |   |   |   |   15162f54fb6c7190_0
+|   |   |   |   |   152a66e5787eebf4_0
+|   |   |   |   |   162c549d0e4e57ca_0
+|   |   |   |   |   1643069414c84fb4_0
+|   |   |   |   |   170ab13c6f1889b9_0
+|   |   |   |   |   17bd36992fd32091_0
+|   |   |   |   |   17c3efa4d0ad4dab_0
+|   |   |   |   |   17e6c10163100b98_0
+|   |   |   |   |   18b9978ec518c08c_0
+|   |   |   |   |   1ed805be25e729c1_0
+|   |   |   |   |   20658fc204c6d780_0
+|   |   |   |   |   20db55bf8d6c0b9b_0
+|   |   |   |   |   223c6fb4a9b1b36a_0
+|   |   |   |   |   29e0784544078d65_0
+|   |   |   |   |   2b4422515f69eb08_0
+|   |   |   |   |   2e46f7ec3b135c96_0
+|   |   |   |   |   2f1429c8848319e4_0
+|   |   |   |   |   306165f95282c078_0
+|   |   |   |   |   32d0dff88b427a07_0
+|   |   |   |   |   33fdaa98d7b941e1_0
+|   |   |   |   |   33ff077f8bf20967_0
+|   |   |   |   |   3a08ced8f78e3dbd_0
+|   |   |   |   |   3d9105de833c54c4_0
+|   |   |   |   |   44bfe7bcb38f05f6_0
+|   |   |   |   |   44e42592e4f30b4a_0
+|   |   |   |   |   4557ffeba24bf1bf_0
+|   |   |   |   |   45f33b0536b1b91e_0
+|   |   |   |   |   4d617d8a3f046b30_0
+|   |   |   |   |   4e57b6d9bab368ab_0
+|   |   |   |   |   4eb803c4452bb257_0
+|   |   |   |   |   50f6b8455ebd6a06_0
+|   |   |   |   |   510ae92c872dc7d5_0
+|   |   |   |   |   5130e6b52764e006_0
+|   |   |   |   |   52824176bf0ef934_0
+|   |   |   |   |   53f75e658a1e12cd_0
+|   |   |   |   |   557db148157143ce_0
+|   |   |   |   |   55e65df91bc4de46_0
+|   |   |   |   |   561b4ed32e72f6df_0
+|   |   |   |   |   57821ed9ffb8fe83_0
+|   |   |   |   |   57b733dd131ed0fa_0
+|   |   |   |   |   594dc82cf6a952e7_0
+|   |   |   |   |   59f6cd5d31b7600e_0
+|   |   |   |   |   5bb5f8182fd8d559_0
+|   |   |   |   |   5c94f9da27793968_0
+|   |   |   |   |   5ff283edd34e342d_0
+|   |   |   |   |   62bd649c7a770df0_0
+|   |   |   |   |   652983bb7e3de27e_0
+|   |   |   |   |   6537c546d43edce8_0
+|   |   |   |   |   65feb75b19b549f0_0
+|   |   |   |   |   6637d04904a86db6_0
+|   |   |   |   |   667759a3e9f92657_0
+|   |   |   |   |   689b88f6622aee0d_0
+|   |   |   |   |   68eba4b3eda19bf7_0
+|   |   |   |   |   6d2f20627f621ab8_0
+|   |   |   |   |   6e2d83294ac17aed_0
+|   |   |   |   |   706ecd0e1aaf049a_0
+|   |   |   |   |   734191715fda216c_0
+|   |   |   |   |   74ab2f601a0f0a16_0
+|   |   |   |   |   74f37553f93c8535_0
+|   |   |   |   |   77096025e3b43613_0
+|   |   |   |   |   7d484f762ac0c37e_0
+|   |   |   |   |   7e6b99abc4b58623_0
+|   |   |   |   |   80b48ae28a12e979_0
+|   |   |   |   |   81d5bc0dd47e86f2_0
+|   |   |   |   |   81fb846d1636cd05_0
+|   |   |   |   |   82fb1d1c380f1950_0
+|   |   |   |   |   83429030c12a1cea_0
+|   |   |   |   |   8400d6484c85e219_0
+|   |   |   |   |   84824ec6d71facfa_0
+|   |   |   |   |   85693615cab4722a_0
+|   |   |   |   |   89217c8ee2be4d54_0
+|   |   |   |   |   8963128c39786756_0
+|   |   |   |   |   89b1ee9b1f33a8b1_0
+|   |   |   |   |   8a913fb23e28726e_0
+|   |   |   |   |   8e100a3526bdf6f0_0
+|   |   |   |   |   8e55c487f37df190_0
+|   |   |   |   |   920b4e9b8139e15c_0
+|   |   |   |   |   92d55fc300dfa50d_0
+|   |   |   |   |   943d83c95bc6039d_0
+|   |   |   |   |   94ee9c08d780ec13_0
+|   |   |   |   |   94f03cb5f5300417_0
+|   |   |   |   |   95e5b22d13f2a578_0
+|   |   |   |   |   95fc6f1f2250ffe4_0
+|   |   |   |   |   9775c3c68a7612a5_0
+|   |   |   |   |   9799688906680d5a_0
+|   |   |   |   |   9f2c46745f8e9552_0
+|   |   |   |   |   9fab7da7e8cc0131_0
+|   |   |   |   |   a10cd92255170043_0
+|   |   |   |   |   a357a0400a7e2132_0
+|   |   |   |   |   a7d672534cbf5280_0
+|   |   |   |   |   a94d769190ef362f_0
+|   |   |   |   |   ac5a67f3fc4b88b4_0
+|   |   |   |   |   ad5672433ee4b444_0
+|   |   |   |   |   b1538a69093326c5_0
+|   |   |   |   |   b1701881148157f9_0
+|   |   |   |   |   b79f7b13b21e982b_0
+|   |   |   |   |   b91f1ccebaed52c7_0
+|   |   |   |   |   bd767bd68ac2c42f_0
+|   |   |   |   |   bdbbfebe0ef5324d_0
+|   |   |   |   |   be42262aa8df4d53_0
+|   |   |   |   |   be85dc6557a4ec12_0
+|   |   |   |   |   bfe499b523d55948_0
+|   |   |   |   |   c09b820474f6de92_0
+|   |   |   |   |   c1734635e4970887_0
+|   |   |   |   |   c44cb07500df797d_0
+|   |   |   |   |   c757e5a8f928747b_0
+|   |   |   |   |   cccab5f81e333eba_0
+|   |   |   |   |   cea5120161f825d8_0
+|   |   |   |   |   d1e9d59d54841e60_0
+|   |   |   |   |   d7967426ab53d451_0
+|   |   |   |   |   d83ada19ecc84a63_0
+|   |   |   |   |   db555563c54be2b2_0
+|   |   |   |   |   dc70c0df8dbe963f_0
+|   |   |   |   |   dfde2e7d9843bf88_0
+|   |   |   |   |   e2a29ae63400811b_0
+|   |   |   |   |   e2f6100c5ff7562b_0
+|   |   |   |   |   e4eb91841456270b_0
+|   |   |   |   |   e82f35e061b0bfed_0
+|   |   |   |   |   e962c1d68f6daf73_0
+|   |   |   |   |   ea38daa74f06e1e7_0
+|   |   |   |   |   eae4847ae43be6b5_0
+|   |   |   |   |   ec44ff1514f7ac53_0
+|   |   |   |   |   ed9c510a5a7e4610_0
+|   |   |   |   |   eeefe455884fa492_0
+|   |   |   |   |   f16a6309c2c9b01f_0
+|   |   |   |   |   f2b76b96d9073e24_0
+|   |   |   |   |   f375fb8c814f3324_0
+|   |   |   |   |   f3e96228803bd55e_0
+|   |   |   |   |   f4115060ebaeabfa_0
+|   |   |   |   |   f455a1e9a56ea4fb_0
+|   |   |   |   |   f5b21fb9a5d4c6a3_0
+|   |   |   |   |   f68cafb1b10f1136_0
+|   |   |   |   |   f6ec43ab75f255a4_0
+|   |   |   |   |   facccec0ef13df2d_0
+|   |   |   |   |   fc1a7d3a6aea2aee_0
+|   |   |   |   |   fc84334565d4a1d8_0
+|   |   |   |   |   fc8b406a692595a9_0
+|   |   |   |   |   fcf9c04c11eadd56_0
+|   |   |   |   |   fd220f150da353e9_0
+|   |   |   |   |   fe46d3a785c1ebd5_0
+|   |   |   |   |   index
+|   |   |   |   |   
+|   |   |   |   \---index-dir
+|   |   |   |           the-real-index
+|   |   |   |           
+|   |   |   \---wasm
+|   |   |       |   index
+|   |   |       |   
+|   |   |       \---index-dir
+|   |   |               the-real-index
+|   |   |               
+|   |   +---DawnGraphiteCache
+|   |   |       data_0
+|   |   |       data_1
+|   |   |       data_2
+|   |   |       data_3
+|   |   |       index
+|   |   |       
+|   |   +---DawnWebGPUCache
+|   |   |       data_0
+|   |   |       data_1
+|   |   |       data_2
+|   |   |       data_3
+|   |   |       index
+|   |   |       
+|   |   +---GPUCache
+|   |   |       data_0
+|   |   |       data_1
+|   |   |       data_2
+|   |   |       data_3
+|   |   |       index
+|   |   |       
+|   |   +---Local Storage
+|   |   |   \---leveldb
+|   |   |           000003.log
+|   |   |           CURRENT
+|   |   |           LOCK
+|   |   |           LOG
+|   |   |           LOG.old
+|   |   |           MANIFEST-000001
+|   |   |           
+|   |   +---Network
+|   |   |       Cookies
+|   |   |       Cookies-journal
+|   |   |       Network Persistent State
+|   |   |       NetworkDataMigrated
+|   |   |       Trust Tokens
+|   |   |       Trust Tokens-journal
+|   |   |       
+|   |   +---Session Storage
+|   |   |       000003.log
+|   |   |       CURRENT
+|   |   |       LOCK
+|   |   |       LOG
+|   |   |       LOG.old
+|   |   |       MANIFEST-000001
+|   |   |       
+|   |   \---Shared Dictionary
+|   |       |   db
+|   |       |   db-journal
+|   |       |   
+|   |       \---cache
+|   |           |   index
+|   |           |   
+|   |           \---index-dir
+|   |                   the-real-index
+|   |                   
 |   +---logger
 |   |       logger.js
 |   |       
@@ -78,6 +826,7 @@ C:.
 |       lockerit-2025-10-15.log
 |       lockerit-2025-10-16.log
 |       lockerit-2025-10-17.log
+|       lockerit-2025-10-21.log
 |       
 +---node_modules
 |   |   .package-lock.json
@@ -265,107 +1014,101 @@ C:.
 |   |           @mui_x-date-pickers_LocalizationProvider.js.map
 |   |           axios.js
 |   |           axios.js.map
-|   |           chunk-277OV456.js
-|   |           chunk-277OV456.js.map
-|   |           chunk-2AKF4M3Q.js
-|   |           chunk-2AKF4M3Q.js.map
-|   |           chunk-3GB6QJOY.js
-|   |           chunk-3GB6QJOY.js.map
-|   |           chunk-5LIY5J3B.js
-|   |           chunk-5LIY5J3B.js.map
-|   |           chunk-5PZ5DTJY.js
-|   |           chunk-5PZ5DTJY.js.map
-|   |           chunk-6NFYTZ5Y.js
-|   |           chunk-6NFYTZ5Y.js.map
-|   |           chunk-6PU4MC5B.js
-|   |           chunk-6PU4MC5B.js.map
-|   |           chunk-74XLRBUK.js
-|   |           chunk-74XLRBUK.js.map
-|   |           chunk-7Z5KVDSV.js
-|   |           chunk-7Z5KVDSV.js.map
-|   |           chunk-AV2EZKM3.js
-|   |           chunk-AV2EZKM3.js.map
+|   |           chunk-46QRLGIV.js
+|   |           chunk-46QRLGIV.js.map
+|   |           chunk-4POUQTPX.js
+|   |           chunk-4POUQTPX.js.map
+|   |           chunk-4Y34XEW4.js
+|   |           chunk-4Y34XEW4.js.map
+|   |           chunk-5PZTMMWW.js
+|   |           chunk-5PZTMMWW.js.map
+|   |           chunk-6MDSK5TE.js
+|   |           chunk-6MDSK5TE.js.map
+|   |           chunk-766OI3VB.js
+|   |           chunk-766OI3VB.js.map
 |   |           chunk-AWNCFKJZ.js
 |   |           chunk-AWNCFKJZ.js.map
+|   |           chunk-AY3VBRXP.js
+|   |           chunk-AY3VBRXP.js.map
 |   |           chunk-BFL632LT.js
 |   |           chunk-BFL632LT.js.map
 |   |           chunk-BQYK6RGN.js
 |   |           chunk-BQYK6RGN.js.map
-|   |           chunk-BSWOQA5O.js
-|   |           chunk-BSWOQA5O.js.map
-|   |           chunk-CCZ2HLQJ.js
-|   |           chunk-CCZ2HLQJ.js.map
-|   |           chunk-CPTRSOBL.js
-|   |           chunk-CPTRSOBL.js.map
-|   |           chunk-CXVKAMG3.js
-|   |           chunk-CXVKAMG3.js.map
-|   |           chunk-D4FTB2CW.js
-|   |           chunk-D4FTB2CW.js.map
-|   |           chunk-EH5PYSKD.js
-|   |           chunk-EH5PYSKD.js.map
+|   |           chunk-BVIKBSPJ.js
+|   |           chunk-BVIKBSPJ.js.map
+|   |           chunk-CBLCWFVH.js
+|   |           chunk-CBLCWFVH.js.map
+|   |           chunk-DOA7TJQO.js
+|   |           chunk-DOA7TJQO.js.map
+|   |           chunk-DRTQIKPG.js
+|   |           chunk-DRTQIKPG.js.map
+|   |           chunk-DUWWWMDB.js
+|   |           chunk-DUWWWMDB.js.map
+|   |           chunk-E7IE6QST.js
+|   |           chunk-E7IE6QST.js.map
 |   |           chunk-EQCCHGRT.js
 |   |           chunk-EQCCHGRT.js.map
+|   |           chunk-FQ4HY23E.js
+|   |           chunk-FQ4HY23E.js.map
 |   |           chunk-FTDBO4JW.js
 |   |           chunk-FTDBO4JW.js.map
 |   |           chunk-G3PMV62Z.js
 |   |           chunk-G3PMV62Z.js.map
-|   |           chunk-G6ZJNYKK.js
-|   |           chunk-G6ZJNYKK.js.map
-|   |           chunk-H24TQO75.js
-|   |           chunk-H24TQO75.js.map
-|   |           chunk-HDAWR43R.js
-|   |           chunk-HDAWR43R.js.map
-|   |           chunk-HOLCHQKJ.js
-|   |           chunk-HOLCHQKJ.js.map
-|   |           chunk-INWLDDQG.js
-|   |           chunk-INWLDDQG.js.map
-|   |           chunk-JAWWZWDA.js
-|   |           chunk-JAWWZWDA.js.map
-|   |           chunk-JHIXKIB7.js
-|   |           chunk-JHIXKIB7.js.map
-|   |           chunk-LJOIOVWJ.js
-|   |           chunk-LJOIOVWJ.js.map
-|   |           chunk-M6XEVVT7.js
-|   |           chunk-M6XEVVT7.js.map
-|   |           chunk-MWT7EVEV.js
-|   |           chunk-MWT7EVEV.js.map
-|   |           chunk-O46WALMG.js
-|   |           chunk-O46WALMG.js.map
-|   |           chunk-ORXVZLT4.js
-|   |           chunk-ORXVZLT4.js.map
-|   |           chunk-QFQP6YON.js
-|   |           chunk-QFQP6YON.js.map
-|   |           chunk-RHF265Q4.js
-|   |           chunk-RHF265Q4.js.map
+|   |           chunk-GQEOD4XV.js
+|   |           chunk-GQEOD4XV.js.map
+|   |           chunk-GYIPRNES.js
+|   |           chunk-GYIPRNES.js.map
+|   |           chunk-HM3EQR67.js
+|   |           chunk-HM3EQR67.js.map
+|   |           chunk-IC56IIKD.js
+|   |           chunk-IC56IIKD.js.map
+|   |           chunk-II46P2FH.js
+|   |           chunk-II46P2FH.js.map
+|   |           chunk-J4VZE5E5.js
+|   |           chunk-J4VZE5E5.js.map
+|   |           chunk-KJLYL67D.js
+|   |           chunk-KJLYL67D.js.map
+|   |           chunk-M5BPRB76.js
+|   |           chunk-M5BPRB76.js.map
+|   |           chunk-MG55F3PW.js
+|   |           chunk-MG55F3PW.js.map
+|   |           chunk-NTT2DQLZ.js
+|   |           chunk-NTT2DQLZ.js.map
+|   |           chunk-O3T2225X.js
+|   |           chunk-O3T2225X.js.map
+|   |           chunk-OZSWASB4.js
+|   |           chunk-OZSWASB4.js.map
+|   |           chunk-P7JANM7N.js
+|   |           chunk-P7JANM7N.js.map
+|   |           chunk-RLVDLMKW.js
+|   |           chunk-RLVDLMKW.js.map
+|   |           chunk-SPRI63JI.js
+|   |           chunk-SPRI63JI.js.map
 |   |           chunk-SUSNWJV4.js
 |   |           chunk-SUSNWJV4.js.map
-|   |           chunk-TT3NWWFQ.js
-|   |           chunk-TT3NWWFQ.js.map
+|   |           chunk-SWETTG6G.js
+|   |           chunk-SWETTG6G.js.map
 |   |           chunk-TTGKUZR6.js
 |   |           chunk-TTGKUZR6.js.map
-|   |           chunk-XVHPUTBY.js
-|   |           chunk-XVHPUTBY.js.map
-|   |           chunk-YQU5QFSE.js
-|   |           chunk-YQU5QFSE.js.map
+|   |           chunk-VPJLVLRY.js
+|   |           chunk-VPJLVLRY.js.map
+|   |           chunk-WMTQGH4G.js
+|   |           chunk-WMTQGH4G.js.map
+|   |           chunk-XXVSQVRB.js
+|   |           chunk-XXVSQVRB.js.map
+|   |           chunk-Y572V6XA.js
+|   |           chunk-Y572V6XA.js.map
 |   |           chunk-ZCSSBJ3Q.js
 |   |           chunk-ZCSSBJ3Q.js.map
-|   |           chunk-ZQVB7PQJ.js
-|   |           chunk-ZQVB7PQJ.js.map
-|   |           chunk-ZYOPLTVN.js
-|   |           chunk-ZYOPLTVN.js.map
 |   |           dayjs.js
 |   |           dayjs.js.map
 |   |           dayjs_locale_es.js
 |   |           dayjs_locale_es.js.map
-|   |           dayjs_plugin_isSameOrAfter.js
-|   |           dayjs_plugin_isSameOrAfter.js.map
 |   |           dayjs_plugin_utc.js
 |   |           dayjs_plugin_utc.js.map
 |   |           package.json
 |   |           react-dom_client.js
 |   |           react-dom_client.js.map
-|   |           react-draggable.js
-|   |           react-draggable.js.map
 |   |           react-router-dom.js
 |   |           react-router-dom.js.map
 |   |           react-simple-keyboard.js
@@ -376,6 +1119,7 @@ C:.
 |   |           react_jsx-dev-runtime.js.map
 |   |           _metadata.json
 |   |           
+|   +---.vite-temp
 |   +---7zip-bin
 |   |   |   7x.sh
 |   |   |   index.d.ts
@@ -101392,10 +102136,10 @@ C:.
 |                                   
 \---src
     |   fonts.css
-    |   main.jsx
+    |   Main.jsx
     |   
     +---app
-    |       app.jsx
+    |       App.jsx
     |       
     +---assets
     |   |   icon.ico
@@ -101412,19 +102156,22 @@ C:.
     |           
     +---features
     |   +---admin
-    |   |       adminLockers.jsx
-    |   |       reportLockers.jsx
-    |   |       tabAdmin.jsx
-    |   |       tableReportLockers.jsx
+    |   |       AdminLockers.jsx
+    |   |       ReportLockers.jsx
+    |   |       TabAdmin.jsx
+    |   |       TableReportLockers.jsx
+    |   |       
+    |   +---feedback
+    |   |       ErrorPage.jsx
     |   |       
     |   +---login
-    |   |       login.jsx
+    |   |       Login.jsx
     |   |       
     |   +---ppal
-    |   |       ppal.jsx
+    |   |       Ppal.jsx
     |   |       
     |   \---router
-    |           router.jsx
+    |           AppRouter.jsx
     |           
     +---services
     |   +---apis
@@ -101443,33 +102190,38 @@ C:.
     |           
     \---shared
         +---components
-        |   +---dialogs
-        |   |       confirmDialog.jsx
-        |   |       initialLoader.jsx
-        |   |       insertMoney.jsx
-        |   |       keypadNumeric.jsx
-        |   |       loading.jsx
-        |   |       registerUserPeriod.jsx
-        |   |       showErrorAPI.jsx
-        |   |       showLocker.jsx
+        |   +---bars
+        |   |       AppbarBar.jsx
+        |   |       Clock.jsx
+        |   |       Copyright.jsx
+        |   |       Progressbar.jsx
+        |   |       SnackAlert.jsx
         |   |       
-        |   \---layouts
-        |           appbar.jsx
-        |           clock.jsx
-        |           copyright.jsx
-        |           progressbar.jsx
-        |           snackAlert.jsx
+        |   +---dialogs
+        |   |       ConfirmDialog.jsx
+        |   |       InitialLoader.jsx
+        |   |       InsertMoney.jsx
+        |   |       KeypadNumeric.jsx
+        |   |       Loading.jsx
+        |   |       RegisterUserPeriod.jsx
+        |   |       ShowErrorAPI.jsx
+        |   |       ShowLocker.jsx
+        |   |       
+        |   +---inputs
+        |   |       TextFieldVirtKeyPad.jsx
+        |   |       VirtualKeyboard.jsx
+        |   |       
+        |   \---time
+        |           DateTime.jsx
         |           
         +---constants
-        |   \---router
-        |           pathService.js
-        |           router.jsx
-        |           
+        |       pathService.js
+        |       
         +---context
-        |       keyboardContext.jsx
-        |       modalContext.jsx
-        |       userContext.jsx
-        |       windowSizeContext.jsx
+        |       KeyboardContext.jsx
+        |       ModalContext.jsx
+        |       UserContext.jsx
+        |       WindowSizeContext.jsx
         |       
         +---hooks
         |       authStore.js
@@ -101484,16 +102236,13 @@ C:.
         |       useScheduleReport.js
         |       useWindowSize.js
         |       
+        +---theme
+        |       theme.js
+        |       
         \---utils
                 cancelObservable.js
-                dateTime.jsx
-                errorPage.jsx
                 getDateRange.js
                 scaledDimension.js
                 speak.js
-                testGetDateRange.js
-                textFieldVirtKeyPad.jsx
-                theme.js
                 utils.js
-                virtualKeyboard.jsx
                 

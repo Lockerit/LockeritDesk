@@ -1,18 +1,21 @@
-const { defineConfig } = require('vite');
-const react = require('@vitejs/plugin-react-swc');
-const path = require('node:path');
+// vite.config.mjs
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-module.exports = defineConfig({
+export default defineConfig({
   plugins: [react()],
   base: './',
   build: { outDir: 'dist' },
   resolve: {
     alias: {
-      '@app': path.resolve(process.cwd(), 'src/app'),
-      '@features': path.resolve(process.cwd(), 'src/features'),
-      '@shared': path.resolve(process.cwd(), 'src/shared'),
-      '@services': path.resolve(process.cwd(), 'src/services'),
-      '@assets': path.resolve(process.cwd(), 'src/assets'),
+      '@app': path.resolve(__dirname, 'src/app'),
+      '@features': path.resolve(__dirname, 'src/features'),
+      '@shared': path.resolve(__dirname, 'src/shared'),
+      '@services': path.resolve(__dirname, 'src/services'),
+      '@assets': path.resolve(__dirname, 'src/assets'),
     },
   },
 });

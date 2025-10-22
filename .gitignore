@@ -4,4 +4,8 @@
 /out/
 electron/electron_cache/**
 !electron/electron_cache/.gitkeep
-/*.log
+
+logs/**
+!logs/.gitkeep
+
+*.log

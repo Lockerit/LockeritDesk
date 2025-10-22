@@ -121,7 +121,7 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
     width,
     height,
     show: false,
-    icon: path.join(__dirname, 'assets', 'icon.ico'),
+    icon: path.join(__dirname, '..', 'assets', 'icon.ico'),
     webPreferences: {
       preload: preloadPath,
       nodeIntegration: false,
