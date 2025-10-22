@@ -1,7 +1,12 @@
-// electron/watchers/loggerWatcher.js
-const fs = require('fs');
-const path = require('path');
-const { logger } = require('../logger/logger');
+// electron/watchers/loggerWatcher.js  (ESM)
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import logger from '../logger/logger.js';
+
+// __filename/__dirname en ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
 const fileName = path.parse(__filename).name;
 
@@ -10,37 +15,47 @@ const fileName = path.parse(__filename).name;
  * @param {string} loggerPath
  * @param {{ send: (channel: string, payload: any) => void }} messenger
  */
-function watchLoggerConfig(loggerPath, messenger) {
-    if (!fs.existsSync(loggerPath)) {
-        logger.error(`[${fileName}] logger_config.json NO encontrado en: ${loggerPath}`);
-        return;
-    }
+export function watchLoggerConfig(loggerPath, messenger = { send: () => {} }) {
+  if (!loggerPath || !fs.existsSync(loggerPath)) {
+    logger.error(`[${fileName}] logger_config.json NO encontrado en: ${loggerPath}`);
+    return;
+  }
 
-    const loadAndSendLogger = () => {
-        try {
-            const updatedRaw = fs.readFileSync(loggerPath, 'utf8');
-            const updatedLogger = JSON.parse(updatedRaw);
-            logger.debug(`[${fileName}] logger_config.json: ${JSON.stringify(updatedLogger)}`);
-            messenger.send('logger-updated', updatedLogger);
-        } catch (err) {
-            logger.error(`[${fileName}] Error al cargar logger_config.json: ${err.message}`);
-        }
-    };
+  const safeSend = (payload) => {
+    try { messenger.send('logger-updated', payload); }
+    catch (e) { logger.warn(`[${fileName}] messenger.send falló: ${e?.message || e}`); }
+  };
 
-    logger.info(`[${fileName}] Observando: ${loggerPath}`);
-    loadAndSendLogger();
-
+  const loadAndSendLogger = () => {
     try {
-        fs.watch(loggerPath, (eventType) => {
-            if (eventType === 'change') loadAndSendLogger();
-        });
-    } catch {
-        logger.warn(`[${fileName}] fs.watch falló, usando fs.watchFile`);
+      const updatedRaw = fs.readFileSync(loggerPath, 'utf8');
+      const updatedLogger = JSON.parse(updatedRaw);
+      logger.debug?.(`[${fileName}] logger_config.json: ${JSON.stringify(updatedLogger)}`);
+      safeSend(updatedLogger);
+    } catch (err) {
+      logger.error(`[${fileName}] Error al cargar logger_config.json: ${err.message}`);
     }
+  };
 
-    fs.watchFile(loggerPath, { interval: 1000 }, (curr, prev) => {
-        if (curr.mtime !== prev.mtime) loadAndSendLogger();
+  logger.info(`[${fileName}] Observando: ${loggerPath}`);
+  loadAndSendLogger();
+
+  // Debounce para múltiples eventos del SO por un solo cambio
+  let timer = null;
+  const trigger = () => {
+    clearTimeout(timer);
+    timer = setTimeout(loadAndSendLogger, 120);
+  };
+
+  try {
+    fs.watch(loggerPath, (eventType) => {
+      if (eventType === 'change') trigger();
     });
-}
+  } catch {
+    logger.warn(`[${fileName}] fs.watch falló, usando fs.watchFile`);
+  }
 
-module.exports = { watchLoggerConfig };
+  fs.watchFile(loggerPath, { interval: 1000 }, (curr, prev) => {
+    if (curr.mtimeMs !== prev.mtimeMs) trigger();
+  });
+}

@@ -1,11 +1,21 @@
-// electron/main/main.js
-const path = require('path');
-const fs = require('fs');
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
-const dotenv = require('dotenv');
-const { logger } = require('../logger/logger');
-const { exec, execFile } = require("child_process");
-const say = require('say');
+// electron/main/main.js  (ESM)
+import path from 'node:path';
+import fs from 'node:fs';
+import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import dotenv from 'dotenv';
+import { exec, execFile } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import say from 'say';
+
+import logger from '../logger/logger.js';
+import { watchSetupConfig } from '../watchers/setupWatcher.js';
+import { watchAuthKey } from '../watchers/authWatcher.js';
+import { watchEnvFile } from '../watchers/envWatcher.js';
+import { watchLoggerConfig } from '../watchers/loggerWatcher.js';
+
+// __filename/__dirname en ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const fileName = path.parse(__filename).name;
 let win = null;
@@ -17,12 +27,14 @@ logger.info(`[${fileName}] Iniciando aplicación Electron`);
 // ---------- resolver rutas de configFiles ----------
 function resolveConfigPath(file) {
   const candidates = [
-    path.join(process.resourcesPath || '', 'configFiles', file),       // prod
-    path.join(app.getAppPath(), 'configFiles', file),                  // dev (raíz proyecto)
+    path.join(process.resourcesPath || '', 'configFiles', file),      // prod (extraResources)
+    path.join(app.getAppPath(), 'configFiles', file),                 // dev (raíz del proyecto)
     path.join(process.cwd(), 'configFiles', file),
     path.join(__dirname, '..', '..', 'configFiles', file),
   ];
-  for (const p of candidates) if (fs.existsSync(p)) return p;
+  for (const p of candidates) {
+    try { if (fs.existsSync(p)) return p; } catch { /* noop */ }
+  }
   return null;
 }
 
@@ -87,7 +99,7 @@ function getScreenData() {
 function sendScreenData() {
   const data = getScreenData();
   logger.debug(`[${fileName}] Enviando tamaño ${data.width} ${data.height} ${data.factor}`);
-  if (win && !win.isDestroyed()) win.webContents.send("screen-data", data);
+  if (win && !win.isDestroyed()) win.webContents.send('screen-data', data);
 }
 
 let isRecreating = false;
@@ -132,15 +144,15 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
     }
   });
 
-  win.on("close", () => {
-    if (process.platform === "linux") {
-      execFile("pkill", ["aplay"], (error) => {
+  win.on('close', () => {
+    if (process.platform === 'linux') {
+      execFile('pkill', ['aplay'], (error) => {
         if (error) logger.warn(`No había procesos de aplay para detener: ${error}`);
       });
     } else {
       say.stop();
     }
-    if (!win.isDestroyed()) win.webContents.send("app-close");
+    if (!win.isDestroyed()) win.webContents.send('app-close');
   });
 
   win.webContents.session.webRequest.onBeforeRequest(
@@ -149,7 +161,7 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
   );
 
   const loadUrl = isProd
-    ? `file://${path.join(__dirname, 'dist', 'index.html')}`
+    ? `file://${path.join(__dirname, '..', '..', 'dist', 'index.html')}`
     : 'http://localhost:5173';
 
   win.loadURL(loadUrl);
@@ -175,11 +187,6 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
   screen.on('display-removed', sendScreenData);
 
   // ----- Iniciar watchers aquí -----
-  const { watchSetupConfig } = require('../watchers/setupWatcher');
-  const { watchAuthKey } = require('../watchers/authWatcher');
-  const { watchEnvFile } = require('../watchers/envWatcher');
-  const { watchLoggerConfig } = require('../watchers/loggerWatcher');
-
   const messenger = {
     send: (channel, payload) => {
       if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
@@ -203,7 +210,6 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
   if (paths.logger) watchLoggerConfig(paths.logger, messenger);
   if (paths.env) watchEnvFile(paths.env, {
     send: (channel, updatedEnv) => {
-      // actualiza CSP solo en prod
       if (isProd && channel === 'env-updated') {
         currentEnv = updatedEnv;
         sendCSPIfChanged(win, buildCSP(currentEnv));
@@ -257,7 +263,6 @@ ipcMain.handle('get-logger', async () => {
 });
 
 ipcMain.handle('get-env', async () => {
-  // Devuelve lo ya cargado en process.env (o lo que actualizó el watcher)
   return { ...currentEnv };
 });
 
@@ -271,7 +276,7 @@ ipcMain.on('log-message', (_event, { level, message }) => {
   else logger.info(`[${fileName}] ${message}`);
 });
 
-ipcMain.handle("get-screen-data", async () => getScreenData());
+ipcMain.handle('get-screen-data', async () => getScreenData());
 
 ipcMain.handle('get-screen-data-once', async () => {
   if (!win) throw new Error('Window no creada aún');
@@ -284,21 +289,24 @@ ipcMain.handle('get-screen-data-once', async () => {
   return { width, height, factor };
 });
 
+// Versión de la app
+ipcMain.handle('get-app-version', () => app.getVersion());
+
 // TTS
-ipcMain.handle("tts-speak", async (_event, text, options = {}) => {
+ipcMain.handle('tts-speak', async (_event, text, options = {}) => {
   const { voiceName, rate = 1 } = options;
   const platform = process.platform;
-  if (platform === "linux") {
+  if (platform === 'linux') {
     (async () => {
       try {
-        const res = await fetch("http://localhost:5002/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, voice: "tts_models/es/css10/vits" })
+        const res = await fetch('http://localhost:5002/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, voice: 'tts_models/es/css10/vits' })
         });
         const arrayBuffer = await res.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const outputPath = path.join(app.getPath("temp"), "tts-output.wav");
+        const outputPath = path.join(app.getPath('temp'), 'tts-output.wav');
         fs.writeFileSync(outputPath, buffer);
         exec(`aplay "${outputPath}"`);
       } catch (err) {
@@ -318,10 +326,10 @@ ipcMain.handle("tts-speak", async (_event, text, options = {}) => {
   }
 });
 
-ipcMain.handle("tts-stop", () => {
+ipcMain.handle('tts-stop', () => {
   const platform = process.platform;
-  if (platform === "linux") {
-    execFile("pkill", ["aplay"], (error) => {
+  if (platform === 'linux') {
+    execFile('pkill', ['aplay'], (error) => {
       if (error) logger.warn(`No había procesos de aplay para detener: ${error}`);
     });
   } else {
@@ -329,35 +337,38 @@ ipcMain.handle("tts-stop", () => {
   }
 });
 
-ipcMain.handle("tts-get-voices", async () => {
+ipcMain.handle('tts-get-voices', async () => {
   const platform = process.platform;
-  if (platform === "win32") {
+  if (platform === 'win32') {
     return new Promise((resolve) => {
       say.getInstalledVoices((err, voices) => {
-        if (err) resolve([]); else resolve(voices.map(v => ({ name: v, lang: v.includes("Spanish") ? "es" : "en" })));
+        if (err) resolve([]); else resolve(voices.map(v => ({ name: v, lang: v.includes('Spanish') ? 'es' : 'en' })));
       });
     });
   }
-  if (platform === "darwin") {
+  if (platform === 'darwin') {
     return new Promise((resolve) => {
-      exec("say -v ?", (err, stdout) => {
+      exec('say -v ?', (err, stdout) => {
         if (err) resolve([]); else {
-          const voices = stdout.split("\n").map(l => l.trim().split(/\s+/)[0]).filter(Boolean)
-            .map(name => ({ name, lang: "" }));
+          const voices = stdout
+            .split('\n')
+            .map((l) => l.trim().split(/\s+/)[0])
+            .filter(Boolean)
+            .map((name) => ({ name, lang: '' }));
           resolve(voices);
         }
       });
     });
   }
-  if (platform === "linux") return [{ name: "Coqui-es-female", lang: "es-ES (female)" }];
+  if (platform === 'linux') return [{ name: 'Coqui-es-female', lang: 'es-ES (female)' }];
   return [];
 });
 
-ipcMain.on("set-fullscreen", (_e, value) => {
+ipcMain.on('set-fullscreen', (_e, value) => {
   if (win) win.setFullScreen(!!value);
 });
 
-ipcMain.on("set-frame", (_e, value) => {
+ipcMain.on('set-frame', (_e, value) => {
   if (!win) return;
   const bounds = win.getBounds();
   const isFullScreen = win.isFullScreen();
@@ -366,13 +377,13 @@ ipcMain.on("set-frame", (_e, value) => {
   win.setBounds(bounds);
 });
 
-ipcMain.on("app:exit", async () => {
-  if (win && !win.isDestroyed()) win.webContents.send("app-close");
+ipcMain.on('app:exit', async () => {
+  if (win && !win.isDestroyed()) win.webContents.send('app-close');
   setTimeout(() => app.quit(), 300);
 });
 
 app.whenReady().then(() => {
-  if (process.platform === "linux") {
+  if (process.platform === 'linux') {
     const composePath = resolveConfigPath('docker-compose.yml');
     if (composePath) {
       const command = `docker compose -f "${composePath}" up -d coqui-tts`;
@@ -384,10 +395,10 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-app.on("window-all-closed", async () => {
-  if (process.platform !== "darwin") {
-    if (win && !win.isDestroyed()) win.webContents.send("app-close");
-    try { await ipcMain.emit("tts-stop"); } catch { }
+app.on('window-all-closed', async () => {
+  if (process.platform !== 'darwin') {
+    if (win && !win.isDestroyed()) win.webContents.send('app-close');
+    try { await ipcMain.emit('tts-stop'); } catch { /* noop */ }
     setTimeout(() => app.quit(), 1000);
   }
 });

@@ -247,11 +247,11 @@ export const Login = () => {
             return false;
         }
 
-        if (userName.toLowerCase() === config?.login?.userOpera.toLowerCase() && pass === config?.login?.passOpera) {
+        if (userName.toLowerCase().trim() === config?.login?.userOpera.toLowerCase().trim() && pass.trim() === config?.login?.passOpera.trim()) {
             isValid = 1;
         }
 
-        if (userName.toLowerCase() === config?.login?.userAdmin.toLowerCase() && pass === config?.login?.passAdmin) {
+        if (userName.toLowerCase().trim() === config?.login?.userAdmin.toLowerCase().trim() && pass.trim() === config?.login?.passAdmin.trim()) {
             isValid = 2;
         }
 
