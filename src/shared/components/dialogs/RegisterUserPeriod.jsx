@@ -14,7 +14,7 @@ import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { useModal } from "@shared/context/ModalContext.jsx";
-import { TextFieldVirtKeyPad } from '@shared/components/inputs/textFieldVirtKeyPad.jsx';
+import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 import { phoneRegex, formatCurrency, emailRegex, formatNumberPhone } from '@shared/utils/utils.js';
 import { Reserve } from '@services/apis/reserve.js';
 
@@ -96,7 +96,7 @@ export const RegisterUserPeriod = ({
       if (!startDate || !dayjs(startDate).isValid()) {
         const today = dayjs();
         setStartDate(today);
-        setEndDate(today.add(1, "month").subtract(1, "day")); // 👈 calcula fin de mes de inmediato
+        setEndDate(today.add(1, "month").subtract(1, "day")); // calcula fin de mes de inmediato
       }
 
       // 👇 si ya hay fecha pero periodo es mensual, asegurar cálculo
@@ -330,9 +330,9 @@ export const RegisterUserPeriod = ({
         keepMounted={false}
         component="form"
         onSubmit={handleSubmit}
-        hideBackdrop               // 👈 evita bloquear clics en el fondo
+        hideBackdrop               // evita bloquear clics en el fondo
         disableEscapeKeyDown
-        disableEnforceFocus        // 👈 no fuerza el foco al modal
+        disableEnforceFocus        // no fuerza el foco al modal
         disableAutoFocus
         disableRestoreFocus
         PaperProps={{
@@ -535,7 +535,7 @@ export const RegisterUserPeriod = ({
                 variant="contained"
                 color="secondary"
                 onClick={cancel}
-                sx={{ flex: 1 }}        // 👈 ocupa la mitad
+                sx={{ flex: 1 }}        // ocupa la mitad
               >
                 Cancelar
                 <Close sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
@@ -545,7 +545,7 @@ export const RegisterUserPeriod = ({
                 variant="contained"
                 color="success"
                 type="submit"
-                sx={{ flex: 1 }}        // 👈 ocupa la otra mitad
+                sx={{ flex: 1 }}        // ocupa la otra mitad
               >
                 Registrar
                 <DoneAll sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
@@ -581,7 +581,7 @@ export const RegisterUserPeriod = ({
           { label: "Nota", value: config?.sendSMS ? '¡Se enviará mensaje de texto al usuario!' : '' },
         ]}
         isPhone={false}
-        hideBackdrop    // 👈 evita que bloquee clicks
+        hideBackdrop    // evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -592,7 +592,7 @@ export const RegisterUserPeriod = ({
         onConfirm={confirmShowErrorAPI}
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
-        hideBackdrop    // 👈 evita que bloquee clicks
+        hideBackdrop    // evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus

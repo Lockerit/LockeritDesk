@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { Alert, Stack } from '@mui/material';
 import './fonts.css';
 
-import { App } from '@app/app.jsx';
+import { App } from '@app/App.jsx';
 import { createScaledTheme } from '@shared/theme/theme.js';
 import { UserProvider } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext, WindowSizeProvider } from '@shared/context/WindowSizeContext.jsx';

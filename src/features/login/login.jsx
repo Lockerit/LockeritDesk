@@ -14,7 +14,7 @@ import logo from '@assets/Logo.png';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
-import { TextFieldVirtKeyPad } from '@shared/components/inputs/textFieldVirtKeyPad.jsx';
+import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'Login';
@@ -38,15 +38,13 @@ export const Login = () => {
         username: false,
         password: false,
     });
-    const [msgErrorLogin, setMsgErrorLogin] = useState('Usuario o contraseña incorrectos');
+    const [msgErrorLogin] = useState('Usuario o contraseña incorrectos');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
     const [buttonName, setButtonName] = useState('Iniciar Sesión');
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
-    const keyboardContainerRef = useRef();
-    const [showKeyboard] = useState(false);
 
     const navigate = useNavigate();
     const config = useElectronConfig();
@@ -459,17 +457,6 @@ export const Login = () => {
                     </Box>
                 </Paper >
             </Box >
-
-            {showKeyboard && (
-                <Paper
-                    elevation={3}
-                    sx={{ position: "absolute", top: "100%", mt: 1, zIndex: 1000, p: 1 }}
-                    ref={keyboardContainerRef}
-                >
-                    <VirtualKeyboard inputValue={userName} onChange={setUserName} />
-                </Paper>
-            )
-            }
 
             <SnackAlert
                 open={snackbarOpen}

@@ -10,6 +10,8 @@ let defaultOptions = {
 
 let voicesReady = null;
 
+const fileName = "speak";
+
 // Función auxiliar para loguear si está disponible
 const log = (level, message) => {
     if (typeof window !== 'undefined' && window.electronAPI?.log) {

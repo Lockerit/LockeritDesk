@@ -1,5 +1,5 @@
 // src/utils/timeUtils.js
-import { getConfig, subscribeConfig } from '@shared/hooks/configStore.js';
+import { getConfig } from '@shared/hooks/configStore.js';
 
 const config = getConfig();
 
@@ -57,6 +57,7 @@ export const formatCurrency = (value, { onlyThousands = false } = {}) => {
             minimumFractionDigits: decimal,
         }).format(number);
     } catch (err) {
+        console.error('Error formateando moneda:', err);
         return number.toLocaleString('es-CO');
     }
 };
