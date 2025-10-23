@@ -1,9 +1,6 @@
 // snackAlert.jsx
-import React from 'react';
 import { Snackbar, Alert } from '@mui/material';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext';
-
-const fileName = 'SnackAlert';
 
 export const SnackAlert = ({ open, message, severity, onClose }) => {
     const size = useWindowSizeContext();

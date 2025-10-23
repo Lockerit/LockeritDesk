@@ -1,7 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+
+import {
+    Typography, Box, Grid, Button
+} from '@mui/material';
+import {
+    AddCircle, Key, RemoveCircle
+} from '@mui/icons-material';
+
+
 import { KeypadNumeric } from '@shared/components/dialogs/KeypadNumeric.jsx'
 import { useUser } from '@shared/context/UserContext.jsx';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
@@ -9,20 +18,7 @@ import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useModal } from '@shared/context/ModalContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
-import { speak, stopSpeaking, getVoices } from '@shared/utils/speak.js';
-import {
-    Typography,
-    Box,
-    Grid,
-    Button,
-} from '@mui/material';
-import {
-    AddCircle,
-    Key,
-    LockReset,
-    RemoveCircle,
-    SensorOccupied
-} from '@mui/icons-material';
+import { speak, stopSpeaking } from '@shared/utils/speak.js';
 
 const fileName = 'Ppal';
 
@@ -36,7 +32,7 @@ const log = (level, message) => {
 export const Ppal = () => {
 
     const [showErrorAPIOpenPpal, setShowErrorAPIOpenPpal] = useState(false);
-    const { userInit, setUserInit } = useUser();
+    const { userInit } = useUser();
     const [available, setAvailable] = useState(null);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
     const [loading, setLoading] = useState(true);

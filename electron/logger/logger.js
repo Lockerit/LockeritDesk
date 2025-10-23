@@ -1,8 +1,9 @@
 // electron/logger/logger.js  (ESM)
-import { app } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+
+import { app } from 'electron';
 import { createLogger, format, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
@@ -47,11 +48,9 @@ try {
     const raw = fs.readFileSync(configPath, 'utf8');
     config = { ...config, ...JSON.parse(raw) };
   } else {
-    // eslint-disable-next-line no-console
     console.warn(`[${fileName}] logger_config.json no encontrado. Usando configuración por defecto.`);
   }
 } catch (err) {
-  // eslint-disable-next-line no-console
   console.warn(`[${fileName}] Error leyendo logger_config.json, usando por defecto: ${err.message}`);
 }
 
@@ -108,10 +107,8 @@ export const reloadLoggerConfig = () => {
     logger.clear();
     logger.add(getConsoleTransport());
     logger.add(getRotateTransport(config));
-    // eslint-disable-next-line no-console
     console.log(`[${fileName}] Configuración de logger recargada dinámicamente`);
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error(`[${fileName}] Error al recargar logger_config.json: ${err.message}`);
   }
 };

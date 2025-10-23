@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Typography, Container, Box } from '@mui/material';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 
-const fileName = 'Copyright';
+import { Typography, Container, Box } from '@mui/material';
+
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 
 export const Copyright = () => {
 
@@ -11,17 +11,9 @@ export const Copyright = () => {
   const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
   useEffect(() => {
-    const log = window?.electronAPI?.log;
-    try {
-      const versionResult = window.electronAPI?.getAppVersion?.();
-      if (versionResult) {
-        setVersion(versionResult);
-        log?.('info', `[${fileName}] Versión cargada: ${versionResult}`);
-      } else {
-        log?.('warn', `[${fileName}] No se pudo obtener la versión de la aplicación`);
-      }
-    } catch (err) {
-      log?.('error', `[${fileName}] Error al obtener la versión: ${err.message}`);
+    const _versionResult = window.electronAPI?.getAppVersion?.();
+    if (_versionResult) {
+      setVersion(_versionResult);
     }
   }, []);
 

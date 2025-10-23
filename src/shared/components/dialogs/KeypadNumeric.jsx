@@ -1,56 +1,34 @@
 import { useState, useRef, forwardRef, useEffect } from 'react';
+
+import {
+  Backspace, Close, DoneAll, MobileFriendly, Refresh, ArrowForwardIos, Password
+} from '@mui/icons-material';
+import {
+  Grid, Button, TextField, Box, Typography, Dialog, DialogContent, IconButton, Slide
+} from '@mui/material';
+
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
-import { ConfirmDialog } from './ConfirmDialog.jsx';
-import { InsertMoney } from './InsertMoney.jsx';
-import { ShowErrorAPI } from './ShowErrorAPI.jsx';
-import { paymentService } from '@services/apis/assignLocker.js';
-import { Loading } from './Loading.jsx';
-import { ShowLocker } from './ShowLocker.jsx';
 import { OpenSessionLocker } from '@services/apis/openSessionLocker.js';
 import { OpenReserveLocker } from '@services/apis/openReserveLocker.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { getVoices, speak, stopSpeaking } from '@shared/utils/speak.js'
+import { speak, stopSpeaking } from '@shared/utils/speak.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { useModal } from "@shared/context/ModalContext.jsx";
-import {
-  formatTime,
-  phoneRegex,
-  keys,
-  formatNumberPhone,
-  formatCurrency
-} from '@shared/utils/utils.js';
-import {
-  closeWebSocket
-} from '@services/realtime/websocket.js';
-import {
-  Backspace,
-  Close,
-  DoneAll,
-  MobileFriendly,
-  Refresh,
-  ArrowForwardIos,
-  Password
-} from '@mui/icons-material';
-import {
-  Grid,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  Dialog,
-  DialogContent,
-  IconButton,
-  Slide,
-} from '@mui/material';
+import { formatTime, phoneRegex, keys, formatNumberPhone, formatCurrency } from '@shared/utils/utils.js';
+import { paymentService } from '@services/apis/assignLocker.js';
+import { closeWebSocket } from '@services/realtime/websocket.js';
 
+import { Loading } from './Loading.jsx';
+import { ConfirmDialog } from './ConfirmDialog.jsx';
+import { InsertMoney } from './InsertMoney.jsx';
+import { ShowErrorAPI } from './ShowErrorAPI.jsx';
+import { ShowLocker } from './ShowLocker.jsx';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-
-const fileName = 'KeypadNumeric';
 
 export const KeypadNumeric = ({
   open,
@@ -810,7 +788,7 @@ export const KeypadNumeric = ({
         mesg={`¡Vas a ${operation}! ${config?.sendSMS ? '\nRecibirás un mensaje de texto con los datos ingresados.' : ''} \n¿El número celular es correcto?`}
         phone={formatNumberPhone(phone)}
         isPhone={true}
-        hideBackdrop    // 👈 evita que bloquee clicks
+        hideBackdrop    // evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -824,7 +802,7 @@ export const KeypadNumeric = ({
         amountPay={formatCurrency(amountPay)}
         phone={formatNumberPhone(phone)}
         timeout={timeoutInsert}
-        hideBackdrop    // 👈 evita que bloquee clicks
+        hideBackdrop    // evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -841,7 +819,7 @@ export const KeypadNumeric = ({
         timeout={timeoutShowMessage}
         backColor={operation === 'Retirar' ? 'secondary.main' : operation === 'Guardar' ? 'primary.main' : 'info.main'}
         operation={operation}
-        hideBackdrop    // 👈 evita que bloquee clicks
+        hideBackdrop    // evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -852,7 +830,7 @@ export const KeypadNumeric = ({
         onConfirm={confirmShowErrorAPI}
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
-        hideBackdrop    // 👈 evita que bloquee clicks
+        hideBackdrop    // evita que bloquee clicks
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus

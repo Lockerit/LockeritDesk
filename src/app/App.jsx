@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Box, Container } from '@mui/material';
 import { HashRouter } from 'react-router-dom';
+
+import { Box, Container } from '@mui/material';
+import utc from "dayjs/plugin/utc";
+import dayjs from "dayjs";
+
 import { AppbarBar } from '@shared/components/bars/AppbarBar.jsx';
-import { Copyright } from '@shared/components/bars/copyright.jsx';
-import { AppRoutes } from '@features/router/AppRouter.jsx';
+import { Copyright } from '@shared/components/bars/Copyright.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useSchedulerReport } from '@shared/hooks/useScheduleReport.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { AppRoutes } from '@features/router/AppRouter.jsx';
 import { GetReportLockers } from '@services/apis/report.js';
 import { setVoiceOptions, getVoices, preloadVoice } from '@shared/utils/speak.js';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
-import utc from "dayjs/plugin/utc";
-import dayjs from "dayjs";
-dayjs.extend(utc);
 
+dayjs.extend(utc);
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'app';
@@ -76,7 +78,6 @@ export const App = () => {
 
     // Comentario cambio para subir a GitHub
     const { userInit, setUserInit } = useUser();
-    const [version, setVersion] = useState('');
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
     const config = useElectronConfig();
@@ -91,22 +92,24 @@ export const App = () => {
     const footerHeight = footerBase * scale;
     const [voiceGet, setVoiceGet] = useState(null);
 
+    // 1) Cargar lista de voces según config
     useEffect(() => {
-
         if (!config) return;
-
         preloadVoice();
+        loadVoices(config?.voice?.name || 'Sabina'); // sólo busca voces con config
+    }, [config]);
 
-        loadVoices(config?.voice?.name || "Sabina");
-
+    // 2) Aplicar opciones cuando haya voz y config
+    useEffect(() => {
+        if (!config) return;
         setVoiceOptions({
             voiceName: voiceGet?.name,
             rate: config?.voice?.rate || 1,
             volume: config?.voice?.volume || 1,
-            pitch: config?.voice?.pitch || 1
+            pitch: config?.voice?.pitch || 1,
         });
-        log('debug', `Voz configurada: ${voiceGet?.name || 'default'}, rate: ${config?.voice?.rate || 1}, volume: ${config?.voice?.volume || 1}, pitch: ${config?.voice?.pitch || 1}`);
-    }, [config]);
+        log('debug', `Voz configurada: ${voiceGet?.name || 'default'}, ...`);
+    }, [config, voiceGet?.name]);
 
     useEffect(() => {
 
@@ -122,18 +125,6 @@ export const App = () => {
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit));
 
         log('info', 'Componente App montado');
-
-        try {
-            const versionResult = window.electronAPI?.getAppVersion?.();
-            if (versionResult) {
-                setVersion(versionResult);
-                log('info', `Versión cargada: ${versionResult}`);
-            } else {
-                log('warn', 'No se pudo obtener la versión de la aplicación');
-            }
-        } catch (err) {
-            log('error', `Error al obtener la versión: ${err.message}`);
-        }
     }, [userInit]);
 
     useResetLocalStorageOnConfigChange(config);

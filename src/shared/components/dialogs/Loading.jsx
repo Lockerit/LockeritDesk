@@ -1,9 +1,7 @@
 // src/components/LoadingScreen.jsx
-import React from 'react';
 import { Box, CircularProgress, Typography, Backdrop } from '@mui/material';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 
-const fileName = 'Loading';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 
 export const Loading = ({ open = true, message = 'Cargando...' }) => {
     const size = useWindowSizeContext();

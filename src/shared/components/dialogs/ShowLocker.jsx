@@ -1,26 +1,18 @@
 import { useState, forwardRef, useEffect } from 'react';
+
+import { Close } from '@mui/icons-material';
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, Paper, IconButton
+} from '@mui/material';
+
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
-import { Close } from '@mui/icons-material';
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Typography,
-    Button,
-    Box,
-    Slide,
-    Paper,
-    IconButton
-} from '@mui/material';
+
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
-
-const fileName = 'ShowLocker';
 
 export const ShowLocker = ({ open, onConfirm, locker, title, msg, timeout = 15, backColor = 'gray', operation }) => {
 

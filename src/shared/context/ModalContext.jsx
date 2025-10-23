@@ -29,7 +29,6 @@ export const ModalProvider = ({ children }) => {
     );
 
     const closeAllModals = () => {
-        setModalOpen(false);
         setInsertMoneyOpen(false);
         setShowLockerOpen(false);
         setShowErrorAPIOpen(false);

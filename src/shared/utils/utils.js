@@ -1,5 +1,5 @@
 // src/utils/timeUtils.js
-import { getConfig, subscribeConfig } from '../hooks/configStore.js';
+import { getConfig, subscribeConfig } from '@shared/hooks/configStore.js';
 
 const config = getConfig();
 

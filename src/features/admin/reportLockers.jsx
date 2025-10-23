@@ -1,31 +1,20 @@
 import { useState, useEffect } from "react";
+
+import { Summarize } from '@mui/icons-material';
+import { Box, Button } from "@mui/material";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
 import { DateTime } from "@shared/components/time/DateTime.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { GetReportLockers } from "@services/apis/report.js";
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
-import { TableReportTableLockers } from "./TableReportLockers.jsx";
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import {
-    Summarize
-} from '@mui/icons-material';
-import {
-    Box,
-    Button,
-    TextField
-} from "@mui/material";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+
+import { TableReportLockers } from "./TableReportLockers.jsx";
+
 dayjs.extend(utc);
-
-const fileName = 'ReportLockers';
-
-// Logging centralizado
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
 
 export const ReportLockers = () => {
     const [endDate, setEndDate] = useState(dayjs());
@@ -94,7 +83,6 @@ export const ReportLockers = () => {
                         msg = 'Reporte generado con éxito';
                         setIsErrorMsj(false);
                     }
-                    log('info', msg);
                     setMessageErrorAPI(msg);;
                     setShowErrorAPIOpen(true);
                 } else {
@@ -173,7 +161,7 @@ export const ReportLockers = () => {
                     minHeight: 0, // evita que los hijos desborden
                 }}
             >
-                <TableReportTableLockers data={reportData} startDate={startDate} endDate={endDate} />
+                <TableReportLockers data={reportData} startDate={startDate} endDate={endDate} />
             </Box>
 
             {loading && <Loading />}

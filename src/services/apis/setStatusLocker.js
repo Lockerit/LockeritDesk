@@ -1,22 +1,24 @@
-import { instanceAxios } from './axiosConfig.js';
 import { API_ROUTES } from '@shared/constants/pathService.js';
-import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
+import { getEnv } from '@shared/hooks/envStore.js';
+
+import { instanceAxios } from './axiosConfig.js';
 
 const fileName = 'setStatusLocker'; // Nombre del archivo para los logs
 
 const log = (level, message) => {
-  if (typeof window !== 'undefined' && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
-  }
+    if (typeof window !== 'undefined' && window.electronAPI?.log) {
+        window.electronAPI.log(level, `[${fileName}] ${message}`);
+    }
 };
 export const SetStatusLocker = async (payload) => {
     log('info', 'Iniciando petición para cambiar estado casillero');
 
-    const env = getEnv(); // Esto se actualiza si `.env` cambió
-    const maxRetries = env?.apiBaseMaxRetries || 5;
-    const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
+    const env = getEnv(); // Se actualiza si .env cambió
 
-    const effectiveTimeout = Number((env?.apiBaseTimeout * 1000) ?? 30000);
+    // Usa valores por defecto cuando las claves no existan (en segundos) y luego conviértelos a ms
+    const effectiveTimeout = Number(env?.apiBaseTimeout ?? 30) * 1000;       // 30s por defecto
+    const maxRetries = Number(env?.apiBaseMaxRetries ?? 5);            // 5 intentos por defecto
+    const retryDelay = Number(env?.apiBaseDelayRetries ?? 1) * 1000;   // 1s por defecto
 
     log('info', `Timeout efectivo en ejecución: ${effectiveTimeout}`);
 

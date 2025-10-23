@@ -1,31 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { useEffect, useState } from 'react';
 import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
 import { OpenByCodeLocker } from '@services/apis/openByCodeLocker.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { SetStatusLocker } from '@services/apis/setStatusLocker.js';
-import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
 import { useModal } from "@shared/context/ModalContext.jsx";
-import {
-    Box,
-    Typography,
-    Grid,
-    MenuItem,
-    Select,
-    FormControl,
-    InputLabel,
-    Button,
-    Paper,
-    Stack,
-    Menu,
-    Checkbox,
-    FormControlLabel,
-    Chip
-} from '@mui/material';
-import { Payment, Sync } from '@mui/icons-material';
+import { Sync } from '@mui/icons-material';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+import { Box, Button, Checkbox, Chip, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Stack, Typography, Menu } from '@mui/material';
 
 const fileName = 'AdminLockers';
 
@@ -170,10 +155,6 @@ export const AdminLockers = () => {
             } catch (err) {
                 failedLockers.push(locker.lockerCode);
             }
-            // }
-            // else {
-            //     failedLockers.push(locker.lockerCode);
-            // }
         }
         setLoading(false);
 
@@ -328,11 +309,6 @@ export const AdminLockers = () => {
                         justifyContent: "center"
                     }}
                 >
-                    {/* <Typography variant="h4"
-                        sx={{ fontWeight: 'bold', mb: 2 * scale }}
-                    >
-                        Estado de Casilleros
-                    </Typography> */}
                     <Typography
                         variant="h4"
                         component="span"

@@ -1,14 +1,11 @@
-import { instanceAxios } from './axiosConfig.js';
 import { API_ROUTES } from '@shared/constants/pathService.js';
 import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
 import {
-    connectWebSocket,
-    closeWebSocket,
-    isWebSocketConnected,
-    onMessage,
-    waitWebSocketReady
+    connectWebSocket, closeWebSocket, isWebSocketConnected, onMessage, waitWebSocketReady
 } from '@services/realtime/websocket.js';
+
+import { instanceAxios } from './axiosConfig.js';
 
 const fileName = 'assignLocker';
 let abortCancel = null; // Controla la cancelación de la petición
@@ -21,9 +18,13 @@ const log = (level, message) => {
 
 
 export const assignLocker = async (payload, timeoutMs) => {
-    const env = getEnv();
-    const maxRetries = env?.apiBaseMaxRetries || 5;
-    const retryDelay = (env?.apiBaseDelayRetries * 1000) || 1;
+
+    const env = getEnv(); // Se actualiza si .env cambió
+
+    // Usa valores por defecto cuando las claves no existan (en segundos) y luego conviértelos a ms
+    const maxRetries = Number(env?.apiBaseMaxRetries ?? 5);            // 5 intentos por defecto
+    const retryDelay = Number(env?.apiBaseDelayRetries ?? 1) * 1000;   // 1s por defecto
+
     abortCancel = false;
 
     log('debug', 'peticion assign 0', isWebSocketConnected());

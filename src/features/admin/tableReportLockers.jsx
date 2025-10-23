@@ -1,4 +1,15 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
+
+
+import utc from "dayjs/plugin/utc";
+import dayjs from "dayjs";
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, Box, Button, IconButton, InputAdornment, TableSortLabel
+} from "@mui/material";
+import {
+    ManageSearch, ForwardToInbox
+} from '@mui/icons-material';
+
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { formatCurrency } from "@shared/utils/utils.js";
 import { GetReportLockers } from "@services/apis/report.js";
@@ -6,42 +17,10 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { TextFieldVirtKeyPad } from "@shared/components/inputs/TextFieldVirtKeyPad.jsx";
-import utc from "dayjs/plugin/utc";
-import dayjs from "dayjs";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    TablePagination,
-    TablePaginationActions,
-    TextField,
-    Box,
-    Button,
-    Typography,
-    IconButton,
-    InputAdornment,
-    TableSortLabel
-} from "@mui/material";
-import {
-    ManageSearch,
-    ForwardToInbox
-} from '@mui/icons-material';
+
 dayjs.extend(utc);
 
-const fileName = 'TableReportTableLockers';
-
-// Logging centralizado
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
-
-export const TableReportTableLockers = ({ data, startDate, endDate }) => {
+export const TableReportLockers = ({ data, startDate, endDate }) => {
 
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
@@ -174,7 +153,6 @@ export const TableReportTableLockers = ({ data, startDate, endDate }) => {
                         msg = 'Reporte enviado con éxito';
                         setIsErrorMsj(false);
                     }
-                    log('info', msg);
                     setMessageErrorAPI(msg);;
                     setShowErrorAPIOpen(true);
                 } else {

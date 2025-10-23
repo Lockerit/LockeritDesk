@@ -1,30 +1,20 @@
 import { useState, forwardRef, useEffect } from 'react';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx'; // Hook para tamaño pantalla
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
-import { speak } from '@shared/utils/speak.js';
-import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
-import { formatTime } from '@shared/utils/utils.js';
+
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Typography,
-    Button,
-    Box,
-    Slide,
-    IconButton
+    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
 } from '@mui/material';
 import {
-    CurrencyExchange,
-    Close
+    CurrencyExchange, Close
 } from '@mui/icons-material';
+
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
+import { formatTime } from '@shared/utils/utils.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
-
-const fileName = 'InsertMoney';
 
 export const InsertMoney = ({ open, onCancel, amountService, amountPay, phone, timeout = 600 }) => {
 

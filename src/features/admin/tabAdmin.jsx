@@ -1,21 +1,11 @@
-import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
+import { useState } from 'react';
+
+import { Box, Tab } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+
 import { useWindowSizeContext } from '@shared/context/windowSizeContext.jsx';
 import { AdminLockers } from './AdminLockers.jsx';
 import { ReportLockers } from './ReportLockers.jsx';
-
-const fileName = 'TabAdmin';
-
-// Logging centralizado
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
 
 export const TabAdmin = () => {
     const [value, setValue] = useState('1');
@@ -46,7 +36,7 @@ export const TabAdmin = () => {
                         aria-label="tabs Administrativo"
                         sx={{
                             minHeight: `${tabBarHeight}px`,
-                            '& .MuiTab-root': { 
+                            '& .MuiTab-root': {
                                 minHeight: `${tabBarHeight}px`,
                             },
                         }}
@@ -60,7 +50,7 @@ export const TabAdmin = () => {
                 <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
                     <TabPanel
                         value="1"
-                        sx={{ flex: 1, height: "100%", p: 0}} // aquí scroll solo del contenido
+                        sx={{ flex: 1, height: "100%", p: 0 }} // aquí scroll solo del contenido
                     >
                         <AdminLockers />
                     </TabPanel>

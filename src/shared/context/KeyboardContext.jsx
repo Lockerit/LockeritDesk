@@ -1,7 +1,9 @@
 
 // KeyboardProvider.jsx
 import { useState, createContext, useContext, useRef } from "react";
+
 import { VirtualKeyboard } from "@shared/components/inputs/VirtualKeyboard";
+
 import { useWindowSizeContext } from "./WindowSizeContext";
 
 const KeyboardContext = createContext();

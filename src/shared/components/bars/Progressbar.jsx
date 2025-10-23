@@ -1,7 +1,6 @@
 import { LinearProgress, Box, Typography } from '@mui/material';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 
-const fileName = 'Progressbar';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 
 export const Progressbar = ({ msg, amountPay }) => {
     const size = useWindowSizeContext();

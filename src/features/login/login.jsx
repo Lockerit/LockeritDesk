@@ -1,5 +1,13 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+
+import {
+    Box, Button, Typography, Paper, InputAdornment, IconButton, FormControlLabel, Checkbox
+} from '@mui/material';
+import {
+    Visibility, VisibilityOff, Send, Person, LockOpen, Undo
+} from '@mui/icons-material';
+
 import { useUser } from '@shared/context/UserContext.jsx';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import logo from '@assets/Logo.png';
@@ -7,25 +15,6 @@ import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/textFieldVirtKeyPad.jsx';
-import {
-    Box,
-    Button,
-    TextField,
-    Typography,
-    Paper,
-    InputAdornment,
-    IconButton,
-    FormControlLabel,
-    Checkbox
-} from '@mui/material';
-import {
-    Visibility,
-    VisibilityOff,
-    Send,
-    Person,
-    LockOpen,
-    Undo
-} from '@mui/icons-material';
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'Login';

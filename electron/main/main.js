@@ -1,11 +1,12 @@
 // electron/main/main.js  (ESM)
 import path from 'node:path';
 import fs from 'node:fs';
-import { app, BrowserWindow, ipcMain, screen } from 'electron';
-import dotenv from 'dotenv';
 import { exec, execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import say from 'say';
+
+import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import dotenv from 'dotenv';
 
 import logger from '../logger/logger.js';
 import { watchSetupConfig } from '../watchers/setupWatcher.js';

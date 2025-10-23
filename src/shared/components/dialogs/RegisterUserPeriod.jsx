@@ -1,53 +1,30 @@
 import { useState, useRef, forwardRef, useEffect } from 'react';
-import { ConfirmDialog } from './ConfirmDialog.jsx';
-import { ShowErrorAPI } from './ShowErrorAPI.jsx';
-import { Loading } from './Loading.jsx';
-import { ShowLocker } from './ShowLocker.jsx';
+
+import {
+  Person, Article, LowPriority, Event, Close, DoneAll, MobileFriendly, Discount, AttachMoney, Email, Today
+} from '@mui/icons-material';
+import {
+  Button, InputLabel, Select, MenuItem, FormControl, Box, Typography, Dialog, DialogContent, IconButton, Slide
+} from '@mui/material';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { useModal } from "@shared/context/ModalContext.jsx";
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/textFieldVirtKeyPad.jsx';
-import { DateTime } from "@shared/components/time/dateTime.jsx";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import { phoneRegex, formatCurrency, emailRegex, formatNumberPhone } from '@shared/utils/utils.js';
 import { Reserve } from '@services/apis/reserve.js';
-import {
-  phoneRegex,
-  formatCurrency,
-  emailRegex,
-  formatNumberPhone
-} from '@shared/utils/utils.js';
-import {
-  Person,
-  Article,
-  LowPriority,
-  Event,
-  Close,
-  DoneAll,
-  MobileFriendly,
-  Discount,
-  AttachMoney,
-  Email,
-  Today,
-} from '@mui/icons-material';
-import {
-  Button,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControl,
-  Box,
-  Typography,
-  Dialog,
-  DialogContent,
-  IconButton,
-  Slide,
-} from '@mui/material';
-dayjs.extend(utc);
 
-//
+
+import { ConfirmDialog } from './ConfirmDialog.jsx';
+import { ShowErrorAPI } from './ShowErrorAPI.jsx';
+import { Loading } from './Loading.jsx';
+import { ShowLocker } from './ShowLocker.jsx';
+
+dayjs.extend(utc);
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -166,7 +143,7 @@ export const RegisterUserPeriod = ({
     setIdNumber('');
     setPhone('');
     setEmail('');
-    setPeriod("Mensual"); // 👈 vuelve siempre a Mensual
+    setPeriod("Mensual"); // vuelve siempre a Mensual
     const today = dayjs();
     setStartDate(today);
     setEndDate(today.endOf("month"));
@@ -523,37 +500,6 @@ export const RegisterUserPeriod = ({
                 disabled
               />
             </Box>
-
-            {/* <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "flex-end",
-                width: "100%",
-                gap: 2 * scale,
-                my: 5 * scale,
-              }}
-            >
-              <Box sx={{ width: "calc(50% - 8px)" }}>
-                <DateTime
-                  label="Fecha de inicio"
-                  value={startDate}
-                  onChange={setStartDate}
-                  showTime={false}
-                  disablePastDates={true}
-                />
-              </Box>
-
-              <Box sx={{ width: "calc(50% - 8px)" }}>
-                <DateTime
-                  label="Fecha de finalización"
-                  value={endDate}
-                  onChange={setEndDate}
-                  showTime={false}
-                  disabled
-                />
-              </Box>
-            </Box> */}
 
             <Box sx={{ display: "flex", alignItems: "center", flex: 1, width: "100%" }}>
               <AttachMoney sx={{ mr: 2 * scale, fontSize: 52 * scale }} />

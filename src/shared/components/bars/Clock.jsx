@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Box } from '@mui/material';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useState, useEffect } from 'react';
 
-const fileName = 'Clock';
+import { Typography, Box } from '@mui/material';
 
 export const Clock = () => {
     const [horaActual, setHoraActual] = useState(new Date());
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
     useEffect(() => {
         const intervalo = setInterval(() => {

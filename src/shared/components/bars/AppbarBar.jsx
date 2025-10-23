@@ -1,36 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import avatarImg from '@assets/Icono.jpg';
-import { Clock } from './Clock.jsx';
-import { useUser } from '@shared/context/UserContext.jsx';
-import { ConfirmDialog } from '@shared/components/dialogs/ConfirmDialog.jsx';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+
+import { Logout, CancelPresentation } from '@mui/icons-material';
 import {
-    Logout,
-    SupervisorAccount,
-    CancelPresentation,
-    Keyboard
-} from '@mui/icons-material';
-import {
-    AppBar,
-    Toolbar,
-    Typography,
-    Avatar,
-    Box,
-    Menu,
-    MenuItem,
-    ListItemIcon
+    AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem, ListItemIcon
 } from '@mui/material';
 
+import avatarImg from '@assets/Icono.jpg';
+import { useUser } from '@shared/context/UserContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+
+import { Clock } from './Clock.jsx';
+
 const USER_STORAGE_KEY = 'userInit';
-const fileName = 'AppbarBar';
 
 export const AppbarBar = () => {
     const { userInit, setUserInit } = useUser();
     const [closeSession, setCloseSession] = useState(false);
     const [showData, setShowData] = useState(false);
-    // const [showAdmin, setShowAdmin] = useState(true);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
     const size = useWindowSizeContext();
@@ -48,9 +36,7 @@ export const AppbarBar = () => {
             setShowData(true);
             const avatarPath = config?.login?.avatarPath ?? '';
             setAvatarSelect(getValidAvatar(avatarPath));
-            // setShowAdmin(false);
         } else {
-            // setShowAdmin(true);
             setShowData(false);
             setAvatarSelect(avatarImg);
             if (userInit?.closeSession) setCloseSession(false);
@@ -96,28 +82,12 @@ export const AppbarBar = () => {
         navigate('/', { replace: true });
     };
 
-    // const acceptConfirmation = () => {
-    //     setConfirmDialogOpen(false);
-    //     // Aquí iría la lógica para cerrar la ventana si es necesario
-    // };
-
-    // const cancelConfirmation = () => {
-    //     setConfirmDialogOpen(false);
-    // };
-
     const openConfirmClose = () => {
         const updatedUser = { ...userInit, closeWindow: true };
         persistUser(updatedUser);
         setAnchorEl(null);
         navigate('/', { replace: true });
     };
-
-    // const openAdmin = () => {
-    //     const updatedUser = { ...userInit, adminWindow: true };
-    //     persistUser(updatedUser);
-    //     setAnchorEl(null);
-    //     navigate('/', { replace: true });
-    // };
 
     return (
         <AppBar
@@ -149,7 +119,7 @@ export const AppbarBar = () => {
                                     {(config?.customer || '')}{' | '}
                                 </Typography>
                                 <Typography variant="h5">
-                                    {(userInit?.authenticatedOpera ? (config?.login?.userOpera || '') : userInit?.authenticatedAdmin ? (config?.login?.userAdmin || '') : '' )}
+                                    {(userInit?.authenticatedOpera ? (config?.login?.userOpera || '') : userInit?.authenticatedAdmin ? (config?.login?.userAdmin || '') : '')}
                                 </Typography>
                             </>
                         )}
@@ -192,16 +162,6 @@ export const AppbarBar = () => {
                         Cerrar sesión
                     </MenuItem>
                 )}
-{/* 
-                {showAdmin && (
-                    <MenuItem onClick={openAdmin}>
-                        <ListItemIcon>
-                            <SupervisorAccount />
-                        </ListItemIcon>
-                        Administración
-                    </MenuItem>
-                )} */}
-
                 <MenuItem onClick={openConfirmClose}>
                     <ListItemIcon>
                         <CancelPresentation />

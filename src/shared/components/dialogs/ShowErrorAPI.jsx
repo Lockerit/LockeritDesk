@@ -1,29 +1,19 @@
 import { useState, forwardRef, useEffect } from 'react';
+
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
+} from '@mui/material';
+import {
+    Close, ErrorOutline, CheckCircleOutline
+} from '@mui/icons-material';
+
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx'; // Hook para tamaño pantalla
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Typography,
-    Button,
-    Box,
-    Slide,
-    IconButton,
-} from '@mui/material';
-import {
-    Close,
-    ErrorOutline,
-    CheckCircleOutline
-} from '@mui/icons-material';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
-
-const fileName = 'ShowErrorAPI';
 
 export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = true }) => {
     const [secondsLeft, setSecondsLeft] = useState(timeout);

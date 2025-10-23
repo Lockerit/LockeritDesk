@@ -2,7 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import dotenv from 'dotenv';
+
 import logger from '../logger/logger.js';
 
 // __filename/__dirname en ESM

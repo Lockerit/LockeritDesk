@@ -1,19 +1,12 @@
 import { forwardRef } from 'react';
+
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { MobileFriendly } from '@mui/icons-material';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Typography,
-    Button,
-    Box,
-    Slide
+    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide
 } from '@mui/material';
 
-const fileName = 'ConfirmDialog';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
