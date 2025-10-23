@@ -22,7 +22,7 @@ export function getDateRange(referenceDate, frequency, dayOfWeek = 1, dayOfMonth
 
         // Tomar el día de la semana *anterior* al hoy
         // (ej: si hoy es martes y pido martes → me da el martes pasado)
-        let startDate = now.day(dow).startOf("day").subtract(7, "day");
+        const startDate = now.day(dow).startOf("day").subtract(7, "day");
 
         const endDate = startDate.add(6, "day").endOf("day");
 

@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useEffect } from "react";
 
 import { getDateRange } from "@shared/utils/getDateRange.js";
 
@@ -56,7 +56,7 @@ function setExecutionDates(frequency, hour, minute, dayOfWeek, dayOfMonth) {
     return nextTarget;
 }
 
-function shouldRunNow(frequency, hour, minute, dayOfWeek, dayOfMonth) {
+function shouldRunNow(frequency) {
     const lastExec = getLastExecution(frequency);
     const nextTarget = getNextTarget(frequency);
     const now = dayjs();

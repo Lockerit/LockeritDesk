@@ -1,5 +1,5 @@
-import { getEnv } from '@shared/hooks/envStore.js';
 import { getAuth } from '@shared/hooks/authStore.js';
+import { getEnv } from '@shared/hooks/envStore.js';
 
 let socket = null;
 let isConnected = false;

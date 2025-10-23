@@ -1,20 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-
-import {
-    Box, Button, Typography, Paper, InputAdornment, IconButton, FormControlLabel, Checkbox
-} from '@mui/material';
 import {
     Visibility, VisibilityOff, Send, Person, LockOpen, Undo
 } from '@mui/icons-material';
+import {
+    Box, Button, Typography, Paper, InputAdornment, IconButton, FormControlLabel, Checkbox
+} from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-import { useUser } from '@shared/context/UserContext.jsx';
-import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+
 import logo from '@assets/Logo.png';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
+import { useUser } from '@shared/context/UserContext.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'Login';

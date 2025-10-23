@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-
 import { Logout, CancelPresentation } from '@mui/icons-material';
 import {
     AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem, ListItemIcon
 } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 import avatarImg from '@assets/Icono.jpg';
 import { useUser } from '@shared/context/UserContext.jsx';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
 
 import { Clock } from './Clock.jsx';
 

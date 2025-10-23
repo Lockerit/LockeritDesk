@@ -1,6 +1,6 @@
 // electron/logger/logger.js  (ESM)
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { app } from 'electron';

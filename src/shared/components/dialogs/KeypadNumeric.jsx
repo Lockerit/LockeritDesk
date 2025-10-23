@@ -1,28 +1,28 @@
-import { useState, useRef, forwardRef, useEffect } from 'react';
-
 import {
   Backspace, Close, DoneAll, MobileFriendly, Refresh, ArrowForwardIos, Password
 } from '@mui/icons-material';
 import {
   Grid, Button, TextField, Box, Typography, Dialog, DialogContent, IconButton, Slide
 } from '@mui/material';
+import { useState, useRef, forwardRef, useEffect } from 'react';
 
-import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
-import { OpenSessionLocker } from '@services/apis/openSessionLocker.js';
-import { OpenReserveLocker } from '@services/apis/openReserveLocker.js';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { speak, stopSpeaking } from '@shared/utils/speak.js';
-import { cancelObservable } from '@shared/utils/cancelObservable.js';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
-import { useModal } from "@shared/context/ModalContext.jsx";
-import { formatTime, phoneRegex, keys, formatNumberPhone, formatCurrency } from '@shared/utils/utils.js';
+
 import { paymentService } from '@services/apis/assignLocker.js';
+import { OpenReserveLocker } from '@services/apis/openReserveLocker.js';
+import { OpenSessionLocker } from '@services/apis/openSessionLocker.js';
 import { closeWebSocket } from '@services/realtime/websocket.js';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+import { useModal } from "@shared/context/ModalContext.jsx";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { cancelObservable } from '@shared/utils/cancelObservable.js';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { speak, stopSpeaking } from '@shared/utils/speak.js';
+import { formatTime, phoneRegex, keys, formatNumberPhone, formatCurrency } from '@shared/utils/utils.js';
 
-import { Loading } from './Loading.jsx';
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { InsertMoney } from './InsertMoney.jsx';
+import { Loading } from './Loading.jsx';
 import { ShowErrorAPI } from './ShowErrorAPI.jsx';
 import { ShowLocker } from './ShowLocker.jsx';
 

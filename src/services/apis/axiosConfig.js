@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
 import { getAuth, subscribeAuth } from '@shared/hooks/authStore.js';
+import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
 
 const fileName = 'axiosConfig';
 

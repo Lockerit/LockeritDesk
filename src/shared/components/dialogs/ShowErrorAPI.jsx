@@ -1,11 +1,11 @@
-import { useState, forwardRef, useEffect } from 'react';
-
-import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
-} from '@mui/material';
 import {
     Close, ErrorOutline, CheckCircleOutline
 } from '@mui/icons-material';
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
+} from '@mui/material';
+import { useState, forwardRef, useEffect } from 'react';
+
 
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx'; // Hook para tamaño pantalla
 import { scaledDimension } from '@shared/utils/scaledDimension.js';

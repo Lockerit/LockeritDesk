@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 
-import { Login } from '@features/login/Login.jsx';
-import { Ppal } from '@features/ppal/Ppal.jsx';
 import { TabAdmin } from '@features/admin/TabAdmin.jsx';
 import { ErrorPage } from '@features/feedback/ErrorPage.jsx';
+import { Login } from '@features/login/Login.jsx';
+import { Ppal } from '@features/ppal/Ppal.jsx';
 
 export const AppRoutes = () => {
   return (

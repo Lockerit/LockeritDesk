@@ -1,5 +1,3 @@
-import { useState, useRef, forwardRef, useEffect } from 'react';
-
 import {
   Person, Article, LowPriority, Event, Close, DoneAll, MobileFriendly, Discount, AttachMoney, Email, Today
 } from '@mui/icons-material';
@@ -8,20 +6,21 @@ import {
 } from '@mui/material';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useState, useRef, forwardRef, useEffect } from 'react';
 
-import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
-import { useModal } from "@shared/context/ModalContext.jsx";
-import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
-import { phoneRegex, formatCurrency, emailRegex, formatNumberPhone } from '@shared/utils/utils.js';
 import { Reserve } from '@services/apis/reserve.js';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
+import { useModal } from "@shared/context/ModalContext.jsx";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { phoneRegex, formatCurrency, emailRegex, formatNumberPhone } from '@shared/utils/utils.js';
 
 
 import { ConfirmDialog } from './ConfirmDialog.jsx';
-import { ShowErrorAPI } from './ShowErrorAPI.jsx';
 import { Loading } from './Loading.jsx';
+import { ShowErrorAPI } from './ShowErrorAPI.jsx';
 import { ShowLocker } from './ShowLocker.jsx';
 
 dayjs.extend(utc);

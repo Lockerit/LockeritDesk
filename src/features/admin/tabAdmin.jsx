@@ -1,9 +1,10 @@
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Tab } from '@mui/material';
 import { useState } from 'react';
 
-import { Box, Tab } from '@mui/material';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
 
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+
 import { AdminLockers } from './AdminLockers.jsx';
 import { ReportLockers } from './ReportLockers.jsx';
 

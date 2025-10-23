@@ -1,9 +1,9 @@
-import { API_ROUTES } from '@shared/constants/pathService.js';
-import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
-import { cancelObservable } from '@shared/utils/cancelObservable.js';
 import {
     connectWebSocket, closeWebSocket, isWebSocketConnected, onMessage, waitWebSocketReady
 } from '@services/realtime/websocket.js';
+import { API_ROUTES } from '@shared/constants/pathService.js';
+import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
+import { cancelObservable } from '@shared/utils/cancelObservable.js';
 
 import { instanceAxios } from './axiosConfig.js';
 

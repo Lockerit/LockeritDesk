@@ -1,18 +1,19 @@
 // electron/main/main.js  (ESM)
-import path from 'node:path';
-import fs from 'node:fs';
 import { exec, execFile } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+
+import dotenv from 'dotenv';
+import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import say from 'say';
 
-import { app, BrowserWindow, ipcMain, screen } from 'electron';
-import dotenv from 'dotenv';
-
 import logger from '../logger/logger.js';
-import { watchSetupConfig } from '../watchers/setupWatcher.js';
 import { watchAuthKey } from '../watchers/authWatcher.js';
 import { watchEnvFile } from '../watchers/envWatcher.js';
 import { watchLoggerConfig } from '../watchers/loggerWatcher.js';
+import { watchSetupConfig } from '../watchers/setupWatcher.js';
 
 // __filename/__dirname en ESM
 const __filename = fileURLToPath(import.meta.url);

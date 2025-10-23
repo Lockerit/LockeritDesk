@@ -1,11 +1,10 @@
-import { forwardRef } from 'react';
-
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { MobileFriendly } from '@mui/icons-material';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide
 } from '@mui/material';
+import { forwardRef } from 'react';
 
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 
 const Transition = forwardRef(function Transition(props, ref) {

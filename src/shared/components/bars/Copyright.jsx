@@ -1,6 +1,6 @@
+import { Typography, Container, Box } from '@mui/material';
 import { useState, useEffect } from 'react';
 
-import { Typography, Container, Box } from '@mui/material';
 
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 

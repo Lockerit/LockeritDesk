@@ -1,16 +1,18 @@
+import { Sync } from '@mui/icons-material';
+import { Box, Button, Checkbox, Chip, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Stack, Typography, Menu } from '@mui/material';
 import { useEffect, useState } from 'react';
+
 import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
 import { OpenByCodeLocker } from '@services/apis/openByCodeLocker.js';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { SetStatusLocker } from '@services/apis/setStatusLocker.js';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { useModal } from "@shared/context/ModalContext.jsx";
-import { Sync } from '@mui/icons-material';
-import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
-import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
-import { Box, Button, Checkbox, Chip, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Stack, Typography, Menu } from '@mui/material';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { useModal } from "@shared/context/ModalContext.jsx";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+
 
 const fileName = 'AdminLockers';
 

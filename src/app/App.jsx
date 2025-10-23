@@ -1,20 +1,20 @@
+import { Box, Container } from '@mui/material';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { useState, useEffect } from 'react';
 import { HashRouter } from 'react-router-dom';
 
-import { Box, Container } from '@mui/material';
-import utc from "dayjs/plugin/utc";
-import dayjs from "dayjs";
 
-import { AppbarBar } from '@shared/components/bars/AppbarBar.jsx';
-import { Copyright } from '@shared/components/bars/Copyright.jsx';
-import { useUser } from '@shared/context/UserContext.jsx';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { useSchedulerReport } from '@shared/hooks/useScheduleReport.js';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { AppRoutes } from '@features/router/AppRouter.jsx';
 import { GetReportLockers } from '@services/apis/report.js';
-import { setVoiceOptions, getVoices, preloadVoice } from '@shared/utils/speak.js';
+import { AppbarBar } from '@shared/components/bars/AppbarBar.jsx';
+import { Copyright } from '@shared/components/bars/Copyright.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { useUser } from '@shared/context/UserContext.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { useSchedulerReport } from '@shared/hooks/useScheduleReport.js';
+import { setVoiceOptions, getVoices, preloadVoice } from '@shared/utils/speak.js';
 
 dayjs.extend(utc);
 
@@ -77,7 +77,7 @@ const useResetLocalStorageOnConfigChange = (config) => {
 export const App = () => {
 
     // Comentario cambio para subir a GitHub
-    const { userInit, setUserInit } = useUser();
+    const { userInit, setUserInit: _setUserInit } = useUser();
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
     const config = useElectronConfig();
@@ -129,7 +129,7 @@ export const App = () => {
 
     useResetLocalStorageOnConfigChange(config);
 
-    const executeReportTask = async (startDate, endDate, frequency) => {
+    const executeReportTask = async (startDate, endDate, _frequency) => {
 
         const timezoneMode = config.report?.timezoneMode || "local";
 

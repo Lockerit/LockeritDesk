@@ -12,7 +12,7 @@ const log = (level, message) => {
 
 export function createScaledTheme(factor = 1) {
   log('debug', `factor theme:  ${factor}`);
-  let theme = createTheme({
+  const theme = createTheme({
     palette: {
       mode: 'light',
       background: {

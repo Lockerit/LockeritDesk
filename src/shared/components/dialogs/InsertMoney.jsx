@@ -1,15 +1,15 @@
-import { useState, forwardRef, useEffect } from 'react';
-
-import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
-} from '@mui/material';
 import {
     CurrencyExchange, Close
 } from '@mui/icons-material';
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
+} from '@mui/material';
+import { useState, forwardRef, useEffect } from 'react';
 
+
+import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
-import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
 import { formatTime } from '@shared/utils/utils.js';
 
 const Transition = forwardRef(function Transition(props, ref) {

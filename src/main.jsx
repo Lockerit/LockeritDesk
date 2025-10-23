@@ -1,18 +1,18 @@
+import { Alert, Stack } from '@mui/material';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
 import { StrictMode, useMemo, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider } from '@mui/material/styles';
-import { Alert, Stack } from '@mui/material';
 import './fonts.css';
 
 import { App } from '@app/App.jsx';
-import { createScaledTheme } from '@shared/theme/theme.js';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { KeyboardProvider } from '@shared/context/KeyboardContext.jsx';
+import { ModalProvider } from '@shared/context/ModalContext.jsx';
 import { UserProvider } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext, WindowSizeProvider } from '@shared/context/WindowSizeContext.jsx';
-import { ModalProvider } from '@shared/context/ModalContext.jsx';
-import { KeyboardProvider } from '@shared/context/KeyboardContext.jsx';
-import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { createScaledTheme } from '@shared/theme/theme.js';
 
 const fileName = 'main-renderer';
 

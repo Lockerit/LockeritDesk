@@ -1,11 +1,11 @@
 // eslint.config.js (flat, ESM)
 import js from '@eslint/js';
-import globals from 'globals';
+import importPlugin from 'eslint-plugin-import';
 import reactPlugin from 'eslint-plugin-react';
 import hooksPlugin from 'eslint-plugin-react-hooks';
 import refreshPlugin from 'eslint-plugin-react-refresh';
 import unusedImports from 'eslint-plugin-unused-imports';
-import importPlugin from 'eslint-plugin-import';
+import globals from 'globals';
 
 export default [
   { ignores: ['dist/**','release/**','out/**','node_modules/**','electron/electron_cache/**','logs/**'] },

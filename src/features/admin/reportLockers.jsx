@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
 
 import { Summarize } from '@mui/icons-material';
 import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useState, useEffect } from "react";
 
+import { GetReportLockers } from "@services/apis/report.js";
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { DateTime } from "@shared/components/time/DateTime.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { GetReportLockers } from "@services/apis/report.js";
-import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
-import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 
 import { TableReportLockers } from "./TableReportLockers.jsx";
@@ -42,7 +42,7 @@ export const ReportLockers = () => {
             setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
         }
 
-        let timezoneMode = config?.report?.timezoneMode || "local";
+        const timezoneMode = config?.report?.timezoneMode || "local";
 
         formatter = timezoneMode === "utc"
             ? (d) => dayjs(d).utc()

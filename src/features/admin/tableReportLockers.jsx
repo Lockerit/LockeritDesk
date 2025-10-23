@@ -1,22 +1,22 @@
-import { useState, useMemo, useEffect } from "react";
 
 
-import utc from "dayjs/plugin/utc";
-import dayjs from "dayjs";
-import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, Box, Button, IconButton, InputAdornment, TableSortLabel
-} from "@mui/material";
 import {
     ManageSearch, ForwardToInbox
 } from '@mui/icons-material';
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, Box, Button, IconButton, InputAdornment, TableSortLabel
+} from "@mui/material";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { useState, useMemo, useEffect } from "react";
 
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { formatCurrency } from "@shared/utils/utils.js";
 import { GetReportLockers } from "@services/apis/report.js";
-import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
-import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { TextFieldVirtKeyPad } from "@shared/components/inputs/TextFieldVirtKeyPad.jsx";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { formatCurrency } from "@shared/utils/utils.js";
 
 dayjs.extend(utc);
 
@@ -46,7 +46,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
             setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
         }
 
-        let timezoneMode = config?.report?.timezoneMode || "local";
+        const timezoneMode = config?.report?.timezoneMode || "local";
 
         formatter = timezoneMode === "utc"
             ? (d) => dayjs(d).utc()

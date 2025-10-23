@@ -1,9 +1,9 @@
-import { useState, forwardRef, useEffect } from 'react';
 
 import { Close } from '@mui/icons-material';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, Paper, IconButton
 } from '@mui/material';
+import { useState, forwardRef, useEffect } from 'react';
 
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
