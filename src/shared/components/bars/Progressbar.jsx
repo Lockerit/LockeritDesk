@@ -10,7 +10,7 @@ export const Progressbar = ({ msg, amountPay }) => {
         <Box sx={{ width: '100%', textAlign: 'center', mt: 2 * scale }}>
             <Box textAlign="center" sx={{ mb: 2 * scale }}>
                 <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
-                    Valor ingresado:{' '}
+                    {msg}{' '}
                 </Typography>
                 <Typography variant="h4" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
                     {amountPay}

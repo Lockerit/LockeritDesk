@@ -8,7 +8,7 @@ import { cancelObservable } from '@shared/utils/cancelObservable.js';
 import { instanceAxios } from './axiosConfig.js';
 
 const fileName = 'assignLocker';
-let abortCancel = null; // Controla la cancelación de la petición
+let _abortCancel = null; // Controla la cancelación de la petición
 
 const log = (level, message) => {
     if (typeof window !== 'undefined' && window.electronAPI?.log) {
@@ -25,19 +25,19 @@ export const assignLocker = async (payload, timeoutMs) => {
     const maxRetries = Number(env?.apiBaseMaxRetries ?? 5);            // 5 intentos por defecto
     const retryDelay = Number(env?.apiBaseDelayRetries ?? 1) * 1000;   // 1s por defecto
 
-    abortCancel = false;
+    _abortCancel = false;
 
     log('debug', 'peticion assign 0', isWebSocketConnected());
     log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
 
     let cancelled = false;
-    let abortController = new AbortController();
+    let _abortController = new AbortController();
     cancelObservable.setCancel(false);
 
     const cancelListener = (e) => {
         if (e.detail) {
             cancelled = true;
-            abortController.abort(); // Cancela la petición HTTP activa
+            _abortController.abort(); // Cancela la petición HTTP activa
         }
     };
     cancelObservable.onCancel(cancelListener);
@@ -49,7 +49,7 @@ export const assignLocker = async (payload, timeoutMs) => {
             if (cancelled) {
                 log('info', `Conexión WebSocket cerrada, abortando intento ${attempt} - cancelled`);
                 cancelObservable.setCancel(false);
-                abortCancel = true;
+                _abortCancel = true;
                 return {
                     success: false,
                     data: '',
@@ -58,7 +58,7 @@ export const assignLocker = async (payload, timeoutMs) => {
             }
 
             try {
-                abortController = new AbortController(); // Nuevo controller por intento
+                _abortController = new AbortController(); // Nuevo controller por intento
                 log('info', `Intento ${attempt}: HOST -> ${instanceAxios.getUri()}`);
                 log('info', `Intento ${attempt}: URL -> ${API_ROUTES.ASSIGN_LOCKER}`);
                 log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
@@ -66,7 +66,7 @@ export const assignLocker = async (payload, timeoutMs) => {
                 const response = await instanceAxios.post(
                     API_ROUTES.ASSIGN_LOCKER,
                     payload,
-                    { timeout: timeoutMs, signal: abortController.signal }
+                    { timeout: timeoutMs, signal: _abortController.signal }
                 );
 
                 log('info', `Response. Status: ${response.status}`);
@@ -82,7 +82,7 @@ export const assignLocker = async (payload, timeoutMs) => {
                 if (instanceAxios.isCancel?.(error) || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
                     log('warn', `Petición cancelada por el usuario`);
                     log('info', `Conexión WebSocket cerrada, abortando intento ${attempt} - catch`);
-                    abortCancel = true;
+                    _abortCancel = true;
                     return {
                         success: false,
                         data: '',

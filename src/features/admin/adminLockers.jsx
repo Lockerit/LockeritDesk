@@ -13,7 +13,6 @@ import { useModal } from "@shared/context/ModalContext.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 
-
 const fileName = 'AdminLockers';
 
 // Logging centralizado
@@ -37,11 +36,10 @@ export const AdminLockers = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-    const [timeoutKeypad, setTimeoutKeypad] = useState();
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
-    const [dataStatus, setDataStatus] = useState({
+    const [dataStatus] = useState({
         general: [
             { status: "Libre", color: "success.main" },
             { status: "Ocupado", color: "error.main" },
@@ -86,8 +84,8 @@ export const AdminLockers = () => {
                 setShowErrorAPIOpen(true);
             }
 
-        } catch (err) {
-            setMessageErrorAPI(err.message || 'Error inesperado al obtener casilleros');
+        } catch (_err) {
+            setMessageErrorAPI(_err.message || 'Error inesperado al obtener casilleros');
             setShowErrorAPIOpen(true);
         } finally {
             setLoading(false);
@@ -154,7 +152,8 @@ export const AdminLockers = () => {
                 } else {
                     failedLockers.push(locker.lockerCode);
                 }
-            } catch (err) {
+            } catch (_err) {
+                log('error', `Error al ${action} casillero ${locker.lockerCode}: ${_err.message || _err}`);
                 failedLockers.push(locker.lockerCode);
             }
         }
@@ -236,7 +235,8 @@ export const AdminLockers = () => {
                     } else {
                         failedLockers.push(locker.lockerCode);
                     }
-                } catch (err) {
+                } catch (_err) {
+                    log('error', `Error al cambiar estado del casillero ${locker.lockerCode}: ${_err.message || _err}`);
                     failedLockers.push(locker.lockerCode);
                 }
             } else {
@@ -595,7 +595,6 @@ export const AdminLockers = () => {
             <RegisterUserPeriod
                 open={registerUserPeriodOpen}
                 onClose={closeRegisterUserPeriod}
-                timeout={timeoutKeypad}
             />
         </>
     );

@@ -17,7 +17,6 @@ const USER_STORAGE_KEY = 'userInit';
 
 export const AppbarBar = () => {
     const { userInit, setUserInit } = useUser();
-    const [closeSession, setCloseSession] = useState(false);
     const [showData, setShowData] = useState(false);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -39,7 +38,6 @@ export const AppbarBar = () => {
         } else {
             setShowData(false);
             setAvatarSelect(avatarImg);
-            if (userInit?.closeSession) setCloseSession(false);
         }
     }, [config, userInit]);
 
@@ -74,7 +72,6 @@ export const AppbarBar = () => {
     };
 
     const handleLogout = () => {
-        setCloseSession(true);
         handleMenuClose();
 
         const updatedUser = { ...userInit, closeSession: true };

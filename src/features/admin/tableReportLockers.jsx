@@ -1,5 +1,3 @@
-
-
 import {
     ManageSearch, ForwardToInbox
 } from '@mui/icons-material';
@@ -21,12 +19,11 @@ import { formatCurrency } from "@shared/utils/utils.js";
 dayjs.extend(utc);
 
 export const TableReportLockers = ({ data, startDate, endDate }) => {
-
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
     const [search, setSearch] = useState("");
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
@@ -34,50 +31,24 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
     const config = useElectronConfig();
     const [isErrorMsj, setIsErrorMsj] = useState(true);
     const [disabledButton, setDisabledButton] = useState(true);
-    let formatter = (d) => dayjs(d); // por defecto local
-    const [orderBy, setOrderBy] = useState("ID");   // campo por defecto
-    const [order, setOrder] = useState("asc");      // asc | desc
+    const [orderBy, setOrderBy] = useState("ID");
+    const [order, setOrder] = useState("asc");
 
-
+    // timeout desde config
     useEffect(() => {
         if (!config) return;
+        const t = config?.paramsHtml?.modalTimeouts?.timeoutShowMessage;
+        if (typeof t === 'number') setTimeoutShowMessage(t);
+    }, [config]);
 
-        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
-        }
+    // modo de zona horaria + formateador
+    const timezoneMode = config?.report?.timezoneMode || "local";
+    const formatter = useMemo(
+        () => (timezoneMode === "utc" ? (d) => dayjs(d).utc() : (d) => dayjs(d)),
+        [timezoneMode]
+    );
 
-        const timezoneMode = config?.report?.timezoneMode || "local";
-
-        formatter = timezoneMode === "utc"
-            ? (d) => dayjs(d).utc()
-            : (d) => dayjs(d);
-
-    }, [config])
-
-    useEffect(() => {
-        if (filteredData.length === 0) {
-            setDisabledButton(true);
-            return;
-        }
-
-        setDisabledButton(false);
-    }, [data]);
-
-    const handleChangePage = (event, newPage) => setPage(newPage);
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
-    // 🔹 Manejar cambio de orden
-    const handleSort = (field) => {
-        const isAsc = orderBy === field && order === "asc";
-        setOrder(isAsc ? "desc" : "asc");
-        setOrderBy(field);
-    };
-
-    // 🔎 Filtrar datos
+    // Habilita/Deshabilita el botón según haya resultados filtrados
     const filteredData = useMemo(() => {
         return data.filter((row) => {
             const query = search.toLowerCase();
@@ -90,7 +61,23 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         });
     }, [data, search]);
 
-    // 🔹 Ordenar datos filtrados
+    useEffect(() => {
+        setDisabledButton(filteredData.length === 0);
+    }, [filteredData.length]);
+
+    const handleChangePage = (_event, newPage) => setPage(newPage);
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const handleSort = (field) => {
+        const isAsc = orderBy === field && order === "asc";
+        setOrder(isAsc ? "desc" : "asc");
+        setOrderBy(field);
+    };
+
     const sortedData = useMemo(() => {
         return [...filteredData].sort((a, b) => {
             let valA = a[orderBy];
@@ -105,23 +92,21 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         });
     }, [filteredData, orderBy, order]);
 
-    // 🔹 Datos de la página actual (ya ordenados)
     const currentPageData = useMemo(() => {
         return sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }, [sortedData, page, rowsPerPage]);
 
-    // Total de todos los datos filtrados
-    const totalAmount = useMemo(() => {
-        return data.reduce((acc, row) => acc + (Number(row.AmountPaid) || 0), 0);
-    }, [data]);
+    const totalAmount = useMemo(
+        () => data.reduce((acc, row) => acc + (Number(row.AmountPaid) || 0), 0),
+        [data]
+    );
 
-    // Total de la página actual
-    const totalAmountCurrentPage = useMemo(() => {
-        return currentPageData.reduce((acc, row) => acc + (Number(row.AmountPaid) || 0), 0);
-    }, [currentPageData]);
+    const totalAmountCurrentPage = useMemo(
+        () => currentPageData.reduce((acc, row) => acc + (Number(row.AmountPaid) || 0), 0),
+        [currentPageData]
+    );
 
     const fetchDataReportLocker = async (showMsg = false) => {
-
         setIsErrorMsj(true);
         setLoading(true);
 
@@ -132,8 +117,8 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                 .format("YYYY-MM-DD HH:mm:ss");
 
         const payload = {
-            startDate: formatUTC(startDate),        // segundos en 00
-            endDate: formatUTC(endDate, true),      // segundos en 59
+            startDate: formatUTC(startDate),
+            endDate: formatUTC(endDate, true),
             sendEmail: true,
         };
 
@@ -141,11 +126,8 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
             const result = await GetReportLockers(payload);
 
             if (result?.success) {
-
                 if (showMsg) {
-
                     let msg = '';
-
                     if (!result?.data) {
                         msg = 'No se encontraron resultados para enviar';
                         setIsErrorMsj(true);
@@ -153,7 +135,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                         msg = 'Reporte enviado con éxito';
                         setIsErrorMsj(false);
                     }
-                    setMessageErrorAPI(msg);;
+                    setMessageErrorAPI(msg);
                     setShowErrorAPIOpen(true);
                 } else {
                     setShowErrorAPIOpen(false);
@@ -177,10 +159,10 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
     return (
         <>
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-                {/* 🔹 Barra búsqueda */}
+                {/* 🔹 Búsqueda + enviar */}
                 <Box
                     sx={{
-                        flex: "0 0 auto",   // alto dinámico (no fijo en %)
+                        flex: "0 0 auto",
                         display: "flex",
                         gap: 3 * scale,
                         alignItems: "flex-end",
@@ -200,9 +182,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                     <InputAdornment position="end">
                                         <IconButton
                                             sx={{
-                                                '& .MuiSvgIcon-root': {
-                                                    fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
-                                                },
+                                                '& .MuiSvgIcon-root': { fontSize: `${32 * scale}px` },
                                             }}
                                         >
                                             <ManageSearch />
@@ -230,15 +210,14 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                     </Box>
                 </Box>
 
-
-                {/* 🔹 Contenedor tabla */}
+                {/* 🔹 Tabla */}
                 <Paper
                     sx={{
                         width: "100%",
-                        flex: 1,             // ocupa todo lo que queda
+                        flex: 1,
                         display: "flex",
                         flexDirection: "column",
-                        minHeight: 0,        // 🔑 deja crecer hasta el padre
+                        minHeight: 0,
                     }}
                 >
                     <TableContainer sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
@@ -346,6 +325,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                     </TableCell>
                                 </TableRow>
                             </TableHead>
+
                             <TableBody>
                                 {currentPageData.map((row) => (
                                     <TableRow key={row.ID}>
@@ -371,7 +351,6 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
 
                     {/* Totales + paginación */}
                     <Box display="flex" justifyContent="space-between" alignItems="center" px={5 * scale}>
-                        {/* Totales alineados a la izquierda */}
                         <Box fontWeight="bold" sx={{ fontSize: `${20 * scale}px` }}>
                             Total Reporte: {formatCurrency(totalAmount)}
                         </Box>
@@ -379,7 +358,6 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                             Total Página: {formatCurrency(totalAmountCurrentPage)}
                         </Box>
 
-                        {/* Paginación alineada a la derecha */}
                         <TablePagination
                             rowsPerPageOptions={[5, 10, 20, 50, 100, 200, 500]}
                             component="div"
@@ -395,7 +373,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                 </Paper>
             </Box>
 
-            {loading && <Loading message={'Enviando...'} />}
+            {loading && <Loading message="Enviando..." />}
 
             {showErrorAPIOpen && (
                 <ShowErrorAPI
@@ -412,4 +390,3 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         </>
     );
 };
-

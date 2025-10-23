@@ -53,13 +53,14 @@ const connectWebSocket = () => {
                 const data = JSON.parse(event.data);
                 messageListeners.forEach(cb => cb(data));
                 log('debug', `Mensaje recibido: ${event.data}`);
-            } catch (err) {
+            } catch (_err) {
+                log('error', `Error al procesar mensaje: ${_err.message || _err}`);
                 log('warn', `Mensaje no válido: ${event.data}`);
             }
         };
 
-        socket.onerror = (error) => {
-            log('error', `Error en WebSocket: ${error.message || error}`);
+        socket.onerror = (_error) => {
+            log('error', `Error en WebSocket: ${_error.message || _error}`);
             closeWebSocket();
             return reject(new Error('[WebSocket] Error desconocido'));
         };

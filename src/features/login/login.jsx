@@ -4,7 +4,7 @@ import {
 import {
     Box, Button, Typography, Paper, InputAdornment, IconButton, FormControlLabel, Checkbox
 } from '@mui/material';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 
@@ -42,7 +42,6 @@ export const Login = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-    const [buttonName, setButtonName] = useState('Iniciar Sesión');
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
 
@@ -50,6 +49,26 @@ export const Login = () => {
     const config = useElectronConfig();
     const location = useLocation();
     const redirected = useRef(false);
+
+    const buttonName = useMemo(() => {
+        if ((!userInit?.authenticatedOpera && !userInit?.authenticatedAdmin) &&
+            !userInit?.closeSession && !userInit?.closeWindow) {
+            return 'Iniciar Sesión';
+        }
+        if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
+            return 'Cerrar Sesión';
+        }
+        if (userInit?.closeWindow) {
+            return 'Salir';
+        }
+        return 'Iniciar Sesión';
+    }, [
+        userInit?.authenticatedOpera,
+        userInit?.authenticatedAdmin,
+        userInit?.closeSession,
+        userInit?.closeWindow,
+    ]);
+
 
     // Solo inicializar usuario
     useEffect(() => {
@@ -64,7 +83,6 @@ export const Login = () => {
             setFullScreen(true);
         }
 
-        nameButton();
     }, [userInit]);
 
     // Solo redirección
@@ -268,17 +286,6 @@ export const Login = () => {
         setSnackbarSeverity(severity);
         setSnackbarOpen(true);
     };
-
-    const nameButton = () => {
-
-        if ((!userInit?.authenticatedOpera || !userInit?.authenticatedAdmin) && !userInit?.closeSession && !userInit?.closeWindow) {
-            setButtonName('Iniciar Sesión');
-        } else if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
-            setButtonName('Cerrar Sesión');
-        } else if (userInit?.closeWindow) {
-            setButtonName('Salir');
-        }
-    }
 
     return (
         <>

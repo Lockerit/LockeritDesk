@@ -4,7 +4,7 @@ import {
 import {
     Typography, Box, Grid, Button
 } from '@mui/material';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 
@@ -54,6 +54,13 @@ export const Ppal = () => {
 
     const intervalRef = useRef(null);
 
+    const speakWelcome = useCallback(() => {
+        stopSpeaking();
+        let msg = config?.voice?.message?.welcome || "";
+        msg = msg.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
+        msg = msg.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
+        speak(msg || "");
+    }, [config]);
 
     useEffect(() => {
         const stopSpeech = () => {
@@ -70,7 +77,7 @@ export const Ppal = () => {
         return () => {
             stopSpeech(); // limpiar si desmonta el componente
         };
-    }, []);
+    }, [config?.voice?.enabled]);
 
     useEffect(() => {
         if (!config || !config?.voice?.enabled) return;
@@ -107,7 +114,7 @@ export const Ppal = () => {
             }
             stopSpeaking();
         };
-    }, [keypadOpen, config?.voice?.enabled]);
+    }, [keypadOpen, config, config?.voice?.enabled, speakWelcome]);
 
     useEffect(() => {
         fetchDataStatusLocker();
@@ -169,20 +176,13 @@ export const Ppal = () => {
                 setShowErrorAPIOpenPpal(true);
             }
 
-        } catch (err) {
+        } catch (_err) {
+            log('error', `Error al obtener estado de casilleros: ${_err.message || _err}`);
             setMessageErrorAPI('No se puedo obtener estado de casilleros');
             setShowErrorAPIOpenPpal(true);
         } finally {
             setLoading(false);
         }
-    };
-
-    const speakWelcome = () => {
-        stopSpeaking();
-        let msg = config?.voice?.message?.welcome || "";
-        msg = msg.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
-        msg = msg.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
-        speak(msg || "");
     };
 
     const ActionButton = ({ text, icon, color, onClick, disabled }) => (

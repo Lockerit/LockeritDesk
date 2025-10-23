@@ -347,9 +347,7 @@ export const KeypadNumeric = ({
           result = await OpenReserveLocker(payload);
           message = config?.voice?.message?.openReserveLocker || "";
         }
-
-        console.log("result: ", result)
-
+        
         if (result?.success) {
 
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
