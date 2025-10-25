@@ -1,4 +1,11 @@
-node_modules
-dist
-logs
-release
+/node_modules/
+/dist/
+/release/
+/out/
+electron/electron_cache/**
+!electron/electron_cache/.gitkeep
+
+logs/**
+!logs/.gitkeep
+
+*.log

@@ -1,34 +1,23 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useUser } from '../context/userContext.jsx';
-import SnackBarAlert from '../bar/snackAlert.jsx';
-import logo from '../../assets/Logo.png';
-import { useElectronConfig } from '../hooks/useConfig.js';
-import { useWindowSizeContext } from '../context/windowSizeContext';
-import { scaledDimension } from '../utils/scaledDimension.js';
-import TextFieldVirtKeyPad from '../utils/textFieldVirtKeyPad.jsx';
 import {
-    Box,
-    Button,
-    TextField,
-    Typography,
-    Paper,
-    InputAdornment,
-    IconButton,
-    FormControlLabel,
-    Checkbox
-} from '@mui/material';
-import {
-    Visibility,
-    VisibilityOff,
-    Send,
-    Person,
-    LockOpen,
-    Undo
+    Visibility, VisibilityOff, Send, Person, LockOpen, Undo
 } from '@mui/icons-material';
+import {
+    Box, Button, Typography, Paper, InputAdornment, IconButton, FormControlLabel, Checkbox
+} from '@mui/material';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+
+
+import logo from '@assets/Logo.png';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
+import { useUser } from '@shared/context/UserContext.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
 
 const USER_STORAGE_KEY = 'userInit';
-const fileName = 'login';
+const fileName = 'Login';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -37,7 +26,7 @@ const log = (level, message) => {
     }
 };
 
-export default function Login() {
+export const Login = () => {
     const { userInit, setUserInit } = useUser();
     const [userName, setUserName] = useState('');
     const [pass, setPass] = useState('');
@@ -49,20 +38,37 @@ export default function Login() {
         username: false,
         password: false,
     });
-    const [msgErrorLogin, setMsgErrorLogin] = useState('Usuario o contraseña incorrectos');
+    const [msgErrorLogin] = useState('Usuario o contraseña incorrectos');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-    const [buttonName, setButtonName] = useState('Iniciar Sesión');
     const size = useWindowSizeContext();
     const scale = size.factor || 1; // de tu hook useElectronScreenData()
-    const keyboardContainerRef = useRef();
-    const [showKeyboard] = useState(false);
 
     const navigate = useNavigate();
     const config = useElectronConfig();
     const location = useLocation();
     const redirected = useRef(false);
+
+    const buttonName = useMemo(() => {
+        if ((!userInit?.authenticatedOpera && !userInit?.authenticatedAdmin) &&
+            !userInit?.closeSession && !userInit?.closeWindow) {
+            return 'Iniciar Sesión';
+        }
+        if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
+            return 'Cerrar Sesión';
+        }
+        if (userInit?.closeWindow) {
+            return 'Salir';
+        }
+        return 'Iniciar Sesión';
+    }, [
+        userInit?.authenticatedOpera,
+        userInit?.authenticatedAdmin,
+        userInit?.closeSession,
+        userInit?.closeWindow,
+    ]);
+
 
     // Solo inicializar usuario
     useEffect(() => {
@@ -77,7 +83,6 @@ export default function Login() {
             setFullScreen(true);
         }
 
-        nameButton();
     }, [userInit]);
 
     // Solo redirección
@@ -247,11 +252,11 @@ export default function Login() {
             return false;
         }
 
-        if (userName.toLowerCase() === config?.login?.userOpera.toLowerCase() && pass === config?.login?.passOpera) {
+        if (userName.toLowerCase().trim() === config?.login?.userOpera.toLowerCase().trim() && pass.trim() === config?.login?.passOpera.trim()) {
             isValid = 1;
         }
 
-        if (userName.toLowerCase() === config?.login?.userAdmin.toLowerCase() && pass === config?.login?.passAdmin) {
+        if (userName.toLowerCase().trim() === config?.login?.userAdmin.toLowerCase().trim() && pass.trim() === config?.login?.passAdmin.trim()) {
             isValid = 2;
         }
 
@@ -281,17 +286,6 @@ export default function Login() {
         setSnackbarSeverity(severity);
         setSnackbarOpen(true);
     };
-
-    const nameButton = () => {
-
-        if ((!userInit?.authenticatedOpera || !userInit?.authenticatedAdmin) && !userInit?.closeSession && !userInit?.closeWindow) {
-            setButtonName('Iniciar Sesión');
-        } else if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
-            setButtonName('Cerrar Sesión');
-        } else if (userInit?.closeWindow) {
-            setButtonName('Salir');
-        }
-    }
 
     return (
         <>
@@ -471,18 +465,7 @@ export default function Login() {
                 </Paper >
             </Box >
 
-            {showKeyboard && (
-                <Paper
-                    elevation={3}
-                    sx={{ position: "absolute", top: "100%", mt: 1, zIndex: 1000, p: 1 }}
-                    ref={keyboardContainerRef}
-                >
-                    <VirtualKeyboard inputValue={userName} onChange={setUserName} />
-                </Paper>
-            )
-            }
-
-            <SnackBarAlert
+            <SnackAlert
                 open={snackbarOpen}
                 message={snackbarMessage}
                 severity={snackbarSeverity}

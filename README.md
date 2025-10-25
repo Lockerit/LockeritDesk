@@ -55,18 +55,42 @@ Sistema de Asignación de Casilleros desarrollado con **React**, **Vite** y **El
 ## Estructura del Proyecto
 
 ```plaintext
-lockerit-desk/
-├──                 # Proceso principal de Electron
-├──              # Preload scripts para Electron
-├── src/                   # Código fuente de React
-├── electron/              # Lógica adicional de Electron (loggers, watchers)
-├── configFiles/           # Archivos de configuración (.env, JSON)
-├── public/                # Archivos estáticos y assets
-├── release/               # Builds generados
-├── logs/                  # Archivos de logs y auditoría
-├──            # Configuración de npm y scripts
-├──          # Configuración de Vite
-└── ...
+LockeritDesk/
+├─ electron/
+│  ├─ main/                 # Proceso principal (antes: main.js)
+│  │  └─ index.js
+│  ├─ preload/              # Único puente al renderer (antes: preload.js)
+│  │  └─ index.js
+│  ├─ logger/               # ya existe: logger.js
+│  └─ watchers/             # ya existe: auth/env/logger/setup watcher .js
+│
+├─ src/                     # React (renderer)
+│  ├─ app/                  # App shell, router, providers
+│  │  └─ App.jsx
+│  ├─ features/
+│  │  ├─ admin/             # adminLockers.jsx, reportLockers.jsx, tabAdmin.jsx, tableReportLockers.jsx
+│  │  ├─ operator/          # ppal.jsx
+│  │  └─ auth/              # login.jsx
+│  ├─ services/
+│  │  ├─ api/               # assignLocker.js, getAllStatusLockers.js, open*.js, report.js, reserve.js, setStatusLocker.js
+│  │  └─ realtime/          # websocket.js
+│  ├─ shared/
+│  │  ├─ components/
+│  │  │  ├─ layout/         # appbar.jsx, clock.jsx, progressbar.jsx, snackAlert.jsx
+│  │  │  └─ dialogs/        # insertMoney.jsx, keypadNumeric.jsx, loading.jsx, registerUserPeriod.jsx, showErrorAPI.jsx, showLocker.jsx
+│  │  ├─ context/           # keyboardContext.jsx, modalContext.jsx, userContext.jsx, windowSizeContext.jsx
+│  │  ├─ hooks/             # useScheduleReport.js
+│  │  ├─ utils/             # getDateRange.js, testGetDateRange.js, theme.js, utils.js
+│  │  └─ constants/         # (crear más adelante: STATUS, rutas, etc.)
+│  ├─ assets/               # ya existe si la usas desde React
+│  └─ main.jsx              # entry React (ya existe)
+│
+├─ public/                  # estáticos (ya existe)
+├─ configFiles/             # configs empaquetadas (ya existe)
+├─ index.html               # (ya existe)
+├─ vite.config.js           # (ya existe)
+├─ eslint.config.js         # (ya existe)
+└─ package.json             # (ya existe)
 ```
 
 ## Configuración

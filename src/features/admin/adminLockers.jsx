@@ -1,33 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import LoadingScreen from '../dialogs/loading.jsx';
-import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
-import OpenByCodeLocker from '../apis/openByCodeLocker.js';
-import { useElectronConfig } from '../hooks/useConfig.js';
-import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import SetStatusLocker from '../apis/setStatusLocker.js';
-import SnackBarAlert from '../bar/snackAlert.jsx';
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
-import RegisterUserPeriod from '../dialogs/registerUserPeriod.jsx';
-import { useModal } from "../context/modalContext.jsx";
-import {
-    Box,
-    Typography,
-    Grid,
-    MenuItem,
-    Select,
-    FormControl,
-    InputLabel,
-    Button,
-    Paper,
-    Stack,
-    Menu,
-    Checkbox,
-    FormControlLabel,
-    Chip
-} from '@mui/material';
-import { Payment, Sync } from '@mui/icons-material';
+import { Sync } from '@mui/icons-material';
+import { Box, Button, Checkbox, Chip, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Stack, Typography, Menu } from '@mui/material';
+import { useEffect, useState } from 'react';
 
-const fileName = 'adminLockers';
+import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
+import { OpenByCodeLocker } from '@services/apis/openByCodeLocker.js';
+import { SetStatusLocker } from '@services/apis/setStatusLocker.js';
+import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { useModal } from "@shared/context/ModalContext.jsx";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+
+const fileName = 'AdminLockers';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -36,7 +22,7 @@ const log = (level, message) => {
     }
 };
 
-const AdminLockers = () => {
+export const AdminLockers = () => {
     const [data, setData] = useState(null);
     const [selectedModule, setSelectedModule] = useState('');
     const [selectedLockers, setSelectedLockers] = useState([]);
@@ -50,11 +36,10 @@ const AdminLockers = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-    const [timeoutKeypad, setTimeoutKeypad] = useState();
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
-    const [dataStatus, setDataStatus] = useState({
+    const [dataStatus] = useState({
         general: [
             { status: "Libre", color: "success.main" },
             { status: "Ocupado", color: "error.main" },
@@ -99,8 +84,8 @@ const AdminLockers = () => {
                 setShowErrorAPIOpen(true);
             }
 
-        } catch (err) {
-            setMessageErrorAPI(err.message || 'Error inesperado al obtener casilleros');
+        } catch (_err) {
+            setMessageErrorAPI(_err.message || 'Error inesperado al obtener casilleros');
             setShowErrorAPIOpen(true);
         } finally {
             setLoading(false);
@@ -167,13 +152,10 @@ const AdminLockers = () => {
                 } else {
                     failedLockers.push(locker.lockerCode);
                 }
-            } catch (err) {
+            } catch (_err) {
+                log('error', `Error al ${action} casillero ${locker.lockerCode}: ${_err.message || _err}`);
                 failedLockers.push(locker.lockerCode);
             }
-            // }
-            // else {
-            //     failedLockers.push(locker.lockerCode);
-            // }
         }
         setLoading(false);
 
@@ -253,7 +235,8 @@ const AdminLockers = () => {
                     } else {
                         failedLockers.push(locker.lockerCode);
                     }
-                } catch (err) {
+                } catch (_err) {
+                    log('error', `Error al cambiar estado del casillero ${locker.lockerCode}: ${_err.message || _err}`);
                     failedLockers.push(locker.lockerCode);
                 }
             } else {
@@ -328,11 +311,6 @@ const AdminLockers = () => {
                         justifyContent: "center"
                     }}
                 >
-                    {/* <Typography variant="h4"
-                        sx={{ fontWeight: 'bold', mb: 2 * scale }}
-                    >
-                        Estado de Casilleros
-                    </Typography> */}
                     <Typography
                         variant="h4"
                         component="span"
@@ -593,7 +571,7 @@ const AdminLockers = () => {
                     </Box>
                 )}
             </Box>
-            {loading && (<LoadingScreen
+            {loading && (<Loading
                 message={messageLoading}
             />)}
 
@@ -607,7 +585,7 @@ const AdminLockers = () => {
                 disableRestoreFocus
             />
 
-            <SnackBarAlert
+            <SnackAlert
                 open={snackbarOpen}
                 message={snackbarMessage}
                 severity={snackbarSeverity}
@@ -617,10 +595,7 @@ const AdminLockers = () => {
             <RegisterUserPeriod
                 open={registerUserPeriodOpen}
                 onClose={closeRegisterUserPeriod}
-                timeout={timeoutKeypad}
             />
         </>
     );
 };
-
-export default AdminLockers;

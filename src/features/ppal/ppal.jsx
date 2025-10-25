@@ -1,30 +1,26 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import KeyPadModal from '../dialogs/keypadNumeric.jsx'
-import { useUser } from '../context/userContext.jsx';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useElectronConfig } from '../hooks/useConfig.js';
-import GetAllStatusLockers from '../apis/getAllStatusLockers.js';
-import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import LoadingScreen from '../dialogs/loading.jsx';
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
-import { useModal } from "../context/modalContext.jsx";
-import { scaledDimension } from '../utils/scaledDimension.js';
-import { speak, stopSpeaking, getVoices } from '../utils/speak.js';
 import {
-    Typography,
-    Box,
-    Grid,
-    Button,
-} from '@mui/material';
-import {
-    AddCircle,
-    Key,
-    LockReset,
-    RemoveCircle,
-    SensorOccupied
+    AddCircle, Key, RemoveCircle
 } from '@mui/icons-material';
+import {
+    Typography, Box, Grid, Button
+} from '@mui/material';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const fileName = 'ppal';
+
+
+import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
+import { KeypadNumeric } from '@shared/components/dialogs/KeypadNumeric.jsx'
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { useModal } from '@shared/context/ModalContext.jsx';
+import { useUser } from '@shared/context/UserContext.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { speak, stopSpeaking } from '@shared/utils/speak.js';
+
+const fileName = 'Ppal';
 
 // Logging centralizado
 const log = (level, message) => {
@@ -33,10 +29,10 @@ const log = (level, message) => {
     }
 };
 
-export default function Ppal() {
+export const Ppal = () => {
 
     const [showErrorAPIOpenPpal, setShowErrorAPIOpenPpal] = useState(false);
-    const { userInit, setUserInit } = useUser();
+    const { userInit, setUserInit: _setUserInit } = useUser();
     const [available, setAvailable] = useState(null);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
     const [loading, setLoading] = useState(true);
@@ -58,6 +54,13 @@ export default function Ppal() {
 
     const intervalRef = useRef(null);
 
+    const speakWelcome = useCallback(() => {
+        stopSpeaking();
+        let msg = config?.voice?.message?.welcome || "";
+        msg = msg.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
+        msg = msg.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
+        speak(msg || "");
+    }, [config]);
 
     useEffect(() => {
         const stopSpeech = () => {
@@ -74,7 +77,7 @@ export default function Ppal() {
         return () => {
             stopSpeech(); // limpiar si desmonta el componente
         };
-    }, []);
+    }, [config?.voice?.enabled]);
 
     useEffect(() => {
         if (!config || !config?.voice?.enabled) return;
@@ -111,7 +114,7 @@ export default function Ppal() {
             }
             stopSpeaking();
         };
-    }, [keypadOpen, config?.voice?.enabled]);
+    }, [keypadOpen, config, config?.voice?.enabled, speakWelcome]);
 
     useEffect(() => {
         fetchDataStatusLocker();
@@ -173,20 +176,13 @@ export default function Ppal() {
                 setShowErrorAPIOpenPpal(true);
             }
 
-        } catch (err) {
+        } catch (_err) {
+            log('error', `Error al obtener estado de casilleros: ${_err.message || _err}`);
             setMessageErrorAPI('No se puedo obtener estado de casilleros');
             setShowErrorAPIOpenPpal(true);
         } finally {
             setLoading(false);
         }
-    };
-
-    const speakWelcome = () => {
-        stopSpeaking();
-        let msg = config?.voice?.message?.welcome || "";
-        msg = msg.replace("{{amount}}", config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
-        msg = msg.replace("{{pesos}}", config?.paramsHtml?.currency?.currencyPesos || "pesos");
-        speak(msg || "");
     };
 
     const ActionButton = ({ text, icon, color, onClick, disabled }) => (
@@ -390,7 +386,7 @@ export default function Ppal() {
                 </Box>
             </Box >
 
-            <KeyPadModal
+            <KeypadNumeric
                 open={keypadOpen}
                 onClose={closeKeypad}
                 operation={operation}
@@ -407,7 +403,7 @@ export default function Ppal() {
                 disableRestoreFocus
             />
 
-            {loading && (<LoadingScreen />)}
+            {loading && (<Loading />)}
 
         </>
     );

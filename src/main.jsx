@@ -1,17 +1,19 @@
-import { StrictMode, useMemo, useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './features/app/app.jsx';
-import { createScaledTheme } from './features/utils/theme.js';
+import { Alert, Stack } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { UserProvider } from './features/context/userContext.jsx';
-import { useWindowSizeContext, WindowSizeProvider } from './features/context/windowSizeContext.jsx';
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
+import { StrictMode, useMemo, useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+
 import './fonts.css';
-import LoadingScreen from './features/dialogs/loading.jsx';
-import { ModalProvider } from './features/context/modalContext.jsx';
-import { KeyboardProvider } from './features/context/keyboardContext.jsx';
+
+import { App } from '@app/App.jsx';
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { KeyboardProvider } from '@shared/context/KeyboardProvider.jsx';
+import { ModalProvider } from '@shared/context/ModalProvider.jsx';
+import { UserProvider } from '@shared/context/UserProvider.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { WindowSizeProvider } from '@shared/context/WindowSizeProvider.jsx';
+import { createScaledTheme } from '@shared/theme/theme.js';
 
 const fileName = 'main-renderer';
 
@@ -21,12 +23,17 @@ const log = (level, message) => {
   }
 };
 
-function RootApp() {
+export const RootApp = () => {
   const [pendingCSP, setPendingCSP] = useState(null);
 
-  // hook con valor inicial
+  // Hook de contexto: SIEMPRE se llama
   const size = useWindowSizeContext();
+  const factor = Number(size?.factor) > 0 ? Number(size.factor) : 1;
 
+  // Hook: SIEMPRE se llama (no condicional)
+  const theme = useMemo(() => createScaledTheme(factor), [factor]);
+
+  // Efecto: registra listener de CSP (una sola vez)
   useEffect(() => {
     const currentMetaCSP =
       document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || null;
@@ -37,8 +44,9 @@ function RootApp() {
     log('debug', `CSP en localStorage: ${storedCSP}`);
 
     if (window?.electronAPI?.onUpdateCSP) {
-      window.electronAPI.onUpdateCSP((newCsp) => {
-        const currentMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content');
+      const handler = (newCsp) => {
+        const currentMeta =
+          document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content');
 
         if (newCsp && newCsp !== currentMeta) {
           log('info', `CSP cambió, guardando en localStorage y mostrando banner`);
@@ -47,31 +55,21 @@ function RootApp() {
         } else {
           log('debug', `CSP recibida es igual a la actual, no se hace nada`);
         }
-      });
+      };
+
+      window.electronAPI.onUpdateCSP(handler);
+
+      // Si tu preload expone offUpdateCSP, descomenta:
+      // return () => window.electronAPI.offUpdateCSP?.(handler);
     }
   }, []);
 
-  const handleReload = () => {
-    const cspToApply = localStorage.getItem('lastAppliedCSP');
-    if (cspToApply) {
-      let meta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('http-equiv', 'Content-Security-Policy');
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', cspToApply);
-    }
-    window.electronAPI.reloadApp();
-  };
-
   log('debug', `RootApp size ${JSON.stringify(size)}`);
 
+  // Ya NO hay Hooks debajo de este return condicional
   if (!size?.factor || size.factor <= 0) {
-    return <LoadingScreen open message="Cargando aplicación..." />;
+    return <Loading open message="Cargando aplicación..." />;
   }
-
-  const theme = useMemo(() => createScaledTheme(size.factor), [size.factor]);
 
   return (
     <>
@@ -95,7 +93,7 @@ function RootApp() {
       <UserProvider>
         <ModalProvider>
           <KeyboardProvider>
-            <ThemeProvider key={`theme-${size.factor}`} theme={theme}>
+            <ThemeProvider key={`theme-${factor}`} theme={theme}>
               <CssBaseline />
               <App />
             </ThemeProvider>
@@ -104,18 +102,18 @@ function RootApp() {
       </UserProvider>
     </>
   );
-}
+};
 
-async function bootstrap() {
+const bootstrap = async () => {
   const initialSize = await window.electronAPI.getScreenDataOnce();
 
-  createRoot(document.getElementById("root")).render(
+  createRoot(document.getElementById('root')).render(
     <StrictMode>
       <WindowSizeProvider initialSize={initialSize}>
         <RootApp />
       </WindowSizeProvider>
     </StrictMode>
   );
-}
+};
 
 bootstrap();

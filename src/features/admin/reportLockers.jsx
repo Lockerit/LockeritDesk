@@ -1,33 +1,21 @@
-import { useState, useEffect } from "react";
-import DateTime from "../utils/dateTime"; // tu componente personalizado
-import { useWindowSizeContext } from '../context/windowSizeContext'; // Hook para tamaño pantalla
-import GetReportLockers from "../apis/report.js";
-import ShowErrorAPI from '../dialogs/showErrorAPI.jsx';
-import LoadingScreen from '../dialogs/loading.jsx';
-import ReportTable from "./tableReportLockers.jsx";
-import { useElectronConfig } from '../hooks/useConfig.js';
-import {
-    Summarize
-} from '@mui/icons-material';
-import {
-    Box,
-    Button,
-    TextField
-} from "@mui/material";
+import { Summarize } from '@mui/icons-material';
+import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useState, useEffect, useCallback } from "react";
+
+import { GetReportLockers } from "@services/apis/report.js";
+import { Loading } from '@shared/components/dialogs/Loading.jsx';
+import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { DateTime } from "@shared/components/time/DateTime.jsx";
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
+
+import { TableReportLockers } from "./TableReportLockers.jsx";
+
 dayjs.extend(utc);
 
-const fileName = 'reportLockers';
-
-// Logging centralizado
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
-
-const ReportLockers = () => {
+export const ReportLockers = () => {
     const [endDate, setEndDate] = useState(dayjs());
     const [startDate, setStartDate] = useState(dayjs().hour(0).minute(0).second(0));
     const size = useWindowSizeContext();
@@ -40,90 +28,81 @@ const ReportLockers = () => {
     const [reportData, setReportData] = useState([]);
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const config = useElectronConfig();
-    let formatter = (d) => dayjs(d); // por defecto local
 
-    useEffect(() => {
-        fetchDataReportLocker(false);
-    }, []);
-
+    // Lee timeout del config cuando esté disponible
     useEffect(() => {
         if (!config) return;
+        const t = config?.paramsHtml?.modalTimeouts?.timeoutShowMessage;
+        if (typeof t === 'number') setTimeoutShowMessage(t);
+    }, [config]);
 
-        if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
-        }
+    // fetch con deps estables
+    const fetchDataReportLocker = useCallback(
+        async (showMsg = false) => {
+            setIsErrorMsj(true);
+            setLoading(true);
 
-        let timezoneMode = config?.report?.timezoneMode || "local";
+            const formatUTC = (d, isEnd = false) =>
+                dayjs(d)
+                    .utc()
+                    .set("second", isEnd ? 59 : 0)
+                    .format("YYYY-MM-DD HH:mm:ss");
 
-        formatter = timezoneMode === "utc"
-            ? (d) => dayjs(d).utc()
-            : (d) => dayjs(d);
+            const payload = {
+                startDate: formatUTC(startDate),       // segundos en 00
+                endDate: formatUTC(endDate, true),     // segundos en 59
+                sendEmail: false,
+            };
 
-    }, [config])
+            try {
+                const result = await GetReportLockers(payload);
 
-    const fetchDataReportLocker = async (showMsg = false) => {
-        setIsErrorMsj(true);
-        setLoading(true);
+                if (result?.success) {
+                    setReportData(result?.data || []);
 
-        const formatUTC = (d, isEnd = false) =>
-            dayjs(d)
-                .utc()
-                .set("second", isEnd ? 59 : 0)
-                .format("YYYY-MM-DD HH:mm:ss");
-
-        const payload = {
-            startDate: formatUTC(startDate),        // segundos en 00
-            endDate: formatUTC(endDate, true),      // segundos en 59
-            sendEmail: false,
-        };
-
-        try {
-            const result = await GetReportLockers(payload);
-
-            if (result?.success) {
-                setReportData(result?.data || []);
-
-                if (showMsg) {
-
-                    let msg = '';
-
-                    if (!result?.data) {
-                        msg = 'No se encontraron resultados';
-                        setIsErrorMsj(true);
+                    if (showMsg) {
+                        let msg = '';
+                        if (!result?.data) {
+                            msg = 'No se encontraron resultados';
+                            setIsErrorMsj(true);
+                        } else {
+                            msg = 'Reporte generado con éxito';
+                            setIsErrorMsj(false);
+                        }
+                        setMessageErrorAPI(msg);
+                        setShowErrorAPIOpen(true);
                     } else {
-                        msg = 'Reporte generado con éxito';
-                        setIsErrorMsj(false);
+                        setShowErrorAPIOpen(false);
                     }
-                    log('info', msg);
-                    setMessageErrorAPI(msg);;
-                    setShowErrorAPIOpen(true);
                 } else {
-                    setShowErrorAPIOpen(false);
+                    const msg = typeof result?.data === 'string'
+                        ? result.data
+                        : result?.data?.message || 'Error al obtener reporte';
+
+                    setMessageErrorAPI(msg);
+                    setShowErrorAPIOpen(true);
                 }
-            } else {
-                const msg = typeof result?.data === 'string'
-                    ? result.data
-                    : result?.data?.message || 'Error al obtener reporte';
-
-                setMessageErrorAPI(msg);
+            } catch (err) {
+                setMessageErrorAPI(err.message || 'Error al obtener reporte');
                 setShowErrorAPIOpen(true);
+            } finally {
+                setLoading(false);
             }
+        },
+        [startDate, endDate]
+    );
 
-        } catch (err) {
-            setMessageErrorAPI(err.message || 'Error al obtener reporte');
-            setShowErrorAPIOpen(true);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Carga inicial
+    useEffect(() => {
+        fetchDataReportLocker(false);
+    }, [fetchDataReportLocker]);
 
     return (
         <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-
-            {/* 🔹 Sección filtros (20%) */}
+            {/* 🔹 Filtros */}
             <Box
                 sx={{
-                    flex: "0 0 3%", // 20% del alto fijo
+                    flex: "0 0 3%",
                     display: "flex",
                     gap: 3 * scale,
                     alignItems: "flex-end",
@@ -135,7 +114,7 @@ const ReportLockers = () => {
                         label="Fecha y hora inicial"
                         value={startDate}
                         onChange={setStartDate}
-                        showTime={true}
+                        showTime
                     />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -143,7 +122,7 @@ const ReportLockers = () => {
                         label="Fecha y hora final"
                         value={endDate}
                         onChange={setEndDate}
-                        showTime={true}
+                        showTime
                     />
                 </Box>
                 <Box>
@@ -163,20 +142,20 @@ const ReportLockers = () => {
                 </Box>
             </Box>
 
-            {/* Sección tabla (80%) */}
+            {/* Tabla */}
             <Box
                 sx={{
                     display: "flex",
                     flexDirection: "column",
                     flex: "1 1 95%",
                     p: 2 * scale,
-                    minHeight: 0, // evita que los hijos desborden
+                    minHeight: 0,
                 }}
             >
-                <ReportTable data={reportData} startDate={startDate} endDate={endDate} />
+                <TableReportLockers data={reportData} startDate={startDate} endDate={endDate} />
             </Box>
 
-            {loading && <LoadingScreen />}
+            {loading && <Loading />}
 
             {showErrorAPIOpen && (
                 <ShowErrorAPI
@@ -193,5 +172,3 @@ const ReportLockers = () => {
         </Box>
     );
 };
-
-export default ReportLockers;

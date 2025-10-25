@@ -1,21 +1,14 @@
-import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
-import { useWindowSizeContext } from '../context/windowSizeContext';
-import AdminLockers from './adminLockers.jsx';
-import ReportLockers from './reportLockers.jsx';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Tab } from '@mui/material';
+import { useState } from 'react';
 
-// Logging centralizado
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
 
-const Tabadmin = () => {
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+
+import { AdminLockers } from './AdminLockers.jsx';
+import { ReportLockers } from './ReportLockers.jsx';
+
+export const TabAdmin = () => {
     const [value, setValue] = useState('1');
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
@@ -44,7 +37,7 @@ const Tabadmin = () => {
                         aria-label="tabs Administrativo"
                         sx={{
                             minHeight: `${tabBarHeight}px`,
-                            '& .MuiTab-root': { 
+                            '& .MuiTab-root': {
                                 minHeight: `${tabBarHeight}px`,
                             },
                         }}
@@ -58,7 +51,7 @@ const Tabadmin = () => {
                 <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
                     <TabPanel
                         value="1"
-                        sx={{ flex: 1, height: "100%", p: 0}} // aquí scroll solo del contenido
+                        sx={{ flex: 1, height: "100%", p: 0 }} // aquí scroll solo del contenido
                     >
                         <AdminLockers />
                     </TabPanel>
@@ -73,5 +66,3 @@ const Tabadmin = () => {
         </Box>
     );
 };
-
-export default Tabadmin;
