@@ -139,5 +139,5 @@ export function useSchedulerReport({
         }, timeInterval * 1000);
 
         return () => clearInterval(interval);
-    }, [frequency, hour, minute, dayOfWeek, dayOfMonth, task, enabled]);
+    }, [frequency, hour, minute, dayOfWeek, dayOfMonth, task, enabled, timeInterval]);
 }

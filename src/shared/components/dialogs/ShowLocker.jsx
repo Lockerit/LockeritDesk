@@ -21,32 +21,25 @@ export const ShowLocker = ({ open, onConfirm, locker, title, msg, timeout = 15, 
 
     const [secondsLeft, setSecondsLeft] = useState(timeout);
 
+    // 1) Reinicia el contador cada vez que se abre el modal o cambia el timeout
     useEffect(() => {
-
-        if (open) {
-            setSecondsLeft(timeout); // reinicia cada vez que abre
-        }
+        if (!open) return;
+        setSecondsLeft(timeout);
     }, [open, timeout]);
 
-    // Manejar conteo
+    // 2) Tiqueo del contador (1s) mientras esté abierto y queden segundos
     useEffect(() => {
         if (!open || secondsLeft <= 0) return;
-
-        const interval = setInterval(() => {
-            setSecondsLeft(prev => prev - 1);
-        }, 1000);
-
-        return () => clearInterval(interval);
+        const id = setInterval(() => setSecondsLeft((prev) => prev - 1), 1000);
+        return () => clearInterval(id);
     }, [open, secondsLeft]);
 
-    // Cerrar automáticamente cuando llegue a 0
+    // 3) Autocierre al llegar a 0 (incluye timeout en deps porque se usa en setSecondsLeft)
     useEffect(() => {
-        if (open && secondsLeft === 0) {
-            setSecondsLeft(timeout);
-            setTimeout(() => onConfirm(), 100);
-        }
-    }, [open, secondsLeft, onConfirm]);
-
+        if (!open || secondsLeft !== 0) return;
+        setSecondsLeft(timeout);
+        onConfirm();
+    }, [open, secondsLeft, onConfirm, timeout]);
     return (
         <Dialog
             open={open}

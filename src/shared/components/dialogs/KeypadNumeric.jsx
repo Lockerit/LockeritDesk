@@ -4,7 +4,7 @@ import {
 import {
   Grid, Button, TextField, Box, Typography, Dialog, DialogContent, IconButton, Slide
 } from '@mui/material';
-import { useState, useRef, forwardRef, useEffect } from 'react';
+import { useState, useRef, forwardRef, useEffect, useCallback } from 'react';
 
 
 import { paymentService } from '@services/apis/assignLocker.js';
@@ -77,23 +77,59 @@ export const KeypadNumeric = ({
   const cleanupRef = useRef(null);
   const config = useElectronConfig();
 
-
   const operationRet = (operation === 'Retirar' || operation === 'Reservado') ? true : false;
   const isConfigReady = config && Object.keys(config).length > 0;
+
+  const openedOnceRef = useRef(false);
+
+  const clearInputs = useCallback(() => {
+    setPhone('');
+    setPassword('');
+    setConfirmPassword('');
+    setActiveInput('phone');
+    setErrorsEmpty({ phone: false, password: false, confirmPassword: false });
+    setConfirmDialogOpen(false);
+  }, [setPhone, setPassword, setConfirmPassword, setConfirmDialogOpen]);
+
+  const cancel = useCallback(() => {
+    clearInputs();
+    onClose();
+  }, [clearInputs, onClose]);
+
+  const cancelInsertMoney = useCallback(() => {
+    if (cleanupRef.current) cleanupRef.current();
+    cancelObservable.setCancel(true);
+    setAmountPay(0);
+    closeWebSocket();
+    setInsertMoneyOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setMessageErrorAPI(
       'No te preocupes, el proceso continuará con el monto que hayas ingresado hasta ahora, vuelve a intentarlo.'
     );
+  }, []);
 
-    if (insertMoneyOpen) {
-      setShowErrorAPIOpen(true);
-      const timer = setTimeout(() => {
-        cancelInsertMoney();
-      }, 1000);
-
-      return () => clearTimeout(timer);
+  useEffect(() => {
+    if (!insertMoneyOpen) {
+      // Se cerró el modal: reseteamos el fusible para la próxima apertura
+      openedOnceRef.current = false;
+      return;
     }
+
+    // Solo correr una vez por apertura
+    if (openedOnceRef.current) return;
+    openedOnceRef.current = true;
+
+    setShowErrorAPIOpen(true);
+
+    const t = setTimeout(() => {
+      cancelInsertMoney();
+    }, 1000);
+
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -131,24 +167,24 @@ export const KeypadNumeric = ({
       setSecondsLeft(timeout);
       cancel();
     }
-  }, [open, secondsLeft]);
+  }, [open, secondsLeft, cancel, timeout]);
 
   useEffect(() => {
     if (!isConfigReady) return;
 
     const rawAmount = config?.paramsHtml?.currency?.coinBoxRequiredAmount;
-
-    if (rawAmount != null && !isNaN(Number(rawAmount))) {
+    if (rawAmount != null && !Number.isNaN(Number(rawAmount))) {
       setAmountService(formatCurrency(rawAmount));
     } else {
-      setAmountService('0'); // o '', o lo que desees mostrar si no hay valor
+      setAmountService('0');
     }
 
-    if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
-      setTimeoutInsert(config?.paramsHtml?.modalTimeouts?.timeoutInsertMoney);
-      setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
+    const tmo = config?.paramsHtml?.modalTimeouts;
+    if (tmo) {
+      setTimeoutInsert(tmo?.timeoutInsertMoney);
+      setTimeoutShowMessage(tmo?.timeoutShowMessage);
     }
-  }, [config, open])
+  }, [isConfigReady, config]);
 
   const getInputValue = () => {
     switch (activeInput) {
@@ -347,7 +383,7 @@ export const KeypadNumeric = ({
           result = await OpenReserveLocker(payload);
           message = config?.voice?.message?.openReserveLocker || "";
         }
-        
+
         if (result?.success) {
 
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
@@ -386,21 +422,6 @@ export const KeypadNumeric = ({
     }
 
     setLoading(false);
-  };
-
-  const clearInputs = () => {
-    setPhone('');
-    setPassword('');
-    setConfirmPassword('');
-    // setLocker('');
-    setActiveInput('phone');
-    setErrorsEmpty({ phone: false, password: false, confirmPassword: false });
-    cancelConfirmation();
-  }
-
-  const cancel = () => {
-    clearInputs();
-    onClose();
   };
 
   const showAlert = (msg, severity = 'error') => {
@@ -480,13 +501,6 @@ export const KeypadNumeric = ({
 
   const cancelConfirmation = () => {
     setConfirmDialogOpen(false);
-  };
-
-  const cancelInsertMoney = () => {
-    if (cleanupRef.current) cleanupRef.current();
-    cancelObservable.setCancel(true);
-    setAmountPay(0);
-    closeWebSocket();
   };
 
   const confirmAssignLocker = () => {

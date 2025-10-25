@@ -103,7 +103,7 @@ export const RegisterUserPeriod = ({
         setEndDate(dayjs(startDate).add(1, "month").subtract(1, "day"));
       }
     }
-  }, [open]);
+  }, [open, period, startDate]);
 
   // Cuando cambia startDate o period, recalculamos endDate
   useEffect(() => {

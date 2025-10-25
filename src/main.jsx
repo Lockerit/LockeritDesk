@@ -8,10 +8,11 @@ import './fonts.css';
 
 import { App } from '@app/App.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
-import { KeyboardProvider } from '@shared/context/KeyboardContext.jsx';
-import { ModalProvider } from '@shared/context/ModalContext.jsx';
-import { UserProvider } from '@shared/context/UserContext.jsx';
-import { useWindowSizeContext, WindowSizeProvider } from '@shared/context/WindowSizeContext.jsx';
+import { KeyboardProvider } from '@shared/context/KeyboardProvider.jsx';
+import { ModalProvider } from '@shared/context/ModalProvider.jsx';
+import { UserProvider } from '@shared/context/UserProvider.jsx';
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { WindowSizeProvider } from '@shared/context/WindowSizeProvider.jsx';
 import { createScaledTheme } from '@shared/theme/theme.js';
 
 const fileName = 'main-renderer';
