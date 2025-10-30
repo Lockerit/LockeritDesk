@@ -1,118 +1,218 @@
-// electron/logger/logger.js  (ESM)
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+// electron/logger/logger.js
+import fs from "node:fs";
+import path from "node:path";
 
-import { app } from 'electron';
-import { createLogger, format, transports } from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
+import { app } from "electron";
+import { createLogger, format, transports } from "winston";
+import * as Wdrf from 'winston-daily-rotate-file';
 
-// __dirname/__filename en ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const DailyRotateFile = Wdrf.default || Wdrf;
 
-const fileName = path.parse(__filename).name;
+let cfg = null;
+let baseLogger = null;
 
-// Detectar prod/dev y resolver base de recursos
-const isProd  = (process.resourcesPath && process.resourcesPath.includes('resources')) || __dirname.includes('app.asar');
-const baseDir = isProd ? process.resourcesPath : path.resolve(__dirname, '..', '..');
-
-// Resolver ruta de configuración de logger con varios candidatos
-const resolveConfigPath = (file) => {
-  const candidates = [
-    path.join(process.resourcesPath || '', 'configFiles', file), // prod (extraResources)
-    path.join(baseDir, 'configFiles', file),                     // dev
-    path.join(process.cwd(), 'configFiles', file),               // fallback
-  ];
-  for (const p of candidates) {
-    try { if (fs.existsSync(p)) return p; } catch { /* noop */ }
+function loadConfig() {
+  try {
+    const base = app.isPackaged ? process.resourcesPath : process.cwd();
+    const p = path.join(base, "configFiles", "logger_config.json");
+    const raw = fs.readFileSync(p, "utf-8");
+    cfg = JSON.parse(raw);
+    console.log('[diag] cfg path', p);
+  } catch {
+    cfg = {
+      level: "info",
+      dirname: "logs",
+      filename: "app-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      maxFiles: "14d",
+      maxSize: "20m",
+      console: !app.isPackaged,
+      redact: ["phone", "pin", "password", "token"]
+    };
   }
-  return null;
-};
 
-const configPath = resolveConfigPath('logger_config.json');
-
-// Config por defecto
-let config = {
-  logDirectory: 'logs',     // subcarpeta bajo userData
-  logLevel: 'info',
-  datePattern: 'YYYY-MM-DD',
-  zippedArchive: false,
-  maxSize: '10m',
-  maxFiles: '14d',
-};
-
-// Cargar configuración desde JSON (si existe)
-try {
-  if (configPath) {
-    const raw = fs.readFileSync(configPath, 'utf8');
-    config = { ...config, ...JSON.parse(raw) };
-  } else {
-    console.warn(`[${fileName}] logger_config.json no encontrado. Usando configuración por defecto.`);
-  }
-} catch (err) {
-  console.warn(`[${fileName}] Error leyendo logger_config.json, usando por defecto: ${err.message}`);
+  console.log('[diag] cfg', cfg);
+  return cfg;
 }
 
-// Directorio de logs: %APPDATA%/Lockerit/logs (o equivalente). Con fallback si app no está lista.
-let userDataDir;
-try { userDataDir = app.getPath('userData'); }
-catch { userDataDir = path.join(process.cwd(), '.userData'); }
+// Obtiene un directorio seguro incluso si app no está lista
+function resolveLogDir() {
+  const c = cfg || loadConfig();
 
-const logsDir = path.join(userDataDir, config.logDirectory || 'logs');
-try { fs.mkdirSync(logsDir, { recursive: true }); } catch { /* noop */ }
-
-// Transport consola
-const getConsoleTransport = () =>
-  new transports.Console({
-    format: format.combine(
-      format.colorize(),
-      format.printf((info) => `[${info.timestamp}] [${info.level}] ${info.message}`)
-    ),
-  });
-
-// Transport rotativo a archivo
-const getRotateTransport = (cfg = config) =>
-  new DailyRotateFile({
-    filename: path.join(logsDir, 'lockerit-%DATE%.log'),
-    datePattern: cfg.datePattern,
-    zippedArchive: cfg.zippedArchive,
-    maxSize: cfg.maxSize,
-    maxFiles: cfg.maxFiles,
-  });
-
-// Formato con stack si existe
-const line = format.printf((info) => {
-  const msg = info.stack || info.message;
-  return `[${info.timestamp}] [${info.level.toUpperCase()}] ${msg}`;
-});
-
-// Instancia de logger
-export const logger = createLogger({
-  level: config.logLevel,
-  format: format.combine(
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    line
-  ),
-  transports: [getConsoleTransport(), getRotateTransport()],
-});
-
-// Recargar dinámica (invocada desde loggerWatcher en main)
-export const reloadLoggerConfig = () => {
-  if (!configPath) return;
+  // Directorio base:
+  // - PRODUCCIÓN / ejecutable portable: carpeta del EXE
+  // - DESARROLLO: raíz del proyecto (process.cwd())
+  let baseDir;
   try {
-    const next = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    config = { ...config, ...next };
-    logger.level = config.logLevel;
-    logger.clear();
-    logger.add(getConsoleTransport());
-    logger.add(getRotateTransport(config));
-    console.log(`[${fileName}] Configuración de logger recargada dinámicamente`);
-  } catch (err) {
-    console.error(`[${fileName}] Error al recargar logger_config.json: ${err.message}`);
+    const exeDir = path.dirname(app.getPath('exe')); // carpeta del .exe
+    baseDir = app.isPackaged ? exeDir : process.cwd();
+  } catch {
+    baseDir = process.cwd();
   }
-};
 
-export const getLoggerConfig = () => ({ ...config, logsDir });
+  const dir = path.isAbsolute(c.dirname)
+    ? c.dirname
+    : path.join(baseDir, c.dirname || 'logs');
 
-export default logger;
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+// Redactor simple
+function redact(obj, keys) {
+  try {
+    if (!obj || typeof obj !== "object") return obj;
+    const clone = Array.isArray(obj) ? [...obj] : { ...obj };
+    const walk = (o) => {
+      Object.keys(o).forEach(k => {
+        const v = o[k];
+        if (keys.includes(k.toLowerCase())) {
+          o[k] = "***";
+        } else if (v && typeof v === "object") {
+          walk(v);
+        }
+      });
+    };
+    walk(clone);
+    return clone;
+  } catch { return obj; }
+}
+
+export function initLogger() {
+
+  if (baseLogger) {
+    // ya inicializado; evita doble transporte y doble 'NEW file'
+    return baseLogger;
+  }
+
+  loadConfig();
+  const dir = resolveLogDir();
+
+  const redactKeys = (cfg.redact || []).map(s => String(s).toLowerCase());
+  const redactor = format((info) => {
+    if (info.meta) info.meta = redact(info.meta, redactKeys);
+    return info;
+  });
+
+  const fmt = format.combine(
+    format.errors({ stack: true }),
+    format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
+    redactor(),
+    format.printf((info) => {
+      // Ensamblar salida en el orden exacto solicitado
+      const out = {
+        timestamp: info.timestamp,
+        appVersion: app.getVersion(),
+        scope: info.scope,   // viene del child({ scope })
+        level: info.level,
+        message: info.message,
+      };
+      // if (info.meta) out.meta = info.meta;   // opcional
+      // if (info.stack) out.stack = info.stack;  // opcional (errores)
+      return JSON.stringify(out);
+    })
+  );
+
+  const tps = [];
+  let fileTransport = null;
+
+  try {
+    fileTransport = new DailyRotateFile({
+      dirname: dir,
+      filename: cfg.filename || "app-%DATE%.log",
+      datePattern: cfg.datePattern || "YYYY-MM-DD",
+      maxFiles: cfg.maxFiles || "14d",
+      maxSize: cfg.maxSize || "20m",
+      zippedArchive: false,
+      level: cfg.level || "info",
+    });
+
+    fileTransport.on('new', (fname) => {
+      console.log('[diag] daily-rotate NEW file =>', fname);
+    });
+    fileTransport.on('rotate', (oldF, newF) => {
+      console.log('[diag] daily-rotate ROTATE', oldF, '→', newF);
+    });
+    fileTransport.on('error', (e) => {
+      console.error('[diag] file transport error', e);
+    });
+
+    tps.push(fileTransport);
+  } catch (e) {
+    console.error('No se pudo crear el transporte de archivo para logs:', e);
+  }
+
+  // Siempre habilita consola en dev o si falló el file transport
+  if (cfg.console || !fileTransport) {
+    tps.push(new transports.Console({ level: cfg.level || "info" }));
+  }
+
+  baseLogger = createLogger({
+    level: cfg.level || "info",
+    format: fmt,
+    defaultMeta: { appVersion: app.getVersion() },
+    transports: tps,
+  });
+
+  if (!fileTransport) {
+    baseLogger.log({ level: "warn", message: "logger sin transporte de archivo (usando consola)", scope: "logger" });
+  }
+
+  // escritura inmediata
+  baseLogger.log({ level: "info", message: "logger inicializado", scope: "logger" });
+
+  // segunda escritura para “despertar” stream
+  setTimeout(() => {
+    baseLogger.log({ level: "debug", message: "logger write check", scope: "logger" });
+  }, 50);
+
+  try {
+    baseLogger.transports.forEach((t, i) => {
+      console.log('[diag] transport', i, t.constructor?.name, t.dirname, t.filename, t.level);
+    });
+  } catch (e) {
+    console.error('[diag] error listando transports', e);
+  }
+
+  return baseLogger;
+}
+
+export function getLogger(scope = "app") {
+  if (!baseLogger) initLogger();
+  return baseLogger.child({ scope });
+}
+
+export function reloadLoggerConfig(newCfg = {}) {
+  cfg = { ...(cfg || {}), ...(newCfg || {}) };
+
+  const dir = resolveLogDir();
+  const fileT = new DailyRotateFile({
+    dirname: dir,
+    filename: cfg.filename || 'app-%DATE%.log',
+    datePattern: cfg.datePattern || 'YYYY-MM-DD',
+    maxFiles: cfg.maxFiles || '14d',
+    maxSize: cfg.maxSize || '20m',
+    zippedArchive: false,
+    level: cfg.level || 'info',
+  });
+  fileT.on('error', (e) => console.error('[diag] file transport error (reload)', e));
+
+  if (!baseLogger) initLogger();
+
+  baseLogger.clear();
+  baseLogger.add(fileT);
+  if (cfg.console) baseLogger.add(new transports.Console({ level: cfg.level || 'info' }));
+  baseLogger.level = cfg.level || 'info';
+
+  baseLogger.log({ level: 'info', message: 'logger reconfigurado en caliente', scope: 'logger', meta: { dir } });
+
+  // DIAGNÓSTICO: confirma que el transporte a archivo quedó agregado
+  try {
+    baseLogger.transports.forEach((t, i) => {
+      console.log('[diag/reload] transport', i, t.constructor?.name, t.dirname, t.filename, t.level);
+    });
+  } catch (e) {
+    console.error('[diag/reload] error listando transports', e);
+  }
+}
+

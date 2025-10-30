@@ -1,15 +1,16 @@
-// electron/watchers/authWatcher.js  (ESM)
+// electron/watchers/authWatcher.js  (ESM) — versión ajustada
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import logger from '../logger/logger.js';
+import { getLogger } from '../logger/logger.js';
 
 // __filename/__dirname en ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const fileName = path.parse(__filename).name;
+const log = getLogger(fileName);
 
 /**
  * Observa y emite cambios en auth_key.json.
@@ -18,30 +19,49 @@ const fileName = path.parse(__filename).name;
  */
 export function watchAuthKey(authPath, messenger = { send: () => { } }) {
     if (!authPath || !fs.existsSync(authPath)) {
-        logger.error(`[${fileName}] auth_key.json NO encontrado: ${authPath}`);
+        log.error(`[${fileName}] auth_key.json NO encontrado: ${authPath || '(sin ruta)'}`);
         return;
     }
 
     const safeSend = (payload) => {
         try { messenger.send('auth-updated', payload); }
-        catch (e) { logger.warn(`[${fileName}] messenger.send falló: ${e?.message || e}`); }
+        catch (e) { log.warn(`[${fileName}] messenger.send falló: ${e?.message || e}`); }
+    };
+
+    const redactAuth = (obj) => {
+        if (!obj || typeof obj !== 'object') return obj;
+        const copy = { ...obj };
+        for (const k of Object.keys(copy)) {
+            const key = k.toLowerCase();
+            if (['token', 'apikey', 'api_key', 'secret', 'password', 'pin'].includes(key)) {
+                copy[k] = '***';
+            }
+        }
+        return copy;
     };
 
     const loadAndSendAuth = () => {
         try {
             const raw = fs.readFileSync(authPath, 'utf8');
             const parsed = JSON.parse(raw);
-            logger.debug?.(`[${fileName}] auth_key.json: ${raw}`);
-            safeSend(parsed);
+
+            const redacted = redactAuth(parsed);
+            log.info(`[${fileName}] auth_key.json actualizado`, { path: authPath });
+            log.debug?.(
+                `[${fileName}] auth_key.json (redactado)`,
+                { keys: Object.keys(redacted) }
+            );
+
+            safeSend(parsed); // enviamos el objeto real a renderer (para uso funcional)
         } catch (err) {
-            logger.error(`[${fileName}] Error al leer/parsear auth_key.json: ${err.message}`);
+            log.error(`[${fileName}] Error al leer/parsear auth_key.json: ${err.message}`);
         }
     };
 
-    logger.info(`[${fileName}] Observando: ${authPath}`);
+    log.info(`[${fileName}] Observando auth_key.json`, { path: authPath });
     loadAndSendAuth();
 
-    // Debounce para evitar múltiples emisiones por un solo cambio
+    // Debounce
     let timer = null;
     const trigger = () => {
         clearTimeout(timer);
@@ -53,7 +73,7 @@ export function watchAuthKey(authPath, messenger = { send: () => { } }) {
             if (eventType === 'change') trigger();
         });
     } catch (err) {
-        logger.warn(`[${fileName}] fs.watch falló: ${err.message}, usando fs.watchFile`);
+        log.warn(`[${fileName}] fs.watch falló: ${err.message}, usando fs.watchFile`);
     }
 
     fs.watchFile(authPath, { interval: 1000 }, (curr, prev) => {

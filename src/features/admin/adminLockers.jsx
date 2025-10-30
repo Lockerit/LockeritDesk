@@ -12,15 +12,10 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { useModal } from "@shared/context/ModalContext.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'AdminLockers';
-
-// Logging centralizado
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
+const log = logger.scope(fileName);
 
 export const AdminLockers = () => {
     const [data, setData] = useState(null);
@@ -62,9 +57,12 @@ export const AdminLockers = () => {
             setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
         }
 
+        log.info('Config cargada para AdminLockers');
+
     }, [config]);
 
     useEffect(() => {
+        log.info('Montando vista, solicitando estado de casilleros');
         fetchData();
     }, []);
 
@@ -72,9 +70,13 @@ export const AdminLockers = () => {
         setMessageLoading('Cargando...');
         setLoading(true);
         try {
+            log.info('GET /getAllStatusLockers → inicio');
             const result = await GetAllStatusLockers();
             if (result?.success) {
                 setData(result?.default || result?.data);
+                setSelectedModule((result?.data?.modules?.[0]?.module) || '');
+                const total = (result?.data?.general || []).reduce((s, i) => s + (i.total || 0), 0);
+                log.info(`GET /getAllStatusLockers → ok, total=${total}, modules=${(result?.data?.modules || []).length}`);
             } else {
                 const msg = typeof result?.data === 'string'
                     ? result.data
@@ -82,19 +84,24 @@ export const AdminLockers = () => {
 
                 setMessageErrorAPI(msg);
                 setShowErrorAPIOpen(true);
+
+                log.error(`GET /getAllStatusLockers → fail: ${msg}`);
             }
 
         } catch (_err) {
             setMessageErrorAPI(_err.message || 'Error inesperado al obtener casilleros');
             setShowErrorAPIOpen(true);
+            log.error(`GET /getAllStatusLockers → exception: ${_err.message || _err}`);
         } finally {
             setLoading(false);
+            log.info('GET /getAllStatusLockers → fin');
         }
     };
 
     const handleModuleChange = (event) => {
         setSelectedModule(event.target.value);
         setSelectedLockers([]); // Reinicia selección
+        log.info(`Módulo seleccionado: ${event.target.value}`);
     };
 
     const handleLockerClick = (locker) => {
@@ -109,14 +116,20 @@ export const AdminLockers = () => {
         } else {
             setSelectedLockers((prev) => [...prev, { lockerCode: locker.lockerCode, status: locker.status }]);
         }
+
+        const nextCount = exists ? selectedLockers.length - 1 : selectedLockers.length + 1;
+        log.info(`Toggle locker=${locker.lockerCode} status=${locker.status} → seleccionados=${nextCount}`);
     };
 
 
     const handleAction = async (action) => {
 
+        log.info(`Acción solicitada: ${action} → seleccionados=[${selectedLockers.map(l => l.lockerCode).join(',')}]`);
+
         if (action.toLowerCase() === 'reservar') {
             setSelectedLockers([]); // Deseleccionar todos
             setRegisterUserPeriodOpen(true);
+            log.info('Abrir modal de reserva (RegisterUserPeriod)');
             return;
 
         }
@@ -145,19 +158,23 @@ export const AdminLockers = () => {
                     openBy
                 };
 
+                log.info(`POST /openByCode locker=${locker.lockerCode} setFree=${setFree}`);
                 const resultOpen = await OpenByCodeLocker(payloadOpen);
 
                 if (resultOpen?.success) {
                     successfulLockers.push(locker.lockerCode);
+                    log.info(`POST /openByCode OK locker=${locker.lockerCode}`);
                 } else {
                     failedLockers.push(locker.lockerCode);
+                    log.error(`POST /openByCode FAIL locker=${locker.lockerCode}`);
                 }
             } catch (_err) {
-                log('error', `Error al ${action} casillero ${locker.lockerCode}: ${_err.message || _err}`);
+                log.error(`Error al ${action} casillero ${locker.lockerCode}: ${_err.message || _err}`);
                 failedLockers.push(locker.lockerCode);
             }
         }
         setLoading(false);
+
 
         if (failedLockers.length > 0) {
             if (failedLockers.length > 1) {
@@ -179,6 +196,8 @@ export const AdminLockers = () => {
             }, 500); // Espera 1s después del modal
         }
 
+        log.info(`Acción ${action} → ok=[${successfulLockers.join(',')}] fail=[${failedLockers.join(',')}]`);
+
         await fetchData();
         setSelectedLockers([]); // Deseleccionar todos
     };
@@ -197,6 +216,7 @@ export const AdminLockers = () => {
 
     const confirmShowErrorAPI = () => {
         setShowErrorAPIOpen(false);
+        log.info('Cerrar modal de error API');
     };
 
     const handleMenuClick = (event) => {
@@ -209,9 +229,12 @@ export const AdminLockers = () => {
 
     const handleCantidadClick = () => {
         fetchData();
+        log.info('Refrescar cantidades (click en header)');
     }
 
     const handleStatusChange = async (status) => {
+
+        log.info(`Cambiar estado → nuevo=${status} seleccionados=[${selectedLockers.map(l => l.lockerCode).join(',')}]`);
 
         setMessageLoading('Cambiando estado...');
         setLoading(true);
@@ -228,24 +251,28 @@ export const AdminLockers = () => {
                         newStatus: status
                     };
 
+                    log.info(`POST /setStatus locker=${locker.lockerCode} → ${status}`);
                     const resultStatus = await SetStatusLocker(payloadSetStatus);
 
                     if (resultStatus?.success) {
                         successfulLockers.push(locker.lockerCode);
+                        log.info(`POST /setStatus OK locker=${locker.lockerCode}`);
                     } else {
                         failedLockers.push(locker.lockerCode);
+                        log.error(`POST /setStatus FAIL locker=${locker.lockerCode}`);
                     }
                 } catch (_err) {
-                    log('error', `Error al cambiar estado del casillero ${locker.lockerCode}: ${_err.message || _err}`);
+                    log.error(`Error al cambiar estado del casillero ${locker.lockerCode}: ${_err.message || _err}`);
                     failedLockers.push(locker.lockerCode);
                 }
             } else {
+                log.error(`No está permitido cambiar el estado del casillero ${locker.lockerCode} porque está ${locker.status}`);
                 failedLockers.push(locker.lockerCode);
             }
         }
-
+        
         setLoading(false);
-
+        
         if (failedLockers.length > 0) {
             if (failedLockers.length > 1) {
                 setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
@@ -264,6 +291,8 @@ export const AdminLockers = () => {
                 }
             }, 1000); // Espera 1s después del modal
         }
+        
+        log.info(`Cambiar estado → ok=[${successfulLockers.join(',')}] fail=[${failedLockers.join(',')}] nuevo=${status}`);
 
         await fetchData();
         setSelectedLockers([]); // Deseleccionar todos
@@ -278,15 +307,18 @@ export const AdminLockers = () => {
                 status: locker.status
             }));
             setSelectedLockers(allLockers);
+            log.info(`Seleccionar todos → ${allLockers.length} lockers`);
         } else {
             // Deselecciona todos
             setSelectedLockers([]);
+            log.info('Deseleccionar todos');
         }
     };
 
     const closeRegisterUserPeriod = () => {
         setRegisterUserPeriodOpen(false);
         fetchData(); // Refrescar datos al cerrar el modal
+        log.info('Cerrar modal de reserva → refrescar listado');
     };
 
     return (

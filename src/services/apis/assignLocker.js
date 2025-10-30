@@ -1,109 +1,99 @@
+// assignLocker.js — logging uniforme y mínimo
 import {
-    connectWebSocket, closeWebSocket, isWebSocketConnected, onMessage, waitWebSocketReady
+    connectWebSocket,
+    closeWebSocket,
+    isWebSocketConnected,
+    onMessage,
+    waitWebSocketReady,
 } from '@services/realtime/websocket.js';
 import { API_ROUTES } from '@shared/constants/pathService.js';
 import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
-
 import { instanceAxios } from './axiosConfig.js';
+import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'assignLocker';
-let _abortCancel = null; // Controla la cancelación de la petición
+const log = logger.scope(fileName);
 
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
-
+let _abortCancel = null; // control de cancelación local
 
 export const assignLocker = async (payload, timeoutMs) => {
+    const env = getEnv();
 
-    const env = getEnv(); // Se actualiza si .env cambió
-
-    // Usa valores por defecto cuando las claves no existan (en segundos) y luego conviértelos a ms
-    const maxRetries = Number(env?.apiBaseMaxRetries ?? 5);            // 5 intentos por defecto
-    const retryDelay = Number(env?.apiBaseDelayRetries ?? 1) * 1000;   // 1s por defecto
+    // Defaults y normalización
+    const maxRetries = Number(env?.apiBaseMaxRetries ?? 5);
+    const retryDelayMs = Number(env?.apiBaseDelayRetries ?? 1) * 1000;
 
     _abortCancel = false;
 
-    log('debug', 'peticion assign 0', isWebSocketConnected());
-    log('info', `Iniciando petición para asignar casillero con hasta ${maxRetries} reintentos`);
-
     let cancelled = false;
-    let _abortController = new AbortController();
+    let abortController = new AbortController();
     cancelObservable.setCancel(false);
 
     const cancelListener = (e) => {
         if (e.detail) {
             cancelled = true;
-            _abortController.abort(); // Cancela la petición HTTP activa
+            abortController.abort();
+            log.info('http.cancel.requested');
         }
     };
     cancelObservable.onCancel(cancelListener);
 
+    log.info('http.assign.start', {
+        uri: instanceAxios.getUri?.() || 'n/a',
+        route: API_ROUTES.ASSIGN_LOCKER,
+        timeoutMs,
+        maxRetries,
+        retryDelayMs,
+    });
+
     try {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            log('debug', 'peticion assign: ' + attempt + ' - cancel:' + cancelled);
-
             if (cancelled) {
-                log('info', `Conexión WebSocket cerrada, abortando intento ${attempt} - cancelled`);
-                cancelObservable.setCancel(false);
                 _abortCancel = true;
-                return {
-                    success: false,
-                    data: '',
-                    status: 499,
-                };
+                log.warn('http.assign.canceled', { attempt });
+                cancelObservable.setCancel(false);
+                return { success: false, data: '', status: 499 };
             }
 
             try {
-                _abortController = new AbortController(); // Nuevo controller por intento
-                log('info', `Intento ${attempt}: HOST -> ${instanceAxios.getUri()}`);
-                log('info', `Intento ${attempt}: URL -> ${API_ROUTES.ASSIGN_LOCKER}`);
-                log('info', `Intento ${attempt}: Request -> ${JSON.stringify(payload)}`);
+                abortController = new AbortController();
+                log.debug?.('http.assign.try', { attempt });
 
                 const response = await instanceAxios.post(
                     API_ROUTES.ASSIGN_LOCKER,
                     payload,
-                    { timeout: timeoutMs, signal: _abortController.signal }
+                    { timeout: timeoutMs, signal: abortController.signal }
                 );
 
-                log('info', `Response. Status: ${response.status}`);
-                log('info', `Response. Data: ${JSON.stringify(response.data)}`);
-
-                return {
-                    success: true,
-                    data: response.data,
-                    status: response.status,
-                };
+                log.info('http.assign.ok', { status: response.status });
+                return { success: true, data: response.data, status: response.status };
 
             } catch (error) {
-                if (instanceAxios.isCancel?.(error) || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-                    log('warn', `Petición cancelada por el usuario`);
-                    log('info', `Conexión WebSocket cerrada, abortando intento ${attempt} - catch`);
+                // Petición cancelada
+                if (instanceAxios.isCancel?.(error) || error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') {
                     _abortCancel = true;
-                    return {
-                        success: false,
-                        data: '',
-                        status: 499,
-                    };
+                    log.warn('http.assign.cancelled.byUser', { attempt });
+                    return { success: false, data: '', status: 499 };
                 }
 
                 const status = error?.response?.status || 500;
-                const msg = `Error HTTP: ${status} - ${error?.response?.data?.message || error.message}`;
-                log('error', `[intento ${attempt}] ${msg}`);
+                const message = error?.response?.data?.message || error?.message || 'unknown';
+                log.error('http.assign.error', { attempt, status, message });
 
+                // Reintenta solo para 500 y si hay intentos disponibles
                 if (status === 500 && attempt < maxRetries) {
-                    log('warn', `Reintentando en ${retryDelay}ms...`);
-                    await new Promise(res => setTimeout(res, retryDelay));
-                } else {
-                    return {
-                        success: false,
-                        data: error.response?.data || { message: msg },
-                        status,
-                    };
+                    log.warn('http.assign.retry.delay', { retryDelayMs, nextAttempt: attempt + 1 });
+                    await new Promise((res) => setTimeout(res, retryDelayMs));
+                    continue;
                 }
+
+                // Falla definitiva
+                return {
+                    success: false,
+                    data: error?.response?.data || { message: `HTTP ${status}: ${message}` },
+                    status,
+                };
             }
         }
     } finally {
@@ -111,47 +101,50 @@ export const assignLocker = async (payload, timeoutMs) => {
     }
 };
 
-// assignLocker.js
+// Servicio principal: coordina WS + HTTP y publica totales en tiempo real
 export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoading) => {
-    if (onLoading && typeof onLoading === "function") {
-        onLoading(false);
-    }
-
-    log("info", `Timeout por parámetro: ${timeoutMs}`);
-
-    const env = getEnv();
-    const effectiveTimeout = timeoutMs
-        ?? ((env?.apiBaseTimeout ? Number(env.apiBaseTimeout) * 1000 : 30000));
-
-    log("info", `Timeout efectivo en ejecución: ${effectiveTimeout}`);
-
     try {
-        // 🔄 Si había un WS abierto, cerramos primero
+        onLoading?.(false);
+
+        const env = getEnv();
+        const effectiveTimeout =
+            timeoutMs ?? ((env?.apiBaseTimeout ? Number(env.apiBaseTimeout) * 1000 : 30000));
+
+        log.info('svc.payment.start', { effectiveTimeout });
+
+        // Si ya hay WS abierto, ciérralo primero
         if (isWebSocketConnected()) {
-            log("warn", "Ya había un WebSocket abierto, cerrando antes de reconectar...");
+            log.warn('ws.preexisting.close');
             closeWebSocket();
             await new Promise((r) => setTimeout(r, 200));
         }
 
-        // 1) Conectar
+        // 1) Conexión WS
         await connectWebSocket();
+        log.info('ws.connected');
 
-        // 2) Esperar a que esté realmente listo
+        // 2) Espera a readyState=OPEN estable
         await waitWebSocketReady(5000);
-        log("info", "WebSocket listo, enviando HTTP /assign...");
+        log.info('ws.ready');
 
         let wsComplete = false;
         let httpResponse = null;
 
-        // 3) Escuchar mensajes WS
+        // 3) Suscripción a mensajes
         onMessage((data) => {
-            log("info", `Mensaje WebSocket recibido: ${JSON.stringify(data)}`);
+            try {
+                log.debug?.('ws.message', data);
 
-            if (onTotalUpdate) onTotalUpdate(data.total);
-
-            if (data.complete === true) {
-                wsComplete = true;
-                if (onLoading) onLoading(true);
+                if (typeof data?.total !== 'undefined') {
+                    onTotalUpdate?.(data.total);
+                }
+                if (data?.complete === true) {
+                    wsComplete = true;
+                    onLoading?.(true);
+                    log.info('ws.complete.flag');
+                }
+            } catch (e) {
+                log.error('ws.message.handler.error', { message: e?.message || String(e) });
             }
         });
 
@@ -162,60 +155,55 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
 
                 if (!res.success) {
                     if (res.status === 499) {
-                        log("warn", "WebSocket desconectado - status 499");
+                        log.warn('svc.payment.http.499.cancelled');
                         closeWebSocket();
                         return res;
                     }
-                    const err = res.data?.message || "Error HTTP en servidor (002)";
-                    log("error", err);
+                    const errMsg = res?.data?.message || 'HTTP server error (002)';
+                    log.error('svc.payment.http.fail', { status: res.status, message: errMsg });
                     closeWebSocket();
                 }
 
-                wsComplete = true;
+                wsComplete = true; // consideramos el flujo completo si HTTP respondió
                 closeWebSocket();
-                return "HTTP complete";
+                log.info('svc.payment.http.complete');
+                return 'HTTP complete';
             })
             .catch((err) => {
-                log("error", `Error en HTTP: ${err.message}`);
+                log.error('svc.payment.http.exception', { message: err?.message || String(err) });
                 closeWebSocket();
                 throw err;
             });
 
-        // 5) Timeout para cortar HTTP
+        // 5) Timeout explícito del HTTP
         const httpTimeout = new Promise((_, reject) =>
             setTimeout(() => {
-                const err = "Timeout en HTTP (002)";
-                log("error", err);
+                const msg = 'HTTP timeout (002)';
+                log.error('svc.payment.http.timeout', { effectiveTimeout });
                 closeWebSocket();
-                reject(new Error(err));
+                reject(new Error(msg));
             }, effectiveTimeout)
         );
 
         await Promise.race([httpPromise, httpTimeout]);
 
         closeWebSocket();
-        log("info", "Proceso completado exitosamente");
+        log.info('svc.payment.done', { wsComplete, httpStatus: httpResponse?.status ?? null });
 
-        return {
-            websocket: wsComplete,
-            http: httpResponse,
-        };
+        return { websocket: wsComplete, http: httpResponse };
+
     } catch (error) {
-        log("error", `Error general: ${error.message}`);
+        log.error('svc.payment.error', { message: error?.message || String(error) });
         closeWebSocket();
-        return {
-            websocket: false,
-            http: null,
-            error: error.message || "Error inesperado (003)",
-        };
+        return { websocket: false, http: null, error: error?.message || 'Unexpected error (003)' };
     }
 };
 
-// Escucha cambios en .env para actualizar baseURL dinámicamente
+// Actualiza timeout base de Axios si cambia el .env
 subscribeEnv((env) => {
     if (env?.apiBaseTimeout) {
         const newTimeout = Number(env.apiBaseTimeout);
-        log('info', `API BaseTimeout actualizada dinámicamente: ${newTimeout}`);
         instanceAxios.defaults.timeout = newTimeout;
+        log.info('env.timeout.updated', { newTimeout });
     }
 });

@@ -1,9 +1,12 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 
 import { VirtualKeyboard } from "@shared/components/inputs/VirtualKeyboard";
-
 import { KeyboardContext } from "./KeyboardContext";
 import { useWindowSizeContext } from "./WindowSizeContext";
+import { logger } from "@shared/utils/logger.js";
+
+const fileName = "KeyboardProvider";
+const log = logger.scope(fileName);
 
 export const KeyboardProvider = ({ children }) => {
     const [showKeyboard, setShowKeyboard] = useState(false);
@@ -16,10 +19,8 @@ export const KeyboardProvider = ({ children }) => {
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
-    // Helpers estables
     const clamp = useCallback((v, min, max) => Math.max(min, Math.min(max, v)), []);
 
-    // Abrir/cerrar con identidad estable (evita re-renders innecesarios y warnings)
     const openKeyboard = useCallback(
         (anchorNode, fieldSetter, value, inputRef) => {
             const kbWidth = window.innerWidth * 0.9;
@@ -28,8 +29,16 @@ export const KeyboardProvider = ({ children }) => {
             let x = (window.innerWidth - kbWidth) / 2;
             let y = (window.innerHeight - kbHeight) / 2;
 
+            let rectInfo = null;
             if (anchorNode?.getBoundingClientRect) {
                 const rect = anchorNode.getBoundingClientRect();
+                rectInfo = {
+                    top: Math.round(rect.top),
+                    left: Math.round(rect.left),
+                    width: Math.round(rect.width),
+                    height: Math.round(rect.height),
+                    bottom: Math.round(rect.bottom),
+                };
 
                 if (rect.bottom + kbHeight < window.innerHeight) {
                     y = rect.bottom + 8;
@@ -39,16 +48,19 @@ export const KeyboardProvider = ({ children }) => {
                     y = (window.innerHeight - kbHeight) / 2;
                 }
 
-                x = clamp(
-                    rect.left + rect.width / 2 - kbWidth / 2,
-                    0,
-                    window.innerWidth - kbWidth
-                );
+                x = clamp(rect.left + rect.width / 2 - kbWidth / 2, 0, window.innerWidth - kbWidth);
             }
 
             setPosition({ x, y });
             setActiveField({ setValue: fieldSetter, value, inputRef, key: Date.now() });
             setShowKeyboard(true);
+
+            log.info("abrir teclado", {
+                anchor: rectInfo || "centered",
+                pos: { x: Math.round(x), y: Math.round(y) },
+                width: Math.round(kbWidth),
+                height: Math.round(kbHeight),
+            });
         },
         [clamp, scale]
     );
@@ -56,9 +68,10 @@ export const KeyboardProvider = ({ children }) => {
     const closeKeyboard = useCallback(() => {
         setShowKeyboard(false);
         setActiveField(null);
+        log.info("cerrar teclado");
     }, []);
 
-    // Drag & drop (mouse)
+    // Mouse drag
     const onMouseMove = useCallback(
         (e) => {
             if (!dragging.current) return;
@@ -76,10 +89,12 @@ export const KeyboardProvider = ({ children }) => {
     );
 
     const onMouseUp = useCallback(() => {
+        if (!dragging.current) return;
         dragging.current = false;
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
-    }, [onMouseMove]);
+        log.info("drag fin (mouse)", { pos: { x: Math.round(position.x), y: Math.round(position.y) } });
+    }, [onMouseMove, position.x, position.y]);
 
     const onMouseDown = useCallback(
         (e) => {
@@ -90,11 +105,12 @@ export const KeyboardProvider = ({ children }) => {
             };
             document.addEventListener("mousemove", onMouseMove);
             document.addEventListener("mouseup", onMouseUp);
+            log.info("drag inicio (mouse)", { pos: { x: Math.round(position.x), y: Math.round(position.y) } });
         },
         [onMouseMove, onMouseUp, position.x, position.y]
     );
 
-    // Drag & drop (touch)
+    // Touch drag
     const onTouchMove = useCallback(
         (e) => {
             if (!dragging.current) return;
@@ -109,16 +125,18 @@ export const KeyboardProvider = ({ children }) => {
             const newY = clamp(t.clientY - offset.current.y, 0, maxY);
             setPosition({ x: newX, y: newY });
 
-            e.preventDefault(); // evita scroll mientras arrastras
+            e.preventDefault();
         },
         [clamp, scale]
     );
 
     const onTouchEnd = useCallback(() => {
+        if (!dragging.current) return;
         dragging.current = false;
         document.removeEventListener("touchmove", onTouchMove);
         document.removeEventListener("touchend", onTouchEnd);
-    }, [onTouchMove]);
+        log.info("drag fin (touch)", { pos: { x: Math.round(position.x), y: Math.round(position.y) } });
+    }, [onTouchMove, position.x, position.y]);
 
     const onTouchStart = useCallback(
         (e) => {
@@ -130,25 +148,23 @@ export const KeyboardProvider = ({ children }) => {
             };
             document.addEventListener("touchmove", onTouchMove, { passive: false });
             document.addEventListener("touchend", onTouchEnd);
+            log.info("drag inicio (touch)", { pos: { x: Math.round(position.x), y: Math.round(position.y) } });
         },
         [onTouchEnd, onTouchMove, position.x, position.y]
     );
 
-    // Limpieza defensiva de listeners
+    // Limpieza defensiva
     useEffect(() => {
         return () => {
             document.removeEventListener("mousemove", onMouseMove);
             document.removeEventListener("mouseup", onMouseUp);
             document.removeEventListener("touchmove", onTouchMove);
             document.removeEventListener("touchend", onTouchEnd);
+            log.info("cleanup listeners");
         };
     }, [onMouseMove, onMouseUp, onTouchMove, onTouchEnd]);
 
-    // Valor de contexto memorizado
-    const ctxValue = useMemo(
-        () => ({ openKeyboard, closeKeyboard }),
-        [openKeyboard, closeKeyboard]
-    );
+    const ctxValue = useMemo(() => ({ openKeyboard, closeKeyboard }), [openKeyboard, closeKeyboard]);
 
     return (
         <KeyboardContext.Provider value={ctxValue}>

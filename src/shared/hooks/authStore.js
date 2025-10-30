@@ -1,53 +1,119 @@
+// shared/hooks/authStore.js
+import { logger as baseLogger } from '@shared/utils/logger';
+
+// --- Logger seguro (no rompe si no existe) ---
+const NOOP = Object.freeze({ info() { }, warn() { }, error() { }, debug() { } });
+const log = (baseLogger?.scope?.('authStore')) ?? NOOP;
+
 let currentAuth = null;
-const subscribers = [];
+const subscribers = new Set();
 
-const fileName = 'authStore';
+let ipcAuthUpdateHandler = null;
+let ipcInitialized = false;
 
-// Función auxiliar para loguear si está disponible
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
+// Redacción defensiva de campos sensibles
+const redact = (obj) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    const SENSITIVE = new Set(['key', 'token', 'secret', 'password', 'pass', 'authorization']);
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) {
+        if (SENSITIVE.has(k.toLowerCase())) out[k] = v ? `${String(v).slice(0, 6)}…redacted` : v;
+        else out[k] = v;
     }
+    return out;
 };
 
+// Igualdad superficial con verificación explícita de 'key'
+function shallowEqualAuth(a, b) {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    if (a.key !== b.key) return false;               // clave crítica
+    const ka = Object.keys(a), kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    for (const k of ka) if (a[k] !== b[k]) return false;
+    return true;
+}
+
 export function getAuth() {
-    return currentAuth;
+    return currentAuth; // rápido, sin copiar
+}
+
+// Versión inmutable por si un consumidor muta por error
+export function getAuthSnapshot() {
+    return currentAuth ? structuredClone(currentAuth) : null;
 }
 
 export function subscribeAuth(callback) {
-    if (typeof callback === 'function') {
-        subscribers.push(callback);
-        if (currentAuth) callback(currentAuth);
+    if (typeof callback !== 'function') return () => { };
+    subscribers.add(callback);
+    if (currentAuth) {
+        try { callback(currentAuth); } catch (e) { log.warn('subscribe.callback.error'); }
     }
+    return () => { subscribers.delete(callback); };
 }
 
 export function setAuth(auth) {
-    currentAuth = auth;
-    log('info', 'Auth actualizado');
-    subscribers.forEach(cb => cb(currentAuth));
-}
-
-// Solo si estamos dentro de Electron
-if (typeof window !== 'undefined' && window.electronAPI?.onAuthUpdate) {
-    window.electronAPI.onAuthUpdate((newAuth) => {
-        setAuth(newAuth);
-        log('info', 'Recibido nuevo auth vía IPC');
-    });
-} else {
-    log('warn', 'electronAPI.onAuthUpdate no disponible: ejecutando en navegador');
-}
-
-// Inicializa si se puede
-(async () => {
-    if (typeof window !== 'undefined' && window.electronAPI?.getAuth) {
-        try {
-            const initialAuth = await window.electronAPI.getAuth();
-            setAuth(initialAuth);
-            log('info', 'auth_key.json inicial cargado exitosamente');
-        } catch (err) {
-            log('error', `Error al cargar auth_key.json inicial: ${err.message}`);
-        }
-    } else {
-        log('warn', 'No se puede cargar auth_key.json, no estamos en Electron');
+    if (auth != null && typeof auth !== 'object') {
+        log.warn('setAuth.invalid.type');
+        return;
     }
-})();
+    if (shallowEqualAuth(currentAuth ?? {}, auth ?? {})) {
+        log.debug('setAuth.nochange');
+        return;
+    }
+
+    const prev = currentAuth;
+    currentAuth = auth ?? null;
+
+    try { log.info('setAuth.updated', { prev: redact(prev), next: redact(currentAuth) }); } catch { }
+
+    for (const cb of subscribers) {
+        try { cb(currentAuth); } catch { log.warn('notify.callback.error'); }
+    }
+}
+
+export async function initAuthBridge({ verbose = false } = {}) {
+    if (ipcInitialized) {
+        if (verbose) log.debug('ipc.alreadyInitialized');
+        return;
+    }
+    ipcInitialized = true;
+
+    const api = typeof window !== 'undefined' ? window.electronAPI : null;
+    if (!api) { log.warn('ipc.unavailable.window'); return; }
+
+    try {
+        if (typeof api.getAuth === 'function') {
+            const initial = await api.getAuth();
+            setAuth(initial);
+            if (verbose) log.info('ipc.initial.loaded');
+        } else log.warn('ipc.getAuth.missing');
+    } catch (e) { log.error('ipc.initial.error'); }
+
+    if (typeof api.onAuthUpdate === 'function') {
+        // Evita doble attach accidental
+        if (!ipcAuthUpdateHandler) {
+            ipcAuthUpdateHandler = (newAuth) => { try { setAuth(newAuth); } catch { } };
+            api.onAuthUpdate(ipcAuthUpdateHandler);
+            if (verbose) log.info('ipc.listener.attached');
+        }
+    } else log.warn('ipc.onAuthUpdate.missing');
+}
+
+export function disposeAuthBridge() {
+    const api = typeof window !== 'undefined' ? window.electronAPI : null;
+    if (api?.offAuthUpdate && ipcAuthUpdateHandler) {
+        try { api.offAuthUpdate(ipcAuthUpdateHandler); log.info('ipc.listener.detached'); } catch { }
+    }
+    ipcAuthUpdateHandler = null;
+    ipcInitialized = false;
+}
+
+export function resetAuthStore() {
+    subscribers.clear();
+    currentAuth = null;
+    disposeAuthBridge();
+}
+
+// Auto-init no ruidoso
+(async () => { try { await initAuthBridge(); } catch { } })();

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 
-const fileName = 'useConfig';
+import { logger } from '@shared/utils/logger';
 
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
+const NOOP = Object.freeze({ info(){}, warn(){}, error(){}, debug(){} });
+const log = (logger?.scope?.('useElectronConfig')) ?? NOOP;
 
 export function useElectronConfig() {
     const [config, setConfig] = useState(null); // <-- cambia aquí
@@ -17,12 +14,12 @@ export function useElectronConfig() {
                 if (window?.electronAPI?.getConfig) {
                     const result = await window.electronAPI.getConfig();
                     setConfig(result);
-                    log('info', 'Configuración inicial obtenida');
+                    log.info('Configuración inicial obtenida');
                 } else {
-                    log('warn', 'getConfig no está disponible en electronAPI');
+                    log.warn('getConfig no está disponible en electronAPI');
                 }
             } catch (error) {
-                log('error', `Error al obtener configuración inicial: ${error.message}`);
+                log.error(`Error al obtener configuración inicial: ${error.message}`);
             }
         }
 
@@ -31,10 +28,10 @@ export function useElectronConfig() {
         if (window?.electronAPI?.onConfigUpdate) {
             window.electronAPI.onConfigUpdate((newConfig) => {
                 setConfig(newConfig);
-                log('info', 'Configuración actualizada mediante onConfigUpdate');
+                log.info('Configuración actualizada mediante onConfigUpdate');
             });
         } else {
-            log('warn', 'onConfigUpdate no está disponible en electronAPI');
+            log.warn('onConfigUpdate no está disponible en electronAPI');
         }
     }, []);
 

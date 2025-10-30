@@ -1,45 +1,59 @@
 // electron/preload/preload.js  (ESM)
 import { contextBridge, ipcRenderer } from 'electron';
+import 'source-map-support/register.js';
+
+// Helpers seguros para suscripción/desuscripción
+function on(channel, handler) {
+  if (typeof handler !== 'function') return () => {};
+  const listener = (_evt, payload) => handler(payload);
+  ipcRenderer.on(channel, listener);
+  return () => ipcRenderer.removeListener(channel, listener);
+}
+
+function onRaw(channel, handler) {
+  // para callbacks que esperan (event, ...args), ej: compatibilidad directa
+  if (typeof handler !== 'function') return () => {};
+  ipcRenderer.on(channel, handler);
+  return () => ipcRenderer.removeListener(channel, handler);
+}
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // App
   exitApp: () => ipcRenderer.send('app:exit'),
   requestExit: () => ipcRenderer.send('app:request-exit'),
-  onAppClose: (cb) => ipcRenderer.on('app-close', cb),
+  onAppClose: (cb) => onRaw('app-close', cb),
 
-  // Logs desde renderer
-  log: (level, message) => ipcRenderer.send('log-message', { level, message }),
+  // Logs (unificado)
+  // Uso: window.electronAPI.log('info', 'mensaje', { metaOpcional }, 'scopeOpcional')
+  log: (level, message, meta = {}, scope = 'renderer') =>
+    ipcRenderer.invoke('log:write', { level, scope, message, meta }),
 
-  // Version (pide a main)
+  // Version
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 
   // CSP
-  onUpdateCSP: (cb) => ipcRenderer.on('update-csp', (_e, csp) => cb(csp)),
+  onUpdateCSP: (cb) => on('update-csp', cb),
   reloadApp: () => ipcRenderer.send('reload-app'),
 
-  // Config y estado (main es quien observa archivos)
+  // Config y estado (observados por main)
   getEnv: () => ipcRenderer.invoke('get-env'),
-  onEnvUpdate: (cb) => ipcRenderer.on('env-updated', (_, d) => cb(d)),
+  onEnvUpdate: (cb) => on('env-updated', cb),
 
   getConfig: () => ipcRenderer.invoke('get-config'),
-  onConfigUpdate: (cb) => ipcRenderer.on('config-updated', (_, d) => cb(d)),
+  onConfigUpdate: (cb) => on('config-updated', cb),
 
   getLogger: () => ipcRenderer.invoke('get-logger'),
-  onLoggerUpdate: (cb) => ipcRenderer.on('logger-updated', (_, d) => cb(d)),
+  onLoggerUpdate: (cb) => on('logger-updated', cb),
 
   getAuth: () => ipcRenderer.invoke('get-auth'),
-  onAuthUpdate: (cb) => ipcRenderer.on('auth-updated', (_, d) => cb(d)),
+  onAuthUpdate: (cb) => on('auth-updated', cb),
 
   // Pantalla
   getScreenDataOnce: () => ipcRenderer.invoke('get-screen-data-once'),
-  onScreenData: (cb) => {
-    const listener = (_, data) => cb(data);
-    ipcRenderer.on('screen-data', listener);
-    return () => ipcRenderer.removeListener('screen-data', listener);
-  },
+  onScreenData: (cb) => on('screen-data', cb),
 
   // Teclado virtual (si lo usas desde main)
-  onFocusKeyboard: (cb) => ipcRenderer.on('focus-input-for-keyboard', cb),
+  onFocusKeyboard: (cb) => onRaw('focus-input-for-keyboard', cb),
 
   // TTS
   speak: (text, options) => ipcRenderer.invoke('tts-speak', text, options),

@@ -1,12 +1,15 @@
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Tab } from '@mui/material';
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
 
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { logger } from '@shared/utils/logger.js';
 
 import { AdminLockers } from './AdminLockers.jsx';
 import { ReportLockers } from './ReportLockers.jsx';
+
+const fileName = 'TabAdmin';
+const log = logger.scope(fileName);
 
 export const TabAdmin = () => {
     const [value, setValue] = useState('1');
@@ -17,8 +20,15 @@ export const TabAdmin = () => {
     const tabBarBase = 70 * scale; // altura típica MUI Tabs
     const tabBarHeight = Math.max(40, Math.min(70, tabBarBase * scale));
 
-    const handleChange = (event, newValue) => {
+    useEffect(() => {
+        // [+log]
+        log.info(`Montando TabAdmin valorInicial=${value} scale=${scale}`);
+    }, [scale, value]); // solo una vez
+
+    const handleChange = (_event, newValue) => {
         setValue(newValue);
+        // [+log]
+        log.info(`Cambio de pestaña → ${newValue === '1' ? 'Estado Casilleros' : 'Reporte'}`);
     };
 
     return (

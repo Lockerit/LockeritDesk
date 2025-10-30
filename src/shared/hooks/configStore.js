@@ -1,53 +1,132 @@
+import { logger as baseLogger } from '@shared/utils/logger';
+
+// configStore.js
+/* global logger */
 let currentConfig = null;
-const subscribers = [];
+const subscribers = new Set();
 
-const fileName = 'configStore';
+// --- Logger seguro (no rompe si no existe) ---
+const NOOP = Object.freeze({ info() { }, warn() { }, error() { }, debug() { } });
+const log = (baseLogger?.scope?.('configStore')) ?? NOOP;
 
-// Función auxiliar para loguear
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
+// --- Utilidades ---
+const isObject = (v) => v !== null && typeof v === 'object';
+
+// Comparación superficial de primer nivel para evitar notificar sin cambios
+const shallowEqual = (a, b) => {
+    if (a === b) return true;
+    if (!isObject(a) || !isObject(b)) return false;
+    const ka = Object.keys(a);
+    const kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    for (const k of ka) {
+        if (a[k] !== b[k]) return false;
     }
+    return true;
 };
 
+// Redacción básica de campos sensibles
+const redactConfig = (cfg) => {
+    if (!isObject(cfg)) return cfg;
+    const SENSITIVE_KEYS = new Set([
+        'key', 'token', 'secret', 'password', 'pass', 'authorization',
+    ]);
+    const out = {};
+    for (const [k, v] of Object.entries(cfg)) {
+        if (SENSITIVE_KEYS.has(k.toLowerCase())) {
+            out[k] = v ? `${String(v).slice(0, 6)}…redacted` : v;
+        } else if (isObject(v)) {
+            out[k] = redactConfig(v);
+        } else {
+            out[k] = v;
+        }
+    }
+    return out;
+};
+
+// --- API pública ---
 export function getConfig() {
     return currentConfig;
 }
 
 export function subscribeConfig(callback) {
-    if (typeof callback === 'function') {
-        subscribers.push(callback);
-        if (currentConfig) callback(currentConfig);
+    if (typeof callback !== 'function') {
+        log.warn('subscribe.ignored.nonFunction');
+        return () => { };
     }
+    subscribers.add(callback);
+    // Notificación inicial (si ya hay config)
+    if (currentConfig) {
+        try {
+            callback(currentConfig);
+        } catch (e) {
+            log.error('subscribe.initial.notify.error', { message: e?.message });
+        }
+    }
+    // Retorna unsubscribe
+    return () => {
+        subscribers.delete(callback);
+    };
 }
 
 export function setConfig(config) {
+    // Evita notificar si no hay cambios de primer nivel
+    if (shallowEqual(currentConfig, config)) {
+        log.debug('setConfig.nochange');
+        return;
+    }
+
+    const prev = currentConfig;
     currentConfig = config;
-    log('info', 'Configuración actualizada');
-    subscribers.forEach(cb => cb(currentConfig));
+
+    // Logs de cambio (redactado)
+    try {
+        log.info('setConfig.updated', {
+            prev: redactConfig(prev),
+            next: redactConfig(config),
+        });
+    } catch {
+        // Ignorar errores de serialización
+    }
+
+    // Notificar a suscriptores de forma segura
+    for (const cb of subscribers) {
+        try {
+            cb(currentConfig);
+        } catch (e) {
+            log.error('subscriber.callback.error', { message: e?.message });
+        }
+    }
 }
 
-// Solo si estamos dentro de Electron
-if (typeof window !== 'undefined' && window.electronAPI?.onConfigUpdate) {
-    window.electronAPI.onConfigUpdate((newConfig) => {
-        setConfig(newConfig);
-        log('info', 'Nueva configuración recibida vía IPC');
-    });
+// --- Integración con Electron (si existe) ---
+const hasElectron = typeof window !== 'undefined' && !!window.electronAPI;
+
+if (hasElectron && window.electronAPI?.onConfigUpdate) {
+    try {
+        window.electronAPI.onConfigUpdate((newConfig) => {
+            setConfig(newConfig);
+            log.debug('ipc.onConfigUpdate.received');
+        });
+        log.info('ipc.listener.attached');
+    } catch (e) {
+        log.error('ipc.listener.attach.error', { message: e?.message });
+    }
 } else {
-    log('warn', 'electronAPI.onConfigUpdate no disponible: ejecutando en navegador');
+    log.warn('ipc.listener.unavailable');
 }
 
-// Inicializa si se puede
+// Carga inicial (best-effort)
 (async () => {
-    if (typeof window !== 'undefined' && window.electronAPI?.getConfig) {
+    if (hasElectron && window.electronAPI?.getConfig) {
         try {
             const initialConfig = await window.electronAPI.getConfig();
             setConfig(initialConfig);
-            log('info', 'config_key.json inicial cargado exitosamente');
+            log.info('ipc.initialConfig.loaded');
         } catch (err) {
-            log('error', `Error al cargar config_key.json inicial: ${err.message}`);
+            log.error('ipc.initialConfig.error', { message: err?.message });
         }
     } else {
-        log('warn', 'No se puede cargar config_key.json, no estamos en Electron');
+        log.warn('ipc.initialConfig.unavailable');
     }
 })();

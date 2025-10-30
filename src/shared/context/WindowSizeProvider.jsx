@@ -1,7 +1,10 @@
 // src/shared/context/WindowSizeProvider.jsx
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useRef } from "react";
 import { WindowSizeContext } from "./WindowSizeContext.jsx";
+import { logger } from "@shared/utils/logger.js";
+
+const fileName = "WindowSizeProvider";
+const log = logger.scope(fileName);
 
 function calcFactor(width, height) {
     const isPortrait = height > width;
@@ -18,6 +21,15 @@ function calcFactor(width, height) {
     };
 }
 
+// Debounce simple
+function debounce(fn, ms) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), ms);
+    };
+}
+
 export const WindowSizeProvider = ({ children, initialSize }) => {
     // Usa initialSize solo al inicio; si no viene, usa el viewport actual
     const [size, setSize] = useState(() =>
@@ -26,24 +38,72 @@ export const WindowSizeProvider = ({ children, initialSize }) => {
             : calcFactor(window.innerWidth, window.innerHeight)
     );
 
-    useEffect(() => {
-        const handleResize = () => {
-            setSize(calcFactor(window.innerWidth, window.innerHeight));
-        };
+    const prevRef = useRef(size);
 
-        window.addEventListener("resize", handleResize);
+    useEffect(() => {
+        log.info("mounted", {
+            width: size.width,
+            height: size.height,
+            orientation: size.orientation,
+            factor: size.factor,
+        });
+        return () => log.info("unmounted");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Log cuando cambian orientación o factor de forma significativa
+    useEffect(() => {
+        const prev = prevRef.current;
+        const orientationChanged = prev.orientation !== size.orientation;
+        const factorDelta = Math.abs((size.factor ?? 0) - (prev.factor ?? 0));
+
+        if (orientationChanged || factorDelta >= 0.01) {
+            log.info("resize", {
+                width: size.width,
+                height: size.height,
+                orientation: size.orientation,
+                factor: size.factor,
+            });
+            prevRef.current = size;
+        }
+    }, [size]);
+
+    useEffect(() => {
+        const onResize = debounce(() => {
+            setSize(calcFactor(window.innerWidth, window.innerHeight));
+        }, 150);
+
+        window.addEventListener("resize", onResize);
 
         // Suscripción a Electron (si existe)
         let unsubscribe;
         if (window.electronAPI?.onScreenData) {
             unsubscribe = window.electronAPI.onScreenData((newSize) => {
-                setSize(calcFactor(newSize.width, newSize.height));
+                const next = calcFactor(newSize.width, newSize.height);
+                setSize(next);
+                // Log inmediato para eventos de Electron (menos frecuentes)
+                log.info("screenData", {
+                    width: next.width,
+                    height: next.height,
+                    orientation: next.orientation,
+                    factor: next.factor,
+                });
             });
+            log.info("electron.onScreenData.subscribed");
+        } else {
+            log.debug?.("electron.onScreenData.unavailable");
         }
 
         return () => {
-            window.removeEventListener("resize", handleResize);
-            if (typeof unsubscribe === "function") unsubscribe();
+            window.removeEventListener("resize", onResize);
+            if (typeof unsubscribe === "function") {
+                try {
+                    unsubscribe();
+                    log.info("electron.onScreenData.unsubscribed");
+                } catch {
+                    /* noop */
+                }
+            }
         };
     }, []);
 

@@ -1,52 +1,103 @@
-import { useState, useEffect } from "react";
+// shared/hooks/useWindowSize.js
+import { useEffect, useRef, useState } from "react";
 
-const fileName = "useWindowSize";
-
-const log = (level, message) => {
-  if (typeof window !== "undefined" && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
+function calcSize({ width, height }) {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return null;
   }
-};
+  const isPortrait = height > width;
+  const baseWidth = isPortrait ? 1080 : 1920;
+  const baseHeight = isPortrait ? 1920 : 1080;
+  const scaleW = width / baseWidth;
+  const scaleH = height / baseHeight;
+  const factor = Math.max(0.1, Math.min(5, Math.min(scaleW, scaleH))); // [0.1, 5] defensivo
+  return {
+    width,
+    height,
+    orientation: isPortrait ? "portrait" : "landscape",
+    factor: Number(factor.toFixed(2)),
+  };
+}
 
 /**
- * @param {object|null} initialSize - Tamaño inicial pasado desde main-renderer
+ * @param {{width:number,height:number}|null} initialSize Tamaño inicial (opcional)
  */
 export function useWindowSize(initialSize = null) {
-  log("info", "hook useWindowSize montado");
+  // Estado inicial: si no hay initialSize y estamos en navegador, usar viewport actual
+  const initial =
+    initialSize?.width && initialSize?.height
+      ? calcSize(initialSize)
+      : (typeof window !== "undefined" ? calcSize({ width: window.innerWidth, height: window.innerHeight }) : null);
 
-  const [size, setSize] = useState(initialSize);
+  const [size, setSize] = useState(initial);
+  const rafId = useRef(0);
+  const electronUnsubRef = useRef(null);
 
-  const handler = ({ width, height }) => {
-    const isPortrait = height > width;
-
-    const baseWidth = isPortrait ? 1080 : 1920;
-    const baseHeight = isPortrait ? 1920 : 1080;
-
-    const scaleW = width / baseWidth;
-    const scaleH = height / baseHeight;
-    const factor = Math.min(scaleW, scaleH);
-
-    log("info", `hook useWindowSize montado handler ${scaleW} ${scaleH} ${factor}`);
-
-    setSize({
-      width,
-      height,
-      orientation: isPortrait ? "portrait" : "landscape",
-      factor: parseFloat(factor.toFixed(2)),
+  // Handler común
+  const handleUpdate = ({ width, height }) => {
+    const next = calcSize({ width, height });
+    if (!next) return;
+    setSize(prev => {
+      if (!prev) return next;
+      // evita renders si no cambia algo relevante
+      if (
+        prev.width === next.width &&
+        prev.height === next.height &&
+        prev.orientation === next.orientation &&
+        prev.factor === next.factor
+      ) {
+        return prev;
+      }
+      return next;
     });
   };
 
+  // Listener de window.resize con rAF
   useEffect(() => {
-    if (window.electronAPI?.onScreenData) {
-      log("info", `hook useWindowSize montado onScreenData`);
-      window.electronAPI.onScreenData(handler);
-    }
-    return () => {
-      if (window.electronAPI?.removeOnScreenData) {
-        log("info", `hook useWindowSize montado onScreenData`);
-        window.electronAPI.removeOnScreenData(handler);
-      }
+    if (typeof window === "undefined") return;
+
+    const onResize = () => {
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+      rafId.current = requestAnimationFrame(() => {
+        handleUpdate({ width: window.innerWidth, height: window.innerHeight });
+      });
     };
+
+    window.addEventListener("resize", onResize);
+    return () => {
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  // Canal Electron: onScreenData
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const api = window.electronAPI;
+    if (!api?.onScreenData) return;
+
+    // onScreenData puede devolver un unsubscribe o depender de removeOnScreenData
+    const maybeUnsub = api.onScreenData(({ width, height }) => handleUpdate({ width, height }));
+    if (typeof maybeUnsub === "function") {
+      electronUnsubRef.current = maybeUnsub;
+      return () => {
+        try { electronUnsubRef.current?.(); } catch { /* noop */ }
+        electronUnsubRef.current = null;
+      };
+    }
+
+    // Fallback: usar removeOnScreenData(handler)
+    const fallbackHandler = ({ width, height }) => handleUpdate({ width, height });
+    if (api.removeOnScreenData) {
+      // Ya nos suscribimos arriba; aquí solo definimos cleanup con el mismo handler si la API lo requiere
+      return () => {
+        try { api.removeOnScreenData(fallbackHandler); } catch { /* noop */ }
+      };
+    }
+
+    // Si no hay mecanismo de desuscripción, no hacemos nada en cleanup
+    return () => { };
   }, []);
 
   return size;

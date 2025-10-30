@@ -1,9 +1,10 @@
 {
-    "logDirectory": "logs",
-    "logFilePattern": "lockerit-%DATE%.log",
-    "datePattern": "YYYY-MM-DD",
-    "zippedArchive": false,
-    "maxSize": "10m",
-    "maxFiles": "15d",
-    "logLevel": "info"
-}   
+  "level": "info",
+  "dirname": "logs",
+  "filename": "app-%DATE%.log",
+  "datePattern": "YYYY-MM-DD",
+  "maxFiles": "15d",
+  "maxSize": "20m",
+  "console": true,
+  "redact": ["phone", "pin", "password", "token"]
+}

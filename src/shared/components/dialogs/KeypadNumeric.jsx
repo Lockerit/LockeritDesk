@@ -4,8 +4,7 @@ import {
 import {
   Grid, Button, TextField, Box, Typography, Dialog, DialogContent, IconButton, Slide
 } from '@mui/material';
-import { useState, useRef, forwardRef, useEffect, useCallback } from 'react';
-
+import { useState, useRef, forwardRef, useEffect, useCallback, useMemo } from 'react';
 
 import { paymentService } from '@services/apis/assignLocker.js';
 import { OpenReserveLocker } from '@services/apis/openReserveLocker.js';
@@ -26,6 +25,18 @@ import { Loading } from './Loading.jsx';
 import { ShowErrorAPI } from './ShowErrorAPI.jsx';
 import { ShowLocker } from './ShowLocker.jsx';
 
+// Logger
+import { logger } from '@shared/utils/logger.js';
+const fileName = 'KeypadNumeric';
+const log = logger.scope(fileName);
+
+// Utils de privacidad
+const maskPhone = (p) => {
+  const s = String(p || '').replace(/\D/g, '');
+  if (s.length <= 4) return '****';
+  return s.slice(0, s.length - 4).replace(/./g, '*') + s.slice(-4);
+};
+
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -40,11 +51,7 @@ export const KeypadNumeric = ({
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-  const [errorsEmpty, setErrorsEmpty] = useState({
-    phone: false,
-    password: false,
-    confirmPassword: false,
-  });
+  const [errorsEmpty, setErrorsEmpty] = useState({ phone: false, password: false, confirmPassword: false });
   const [msgPhone, setMsgPhone] = useState('');
   const [msgPass, setMsgPass] = useState('');
   const [msgConfPass, setMsgConfPass] = useState('');
@@ -68,19 +75,18 @@ export const KeypadNumeric = ({
     showErrorAPIOpen, setShowErrorAPIOpen
   } = useModal();
 
-  // Refs para cambiar el foco
   const size = useWindowSizeContext();
-  const scale = size.factor || 1; // de tu hook useElectronScreenData()
+  const scale = size.factor || 1;
   const phoneRef = useRef(null);
   const passRef = useRef(null);
   const confirmRef = useRef(null);
   const cleanupRef = useRef(null);
   const config = useElectronConfig();
 
-  const operationRet = (operation === 'Retirar' || operation === 'Reservado') ? true : false;
-  const isConfigReady = config && Object.keys(config).length > 0;
-
+  const operationRet = (operation === 'Retirar' || operation === 'Reservado');
+  const isConfigReady = !!config && Object.keys(config).length > 0;
   const openedOnceRef = useRef(false);
+  const intervalRef = useRef(null);
 
   const clearInputs = useCallback(() => {
     setPhone('');
@@ -89,86 +95,110 @@ export const KeypadNumeric = ({
     setActiveInput('phone');
     setErrorsEmpty({ phone: false, password: false, confirmPassword: false });
     setConfirmDialogOpen(false);
+    setInsertMoneyOpen(false);
+    log.debug('Inputs reseteados');
   }, [setPhone, setPassword, setConfirmPassword, setConfirmDialogOpen]);
 
   const cancel = useCallback(() => {
+    log.info('Cancelación solicitada');
     clearInputs();
-    onClose();
+    onClose?.();
   }, [clearInputs, onClose]);
 
-  const cancelInsertMoney = useCallback(() => {
-    if (cleanupRef.current) cleanupRef.current();
-    cancelObservable.setCancel(true);
-    setAmountPay(0);
-    closeWebSocket();
-    setInsertMoneyOpen(false);
+
+  // Montaje / desmontaje
+  useEffect(() => {
+    log.info(`Montaje | operation=${operation} | timeout=${timeout}`);
+    return () => {
+      try { closeWebSocket(); } catch { }
+      log.debug('Desmontaje');
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cambios de props
+  const lastProps = useRef({ open: undefined, operation: undefined, timeout: undefined });
   useEffect(() => {
-    setMessageErrorAPI(
-      'No te preocupes, el proceso continuará con el monto que hayas ingresado hasta ahora, vuelve a intentarlo.'
-    );
+    if (lastProps.current.open !== open) {
+      log.debug(`Prop changed: open=${open}`);
+      lastProps.current.open = open;
+    }
+    if (lastProps.current.operation !== operation) {
+      log.info(`Prop changed: operation=${operation}`);
+      lastProps.current.operation = operation;
+    }
+    if (lastProps.current.timeout !== timeout) {
+      log.info(`Prop changed: timeout=${timeout}`);
+      lastProps.current.timeout = timeout;
+    }
+  }, [open, operation, timeout]);
+
+  // Mensaje informativo inicial para modal de error genérico
+  useEffect(() => {
+    setMessageErrorAPI('El proceso continuará con el monto ingresado hasta ahora. Inténtalo de nuevo.');
   }, []);
 
+  // InsertMoney: habilita una sola vez por apertura y arma fusible
   useEffect(() => {
     if (!insertMoneyOpen) {
-      // Se cerró el modal: reseteamos el fusible para la próxima apertura
       openedOnceRef.current = false;
       return;
     }
-
-    // Solo correr una vez por apertura
     if (openedOnceRef.current) return;
     openedOnceRef.current = true;
 
+    log.debug('InsertMoney abierto (primer uso en esta apertura)');
     setShowErrorAPIOpen(true);
 
     const t = setTimeout(() => {
+      log.warn('InsertMoney: tiempo de gracia inicial agotado, cancelando');
       cancelInsertMoney();
     }, 1000);
-
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Frena TTS al abrir
   useEffect(() => {
     if (open) {
-      stopSpeaking(); // cortar audio cuando se abre
+      stopSpeaking();
+      log.debug('TTS detenido por apertura de KeypadNumeric');
     }
   }, [open]);
 
+  // Reinicia contador por apertura o cambio de timeout
   useEffect(() => {
     if (open) {
-      stopSpeaking(); // cortar audio cuando se abre
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (open) {
-      setSecondsLeft(timeout); // reinicia cada vez que abre
+      setSecondsLeft(timeout);
+      log.debug(`Reinicio contador | secondsLeft=${timeout}`);
     }
   }, [open, timeout]);
 
-  // Manejar conteo
+  // Intervalo countdown
   useEffect(() => {
     if (!open || secondsLeft <= 0) return;
+    if (intervalRef.current) clearInterval(intervalRef.current);
 
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setSecondsLeft(prev => prev - 1);
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
   }, [open, secondsLeft]);
 
-  // Cerrar automáticamente cuando llegue a 0
+  // Autocerrar por timeout
   useEffect(() => {
     if (open && secondsLeft === 0) {
+      log.warn('Tiempo agotado, cancelando flujo KeypadNumeric');
       setSecondsLeft(timeout);
       cancel();
     }
   }, [open, secondsLeft, cancel, timeout]);
 
+  // Carga de configuración
   useEffect(() => {
     if (!isConfigReady) return;
 
@@ -180,12 +210,23 @@ export const KeypadNumeric = ({
     }
 
     const tmo = config?.paramsHtml?.modalTimeouts;
-    if (tmo) {
-      setTimeoutInsert(tmo?.timeoutInsertMoney);
-      setTimeoutShowMessage(tmo?.timeoutShowMessage);
-    }
+    setTimeoutInsert(tmo?.timeoutInsertMoney);
+    setTimeoutShowMessage(tmo?.timeoutShowMessage);
+
+    log.info(`Config cargada | amountService=${rawAmount} | timeoutInsert=${tmo?.timeoutInsertMoney} | timeoutShowMessage=${tmo?.timeoutShowMessage}`);
   }, [isConfigReady, config]);
 
+  const cancelInsertMoney = useCallback(() => {
+    try { cleanupRef.current && cleanupRef.current(); } catch { }
+    cancelObservable.setCancel(true);
+    setAmountPay(0);
+    closeWebSocket();
+    setInsertMoneyOpen(false);
+    log.info('InsertMoney cancelado');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Lectura/escritura segura
   const getInputValue = () => {
     switch (activeInput) {
       case 'phone': return phone;
@@ -194,12 +235,12 @@ export const KeypadNumeric = ({
       default: return '';
     }
   };
-
   const setInputValue = (value) => {
     switch (activeInput) {
       case 'phone': setPhone(value); break;
       case 'password': setPassword(value); break;
       case 'confirmPassword': setConfirmPassword(value); break;
+      default: break;
     }
   };
 
@@ -215,115 +256,95 @@ export const KeypadNumeric = ({
     setInputValue(current.slice(0, -1));
   };
 
+  // Validaciones: solo logs de eventos, nunca de PIN/contraseñas
   const validateCurrentInput = () => {
     let error = false;
-
     if (activeInput === 'phone') {
       const trimmedPhone = phone.trim();
-      const isEmpty = trimmedPhone === '';
-      const invalidFormat = !phoneRegex.test(trimmedPhone);
-      setErrorsEmpty(prev => ({ ...prev, phone: isEmpty || invalidFormat }));
-      if (isEmpty) {
-        const msg = 'Ingresa el número celular.';
-        setMsgPhone(msg);
-        showAlert(msg, 'error');
-        error = true;
-      } else if (invalidFormat) {
-        const msg = 'Número celular inválido.';
-        setMsgPhone(msg);
-        showAlert(msg, 'error');
+      const invalid = trimmedPhone === '' || !phoneRegex.test(trimmedPhone);
+      setErrorsEmpty(prev => ({ ...prev, phone: invalid }));
+      if (invalid) {
+        const msg = trimmedPhone === '' ? 'Ingresa el número celular.' : 'Número celular inválido.';
+        setMsgPhone(msg); showAlert(msg, 'error');
+        log.warn(`Validación teléfono falló | phone=${maskPhone(trimmedPhone)}`);
         error = true;
       }
     } else if (activeInput === 'password') {
-      const isEmpty = password.trim() === '';
-      setErrorsEmpty(prev => ({ ...prev, password: isEmpty }));
-      if (isEmpty) {
-        const msg = 'Ingresa la contraseña.';
-        setMsgPass(msg);
-        showAlert(msg, 'error');
-        error = true;
-      } else if ((password.length < config?.paramsHtml?.lenMinInputPass) || (password.length > config?.paramsHtml?.lenMaxInputPass)) {
-        const msg = `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
-        setMsgPass(msg);
-        showAlert(msg, 'error');
-        setErrorsEmpty(prev => ({ ...prev, password: true }));
+      const invalid = password.trim() === '' ||
+        (password.length < config?.paramsHtml?.lenMinInputPass) ||
+        (password.length > config?.paramsHtml?.lenMaxInputPass);
+      setErrorsEmpty(prev => ({ ...prev, password: invalid }));
+      if (invalid) {
+        const msg = password.trim() === '' ? 'Ingresa la contraseña.' : `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
+        setMsgPass(msg); showAlert(msg, 'error');
+        log.warn('Validación password falló');
         error = true;
       }
-    } else if (!operationRet) {
-      if (activeInput === 'confirmPassword') {
-        const isEmpty = confirmPassword.trim() === '';
-        const noMatch = password !== confirmPassword;
-        setErrorsEmpty(prev => ({
-          ...prev,
-          confirmPassword: isEmpty || noMatch,
-        }));
-        if (isEmpty) {
-          const msg = 'Confirma la contraseña.';
-          setMsgConfPass(msg);
-          showAlert(msg, 'error');
-          error = true;
-        } else if (noMatch) {
-          const msg = 'Las contraseñas no coinciden.';
-          setMsgConfPass(msg);
-          showAlert(msg, 'error');
-          error = true;
-        } else if ((confirmPassword.length < config?.paramsHtml?.lenMinInputPass) || (confirmPassword.length > config?.paramsHtml?.lenMaxInputPass)) {
-          const msg = `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
-          setMsgConfPass(msg);
-          showAlert(msg, 'error');
-          setErrorsEmpty(prev => ({ ...prev, confirmPassword: true }));
-          error = true;
-        }
+    } else if (!operationRet && activeInput === 'confirmPassword') {
+      const invalid = (
+        confirmPassword.trim() === '' ||
+        password !== confirmPassword ||
+        (confirmPassword.length < config?.paramsHtml?.lenMinInputPass) ||
+        (confirmPassword.length > config?.paramsHtml?.lenMaxInputPass)
+      );
+      setErrorsEmpty(prev => ({ ...prev, confirmPassword: invalid }));
+      if (invalid) {
+        let msg = '';
+        if (confirmPassword.trim() === '') msg = 'Confirma la contraseña.';
+        else if (password !== confirmPassword) msg = 'Las contraseñas no coinciden.';
+        else msg = `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
+        setMsgConfPass(msg); showAlert(msg, 'error');
+        log.warn('Validación confirmPassword falló');
+        error = true;
       }
     }
-    return !error; // true si todo está OK
+    return !error;
   };
 
   const validateAllInputs = () => {
     let hasError = false;
 
-    // Validación del celular
     const trimmedPhone = phone.trim();
     const phoneInvalid = trimmedPhone === '' || !phoneRegex.test(trimmedPhone);
     if (phoneInvalid) {
       const msg = trimmedPhone === '' ? 'Ingresa el número celular.' : 'Número celular inválido.';
-      setMsgPhone(msg);
-      setErrorsEmpty(prev => ({ ...prev, phone: true }));
-      showAlert(msg, 'error');
+      setMsgPhone(msg); setErrorsEmpty(prev => ({ ...prev, phone: true })); showAlert(msg, 'error');
+      log.warn(`Validación global teléfono falló | phone=${maskPhone(trimmedPhone)}`);
       hasError = true;
     } else {
       setErrorsEmpty(prev => ({ ...prev, phone: false }));
     }
 
-    // Validación contraseña
-    const passInvalid = password.trim() === '' || (password.length < config?.paramsHtml?.lenMinInputPass) || (password.length > config?.paramsHtml?.lenMaxInputPass);
+    const passInvalid = password.trim() === '' ||
+      (password.length < config?.paramsHtml?.lenMinInputPass) ||
+      (password.length > config?.paramsHtml?.lenMaxInputPass);
     if (passInvalid) {
       const msg = password.trim() === '' ? 'Ingresa la contraseña.' : `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
-      setMsgPass(msg);
-      setErrorsEmpty(prev => ({ ...prev, password: true }));
-      showAlert(msg, 'error');
+      setMsgPass(msg); setErrorsEmpty(prev => ({ ...prev, password: true })); showAlert(msg, 'error');
+      log.warn('Validación global password falló');
       hasError = true;
     } else {
       setErrorsEmpty(prev => ({ ...prev, password: false }));
     }
 
     if (!operationRet) {
-      // Validación confirmación contraseña
-      const confInvalid = confirmPassword.trim() === '' || password !== confirmPassword || (confirmPassword.length < config?.paramsHtml?.lenMinInputPass) || (confirmPassword.length > config?.paramsHtml?.lenMaxInputPass);
+      const confInvalid =
+        confirmPassword.trim() === '' ||
+        password !== confirmPassword ||
+        (confirmPassword.length < config?.paramsHtml?.lenMinInputPass) ||
+        (confirmPassword.length > config?.paramsHtml?.lenMaxInputPass);
       if (confInvalid) {
         let msg = '';
         if (confirmPassword.trim() === '') msg = 'Confirma la contraseña.';
         else if (password !== confirmPassword) msg = 'Las contraseñas no coinciden.';
         else msg = `La contraseña debe tener ${config?.paramsHtml?.lenMaxInputPass} dígitos.`;
-        setMsgConfPass(msg);
-        setErrorsEmpty(prev => ({ ...prev, confirmPassword: true }));
-        showAlert(msg, 'error');
+        setMsgConfPass(msg); setErrorsEmpty(prev => ({ ...prev, confirmPassword: true })); showAlert(msg, 'error');
+        log.warn('Validación global confirmPassword falló');
         hasError = true;
       } else {
         setErrorsEmpty(prev => ({ ...prev, confirmPassword: false }));
       }
     }
-
     return !hasError;
   };
 
@@ -332,24 +353,25 @@ export const KeypadNumeric = ({
       (!operationRet && activeInput === 'confirmPassword');
 
     if (!isLastStep) {
-      // Validación paso a paso como ya tienes
       const isValid = validateCurrentInput();
       if (!isValid) return;
 
       if (activeInput === 'phone') {
         setActiveInput('password');
         passRef.current?.focus();
+        log.debug('Paso -> phone → password');
       } else if (!operationRet && activeInput === 'password') {
         setActiveInput('confirmPassword');
         confirmRef.current?.focus();
+        log.debug('Paso -> password → confirmPassword');
       }
       return;
     }
 
-    // Validación FINAL (antes de mostrar el diálogo)
     const allValid = validateAllInputs();
     if (allValid) {
-      accept(); // Mostrar el diálogo de confirmación
+      log.info('Validación final OK, continuar');
+      accept();
     }
   };
 
@@ -357,71 +379,57 @@ export const KeypadNumeric = ({
     setLoading(false);
     if (!operationRet) {
       setMessageLoading('Asignando Casilllero...');
-      setConfirmDialogOpen(true); // Mostrar confirmación
+      setConfirmDialogOpen(true);
+      log.info(`ConfirmDialog abierto | phone=${maskPhone(phone)}`);
     } else {
       setMessageLoading('Buscando Casilllero...');
       setSecondsLeft(timeout);
-      const openBy = 'user';
-
-      const payload = {
-        phone: phone,
-        pin: password,
-        openBy: openBy
-      }
+      const payload = { phone, pin: password, openBy: 'user' };
 
       try {
         setLoading(true);
-        speak(" ");
+        speak(' ');
+        log.info(`Apertura ${operation} solicitada | phone=${maskPhone(phone)}`);
 
         let result = null;
         let message = '';
 
         if (operation === 'Retirar') {
           result = await OpenSessionLocker(payload);
-          message = config?.voice?.message?.openSessionLocker || "";
+          message = config?.voice?.message?.openSessionLocker || '';
         } else if (operation === 'Reservado') {
           result = await OpenReserveLocker(payload);
-          message = config?.voice?.message?.openReserveLocker || "";
+          message = config?.voice?.message?.openReserveLocker || '';
         }
 
         if (result?.success) {
-
           const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
           if (lockerCode) {
-
             if (config?.voice?.enabled) {
-              // Reemplazo dinámico del placeholder
-              message = message.replace("{{lockerCode}}", lockerCode || '');
-              speak(message || "");
+              speak(message.replace('{{lockerCode}}', lockerCode) || '');
             }
-
             setLocker(lockerCode);
             setShowLockerOpen(true);
+            log.info(`Apertura exitosa | locker=${lockerCode}`);
           } else {
             setMessageErrorAPI('No se recibió código de casillero');
             setShowErrorAPIOpen(true);
+            log.warn('Apertura sin lockerCode');
           }
         } else {
-          if (result?.status === 500) {
-            setMessageErrorAPI('No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!');
-          } else {
-            setMessageErrorAPI(result?.data?.message || 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!');
-          }
+          const m = result?.data?.message || 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!';
+          setMessageErrorAPI(result?.status === 500 ? 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!' : m);
           setShowErrorAPIOpen(true);
+          log.warn(`Apertura fallida | status=${result?.status} | msg=${m}`);
         }
-
-        setLoading(false);
-
       } catch (error) {
-        setMessageErrorAPI(error);
+        setMessageErrorAPI(String(error));
         setShowErrorAPIOpen(true);
-        setLoading(false);
+        log.error(`Excepción en apertura: ${String(error)}`);
       } finally {
         setLoading(false);
       }
     }
-
-    setLoading(false);
   };
 
   const showAlert = (msg, severity = 'error') => {
@@ -433,102 +441,83 @@ export const KeypadNumeric = ({
   const handleTotalUpdate = (total) => {
     setAmountPay(total);
   };
-
-  const handleLoadingChange = (loading) => {
-    setLoading(loading);
-  };
+  const handleLoadingChange = (v) => setLoading(v);
 
   const confirmSendData = async () => {
-
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
-    const openBy = 'user';
-
-    const payload = {
-      phone: phone,
-      pin: password,
-      openBy: openBy
-    }
-
+    const payload = { phone, pin: password, openBy: 'user' };
     setInsertMoneyOpen(true);
+    log.info(`Asignación solicitada | phone=${maskPhone(phone)}`);
 
     try {
       setLoading(true);
-      speak(" ");
-
+      speak(' ');
       const result = await paymentService(payload, (timeoutInsert * 1000 * 3), handleTotalUpdate, handleLoadingChange);
-      if (result?.http?.success) {
 
+      if (result?.http?.success) {
         const lockerCode = result?.http?.data?.lockerCode;
         if (lockerCode) {
-
           if (config?.voice?.enabled) {
-            let message = config?.voice?.message?.assignLocker || "";
-            // Reemplazo dinámico del placeholder
-            message = message.replace("{{lockerCode}}", lockerCode || '');
-            speak(message || "");
+            const message = (config?.voice?.message?.assignLocker || '').replace('{{lockerCode}}', lockerCode || '');
+            speak(message || '');
           }
-
           setLocker(lockerCode);
           setShowLockerOpen(true);
+          log.info(`Asignación exitosa | locker=${lockerCode}`);
         }
       } else {
-        if (result?.http?.status === 499) {
-          setMessageErrorAPI('Operación cancelada');
-        } else if (result?.status === null || result?.status === 500 || result?.http?.status === 500) {
-          setMessageErrorAPI('No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!');
-        } else {
-          setMessageErrorAPI(result?.http?.data?.message || 'No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!');
-        }
+        const status = result?.http?.status ?? result?.status;
+        const m =
+          status === 499 ? 'Operación cancelada'
+            : status === 500 || status == null ? 'No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!'
+              : (result?.http?.data?.message || 'No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!');
+
+        setMessageErrorAPI(m);
         setShowErrorAPIOpen(true);
+        log.warn(`Asignación fallida | status=${status} | msg=${m}`);
       }
-
-      setLoading(false);
-
     } catch (error) {
-      setMessageErrorAPI(error);
+      setMessageErrorAPI(String(error));
       setShowErrorAPIOpen(true);
-      setLoading(false);
+      log.error(`Excepción en asignación: ${String(error)}`);
     } finally {
       setInsertMoneyOpen(false);
       setAmountPay(0);
       cancelConfirmation(false);
       setLoading(false);
     }
-    setLoading(false);
   };
 
   const cancelConfirmation = () => {
     setConfirmDialogOpen(false);
+    log.info('ConfirmDialog cerrado por usuario');
   };
 
   const confirmAssignLocker = () => {
     setShowLockerOpen(false);
     clearInputs();
-    closeWebSocket();
+    try { closeWebSocket(); } catch { }
     cancel();
+    log.info('ShowLocker confirmado y flujo finalizado');
   };
 
   const confirmShowErrorAPI = () => {
     setShowErrorAPIOpen(false);
-    setAmountPay(0);  // resetear monto a pagar
-    closeWebSocket();
+    cancelInsertMoney();
+    setAmountPay(0);
+    try { closeWebSocket(); } catch { }
+    log.info('ShowErrorAPI confirmado');
   };
 
   const renderButton = (value) => {
-
     const commonProps = {
       variant: "contained",
       disableRipple: true,
       tabIndex: -1,
-      sx: {
-        width: "100%",
-        height: "100%",
-        fontSize: `${32 * scale}px`,
-      },
+      sx: { width: "100%", height: "100%", fontSize: `${32 * scale}px` },
     };
-
     const gridSize = value === "Aceptar" ? 12 : 4;
 
     if (value === "Aceptar") {
@@ -544,7 +533,7 @@ export const KeypadNumeric = ({
             id="confirmar-keypad"
             onClick={(e) => {
               handleNextOrAccept();
-              const btn = e.currentTarget; // ✅ guardamos referencia
+              const btn = e.currentTarget;
               setTimeout(() => btn.blur(), 0);
             }}
           >
@@ -564,17 +553,15 @@ export const KeypadNumeric = ({
       Cancelar: <Close sx={{ fontSize: 32 * scale, ml: 1 * scale }} />,
     }[value];
 
-    const handler =
-      {
-        Borrar: removeDigit,
-        Cancelar: cancel,
-      }[value] || (() => addDigit(value));
+    const handler = {
+      Borrar: removeDigit,
+      Cancelar: cancel,
+    }[value] || (() => addDigit(value));
 
-    const color =
-      {
-        Borrar: "warning",
-        Cancelar: "error",
-      }[value] || "secondary";
+    const color = {
+      Borrar: "warning",
+      Cancelar: "error",
+    }[value] || "secondary";
 
     return (
       <Grid size={gridSize} key={value}>
@@ -583,7 +570,7 @@ export const KeypadNumeric = ({
           color={color}
           onClick={(e) => {
             handler();
-            const btn = e.currentTarget; // ✅ guardamos referencia
+            const btn = e.currentTarget;
             setTimeout(() => btn.blur(), 0);
           }}
         >
@@ -600,103 +587,48 @@ export const KeypadNumeric = ({
         open={open}
         onClose={() => { }}
         keepMounted={false}
-        hideBackdrop               // 👈 evita bloquear clics en el fondo
+        hideBackdrop
         disableEscapeKeyDown
-        disableEnforceFocus        // 👈 no fuerza el foco al modal
+        disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
         PaperProps={{
           sx: {
             width: scaledDimension(
               {
-                xs: { base: 90, min: 80, max: 90 }, // en % para mobile
-                sm: { base: 90, min: 80, max: 90 }, // tablet
-                md: { base: 60, min: 50, max: 70 }, // desktop medio
-                lg: { base: 50, min: 40, max: 50 }, // desktop grande
+                xs: { base: 90, min: 80, max: 90 },
+                sm: { base: 90, min: 80, max: 90 },
+                md: { base: 60, min: 50, max: 70 },
+                lg: { base: 50, min: 40, max: 50 },
               },
               scale
             ),
-            maxWidth: 'none', // Lo dejas libre, sin límite de MUI
+            maxWidth: 'none',
             height: '100%',
             minHeight: '80%',
-            borderRadius: `${Math.max(8, 16 * scale)}px`, // Opcional: esquinas redondeadas escaladas
-            p: 2 * scale // Opcional: padding escalado
+            borderRadius: `${Math.max(8, 16 * scale)}px`,
+            p: 2 * scale
           }
         }}
-        slots={{
-          transition: Transition,
-        }}
-        sx={{ zIndex: 1300, height: '100%' }} // Asegura que el diálogo esté por encima de otros elementos
+        slots={{ transition: Transition }}
+        sx={{ zIndex: 1300, height: '100%' }}
       >
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2 * scale,
-            position: 'relative',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '5%'
-          }}
-        >
-          {/* Encabezado superior: tiempo y botón cerrar */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              gap: 1 * scale,
-              position: 'absolute',
-              right: 3 * scale,
-              top: 3 * scale,
-            }}
-          >
-            <Typography variant="h5">
-              {formatTime(secondsLeft)}
-            </Typography>
-            <IconButton onClick={cancel}>
-              <Close sx={{ fontSize: 40 * scale }} />
-            </IconButton>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative', alignItems: 'center', justifyContent: 'center', height: '5%' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 * scale, position: 'absolute', right: 3 * scale, top: 3 * scale }}>
+            <Typography variant="h5">{formatTime(secondsLeft)}</Typography>
+            <IconButton onClick={cancel}><Close sx={{ fontSize: 40 * scale }} /></IconButton>
           </Box>
 
           <Box sx={{ mt: 2 * scale }}>
-            {/* Texto centrado */}
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 'bold', textAlign: 'center', p: 2 * scale }}
-            >
-              {operation}
-            </Typography>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center', p: 2 * scale }}>{operation}</Typography>
           </Box>
         </Box>
 
-
         <DialogContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              alignItems: "center",
-              height: "100%",
-              width: "100%",
-              px: 4 * scale,
-            }}
-          >
-            {/* Sección Inputs - 25% */}
-            <Box
-              sx={{
-                flex: "0 0 25%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between", // distribuye de arriba a abajo
-                alignItems: "stretch",           // que ocupen 100% horizontal
-                width: "100%",
-                height: "100%",
-                gap: 2 * scale, // espacio entre inputs si quieres
-              }}
-            >
+          <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center", height: "100%", width: "100%", px: 4 * scale }}>
+            {/* Inputs */}
+            <Box sx={{ flex: "0 0 25%", display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "stretch", width: "100%", height: "100%", gap: 2 * scale }}>
               <Box sx={{ display: "flex", alignItems: "flex-end", flex: 1 }}>
                 <MobileFriendly sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
                 <TextField
@@ -709,11 +641,7 @@ export const KeypadNumeric = ({
                   InputProps={{ readOnly: true }}
                   error={errorsEmpty.phone}
                   helperText={errorsEmpty.phone ? msgPhone : ""}
-                  sx={{
-                    backgroundColor: activeInput === "phone" ? "#dce1f5ff" : "transparent",
-                    borderRadius: 2 * scale,
-                    transition: "background-color 0.3s ease",
-                  }}
+                  sx={{ backgroundColor: activeInput === "phone" ? "#dce1f5ff" : "transparent", borderRadius: 2 * scale, transition: "background-color 0.3s ease" }}
                 />
               </Box>
 
@@ -731,11 +659,7 @@ export const KeypadNumeric = ({
                   InputProps={{ readOnly: true }}
                   error={errorsEmpty.password}
                   helperText={errorsEmpty.password ? msgPass : ""}
-                  sx={{
-                    backgroundColor: activeInput === "password" ? "#dce1f5ff" : "transparent",
-                    borderRadius: 2 * scale,
-                    transition: "background-color 0.3s ease",
-                  }}
+                  sx={{ backgroundColor: activeInput === "password" ? "#dce1f5ff" : "transparent", borderRadius: 2 * scale, transition: "background-color 0.3s ease" }}
                 />
               </Box>
 
@@ -754,30 +678,15 @@ export const KeypadNumeric = ({
                     InputProps={{ readOnly: true }}
                     error={errorsEmpty.confirmPassword}
                     helperText={errorsEmpty.confirmPassword ? msgConfPass : ""}
-                    sx={{
-                      backgroundColor: activeInput === "confirmPassword" ? "#dce1f5ff" : "transparent",
-                      borderRadius: 2 * scale,
-                      transition: "background-color 0.3s ease",
-                    }}
+                    sx={{ backgroundColor: activeInput === "confirmPassword" ? "#dce1f5ff" : "transparent", borderRadius: 2 * scale, transition: "background-color 0.3s ease" }}
                   />
                 </Box>
               )}
             </Box>
 
-            {/* Sección Botones - 75% */}
-            <Box
-              sx={{
-                flex: "0 0 65%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Grid
-                container
-                spacing={1 * scale}
-                sx={{ mt: 4 * scale, height: "100%" }}
-              >
+            {/* Teclado */}
+            <Box sx={{ flex: "0 0 65%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Grid container spacing={1 * scale} sx={{ mt: 4 * scale, height: "100%" }}>
                 {keys().map(renderButton)}
               </Grid>
             </Box>
@@ -785,12 +694,7 @@ export const KeypadNumeric = ({
         </DialogContent>
       </Dialog>
 
-      <SnackAlert
-        open={snackbarOpen}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-        onClose={() => setSnackbarOpen(false)}
-      />
+      <SnackAlert open={snackbarOpen} message={snackbarMessage} severity={snackbarSeverity} onClose={() => setSnackbarOpen(false)} />
 
       <ConfirmDialog
         open={confirmDialogOpen}
@@ -800,11 +704,10 @@ export const KeypadNumeric = ({
         mesg={`¡Vas a ${operation}! ${config?.sendSMS ? '\nRecibirás un mensaje de texto con los datos ingresados.' : ''} \n¿El número celular es correcto?`}
         phone={formatNumberPhone(phone)}
         isPhone={true}
-        hideBackdrop    // evita que bloquee clicks
+        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
-
       />
 
       <InsertMoney
@@ -814,7 +717,7 @@ export const KeypadNumeric = ({
         amountPay={formatCurrency(amountPay)}
         phone={formatNumberPhone(phone)}
         timeout={timeoutInsert}
-        hideBackdrop    // evita que bloquee clicks
+        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -825,13 +728,11 @@ export const KeypadNumeric = ({
         onConfirm={confirmAssignLocker}
         locker={locker}
         title={'Tu casillero es el:'}
-        msg={
-          operation !== 'Reservado' ? (operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio' : 'gracias por utilizar nuestro servicio'
-        }
+        msg={operation !== 'Reservado' ? (operationRet ? 'Retira' : 'Guarda') + ' tus pertenencias, gracias por utilizar nuestro servicio' : 'gracias por utilizar nuestro servicio'}
         timeout={timeoutShowMessage}
         backColor={operation === 'Retirar' ? 'secondary.main' : operation === 'Guardar' ? 'primary.main' : 'info.main'}
         operation={operation}
-        hideBackdrop    // evita que bloquee clicks
+        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -842,15 +743,13 @@ export const KeypadNumeric = ({
         onConfirm={confirmShowErrorAPI}
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
-        hideBackdrop    // evita que bloquee clicks
+        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
       />
 
-      {loading && (<Loading
-        message={messageLoading}
-      />)}
+      {loading && (<Loading message={messageLoading} />)}
     </>
   );
-}
+};

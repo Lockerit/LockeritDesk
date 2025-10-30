@@ -1,9 +1,9 @@
+// src/App.jsx — versión revisada con logs estructurados y seguros
 import { Box, Container } from '@mui/material';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { HashRouter } from 'react-router-dom';
-
 
 import { AppRoutes } from '@features/router/AppRouter.jsx';
 import { GetReportLockers } from '@services/apis/report.js';
@@ -11,215 +11,163 @@ import { AppbarBar } from '@shared/components/bars/AppbarBar.jsx';
 import { Copyright } from '@shared/components/bars/Copyright.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useSchedulerReport } from '@shared/hooks/useScheduleReport.js';
+import { logger } from '@shared/utils/logger.js';
 import { setVoiceOptions, getVoices, preloadVoice } from '@shared/utils/speak.js';
 
 dayjs.extend(utc);
 
 const USER_STORAGE_KEY = 'userInit';
-const fileName = 'app';
+const fileName = 'App';
+const log = logger.scope(fileName);
 
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
-
-const normalizeReportConfig = (report) => {
-    // solo tomamos los campos relevantes
-    return {
-        daily: {
-            enabled: report?.daily?.enabled,
-            hour: report?.daily?.hour,
-            minute: report?.daily?.minute
-        },
-        weekly: {
-            enabled: report?.weekly?.enabled,
-            dayOfWeek: report?.weekly?.dayOfWeek,
-            hour: report?.weekly?.hour,
-            minute: report?.weekly?.minute
-        },
-        monthly: {
-            enabled: report?.monthly?.enabled,
-            dayOfMonth: report?.monthly?.dayOfMonth,
-            hour: report?.monthly?.hour,
-            minute: report?.monthly?.minute
-        },
-        timezoneMode: report?.timezoneMode,
-        timeInterval: report?.timeInterval,
-    };
-}
+const normalizeReportConfig = (report) => ({
+    daily: { enabled: report?.daily?.enabled, hour: report?.daily?.hour, minute: report?.daily?.minute },
+    weekly: { enabled: report?.weekly?.enabled, dayOfWeek: report?.weekly?.dayOfWeek, hour: report?.weekly?.hour, minute: report?.weekly?.minute },
+    monthly: { enabled: report?.monthly?.enabled, dayOfMonth: report?.monthly?.dayOfMonth, hour: report?.monthly?.hour, minute: report?.monthly?.minute },
+    timezoneMode: report?.timezoneMode,
+    timeInterval: report?.timeInterval,
+});
 
 const useResetLocalStorageOnConfigChange = (config) => {
     useEffect(() => {
         if (!config?.report) return;
-
-        const newConfig = normalizeReportConfig(config.report);
-        const prevConfig = JSON.parse(localStorage.getItem("reportConfigSnapshot") || "null");
-
-        if (!prevConfig || JSON.stringify(prevConfig) !== JSON.stringify(newConfig)) {
-            // Config cambió → limpiar lastExecution y lastTarget
-            localStorage.removeItem("lastExecution_daily");
-            localStorage.removeItem("lastTarget_daily");
-            localStorage.removeItem("lastExecution_Weekly");
-            localStorage.removeItem("lastTarget_Weekly");
-            localStorage.removeItem("lastExecution_Monthly");
-            localStorage.removeItem("lastTarget_Monthly");
-            log('info', '[Scheduler] Config cambió → reseteando localStorage');
-
-            localStorage.setItem("reportConfigSnapshot", JSON.stringify(newConfig));
+        const next = normalizeReportConfig(config.report);
+        const prev = JSON.parse(localStorage.getItem('reportConfigSnapshot') || 'null');
+        if (!prev || JSON.stringify(prev) !== JSON.stringify(next)) {
+            localStorage.removeItem('lastExecution_daily');
+            localStorage.removeItem('lastTarget_daily');
+            localStorage.removeItem('lastExecution_Weekly');
+            localStorage.removeItem('lastTarget_Weekly');
+            localStorage.removeItem('lastExecution_Monthly');
+            localStorage.removeItem('lastTarget_Monthly');
+            log.info('Scheduler: configuración cambiada, reseteo de snapshots');
+            localStorage.setItem('reportConfigSnapshot', JSON.stringify(next));
         }
     }, [config]);
-}
+};
 
 export const App = () => {
-
-    // Comentario cambio para subir a GitHub
-    const { userInit, setUserInit: _setUserInit } = useUser();
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const { userInit } = useUser();
     const config = useElectronConfig();
     const [loading, setLoading] = useState(true);
-
-    // Alturas base en px
-    const appBarBase = 100;   // alto típico del AppBar
-    const footerBase = 80;   // alto footer
-
-    // Ajustados con scale
-    const appBarHeight = appBarBase * scale;
-    const footerHeight = footerBase * scale;
     const [voiceGet, setVoiceGet] = useState(null);
+
+    // Usuarios normalizados (evita .toLowerCase() sobre undefined)
+    const cfgUser = useMemo(() => (config?.login?.userOpera || '').toLowerCase(), [config?.login?.userOpera]);
+    const curUser = useMemo(() => (userInit?.user || '').toLowerCase(), [userInit?.user]);
+
+    // Flags normalizados
+    const isEnabledDaily = !!config?.report?.daily?.enabled && cfgUser === curUser;
+    const isEnabledWeekly = !!config?.report?.weekly?.enabled && cfgUser === curUser;
+    const isEnabledMonthly = !!config?.report?.monthly?.enabled && cfgUser === curUser;
 
     // 1) Cargar lista de voces según config
     useEffect(() => {
         if (!config) return;
         preloadVoice();
-        loadVoices(config?.voice?.name || 'Sabina'); // sólo busca voces con config
+        loadVoices(config?.voice?.name || 'Sabina');
     }, [config]);
 
-    // 2) Aplicar opciones cuando haya voz y config
+    // 2) Aplicar opciones cuando haya voz y config (log estructurado)
     useEffect(() => {
         if (!config) return;
-        setVoiceOptions({
+        const opts = {
             voiceName: voiceGet?.name,
             rate: config?.voice?.rate || 1,
             volume: config?.voice?.volume || 1,
             pitch: config?.voice?.pitch || 1,
-        });
-        log('debug', `Voz configurada: ${voiceGet?.name || 'default'}, ...`);
+        };
+        setVoiceOptions(opts);
+        log.debug(`TTS configurado: { opts: ${JSON.stringify(opts)}, voice: ${voiceGet?.name || 'default'} }`
+        );
     }, [config, voiceGet?.name]);
 
+    // 3) App montada
     useEffect(() => {
-
         if (!userInit) return;
-
         setLoading(false);
-
         localStorage.setItem('isCancelInsertMoney', false);
-
-        const lsUserInit = localStorage.getItem(USER_STORAGE_KEY);
-
-        if (!lsUserInit)
+        if (!localStorage.getItem(USER_STORAGE_KEY)) {
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userInit));
-
-        log('info', 'Componente App montado');
+        }
+        log.info(`App montada: { user: ${userInit?.user} }`);
     }, [userInit]);
 
     useResetLocalStorageOnConfigChange(config);
 
-    const executeReportTask = async (startDate, endDate, _frequency) => {
+    // 4) Log de flags en un efecto (evita log en cada render)
+    useEffect(() => {
+        log.info(`Scheduler flags: { daily: ${isEnabledDaily}, weekly: ${isEnabledWeekly}, monthly: ${isEnabledMonthly}, configUser: ${cfgUser}, currentUser: ${curUser} }`);
+    }, [isEnabledDaily, isEnabledWeekly, isEnabledMonthly, cfgUser, curUser]);
 
-        const timezoneMode = config.report?.timezoneMode || "local";
-
-        log("info", `Generando payload en modo [${timezoneMode}]`);
-
+    const executeReportTask = async (startDate, endDate, frequency) => {
+        const timezoneMode = config?.report?.timezoneMode || 'local';
         const formatUTC = (d, isEnd = false) =>
-            dayjs(d)
-                .utc()
-                .set("second", isEnd ? 59 : 0)
-                .format("YYYY-MM-DD HH:mm:ss");
+            dayjs(d).utc().set('second', isEnd ? 59 : 0).format('YYYY-MM-DD HH:mm:ss');
 
         const payload = {
-            startDate: formatUTC(startDate),        // segundos en 00
-            endDate: formatUTC(endDate, true),      // segundos en 59
+            startDate: formatUTC(startDate),
+            endDate: formatUTC(endDate, true),
             sendEmail: true,
         };
 
-        log("info", `Payload generado: ${JSON.stringify(payload)}`);
+        log.info(`Generando reporte: { frequency: ${frequency}, timezoneMode: ${timezoneMode}, payload: ${JSON.stringify(payload)} }`);
 
         try {
             const result = await GetReportLockers(payload);
-            if (result.success) {
-                log("info", `Datos del reporte obtenidos: ${JSON.stringify(result.data)}`);
+            if (result?.success) {
+                const summary = Array.isArray(result?.data)
+                    ? { rows: result.data.length }
+                    : { keys: Object.keys(result?.data || {}) };
+                log.info(`Reporte obtenido: { frequency: ${frequency}, ${summary} }`);
             } else {
-                log("error", result?.data?.message || "Error al obtener reporte");
+                log.error(`Error al obtener reporte: { frequency: ${frequency}, status: ${result?.status}, message: ${result?.data?.message}
+                }`);
             }
         } catch (err) {
-            log("error", err.message || "Error al obtener reporte");
+            log.error(`Excepción al obtener reporte: { frequency: ${frequency}, error: ${err?.message} } `);
         }
-    }
+    };
 
-    const isEnabledDaily = !!config?.report?.daily?.enabled && (config?.login?.userOpera.toLowerCase() === userInit?.user.toLowerCase());
-    log("info", `Scheduler diario habilitado: ${isEnabledDaily} | usuario config: ${config?.login?.userOpera.toLowerCase()} | usuario actual: ${userInit?.user.toLowerCase()}`);
-
-    const isEnabledWeekly = !!config?.report?.weekly?.enabled && (config?.login?.userOpera.toLowerCase() === userInit?.user.toLowerCase());
-    log("info", `Scheduler semanal habilitado: ${isEnabledWeekly} | usuario config: ${config?.login?.userOpera.toLowerCase()} | usuario actual: ${userInit?.user.toLowerCase()}`);
-
-    const isEnabledMonthly = !!config?.report?.monthly?.enabled && (config?.login?.userOpera.toLowerCase() === userInit?.user.toLowerCase());
-    log("info", `Scheduler mensual habilitado: ${isEnabledMonthly} | usuario config: ${config?.login?.userOpera.toLowerCase()} | usuario actual: ${userInit?.user.toLowerCase()}`);
-
-
-    // Daily
+    // Schedulers
     useSchedulerReport({
-        frequency: "daily",
+        frequency: 'daily',
         hour: config?.report?.daily?.hour ?? 0,
         minute: config?.report?.daily?.minute ?? 0,
         enabled: isEnabledDaily,
-        timeInterval: config?.report?.timeInterval || 60, // segundos
-        task: async (startDate, endDate) => {
-            await executeReportTask(startDate, endDate, "daily");
-        },
+        timeInterval: config?.report?.timeInterval || 60,
+        task: (start, end) => executeReportTask(start, end, 'daily'),
     });
 
-    // Weekly
     useSchedulerReport({
-        frequency: "weekly",
+        frequency: 'weekly',
         dayOfWeek: config?.report?.weekly?.dayOfWeek ?? 1,
         hour: config?.report?.weekly?.hour ?? 0,
         minute: config?.report?.weekly?.minute ?? 0,
         enabled: isEnabledWeekly,
-        timeInterval: config?.report?.timeInterval || 60, // segundos
-        task: async (startDate, endDate) => {
-            await executeReportTask(startDate, endDate, "weekly");
-        },
+        timeInterval: config?.report?.timeInterval || 60,
+        task: (start, end) => executeReportTask(start, end, 'weekly'),
     });
 
-    // Monthly
     useSchedulerReport({
-        frequency: "monthly",
+        frequency: 'monthly',
         dayOfMonth: config?.report?.monthly?.dayOfMonth ?? 1,
         hour: config?.report?.monthly?.hour ?? 0,
         minute: config?.report?.monthly?.minute ?? 0,
         enabled: isEnabledMonthly,
-        timeInterval: config?.report?.timeInterval || 60, // segundos
-        task: async (startDate, endDate) => {
-            await executeReportTask(startDate, endDate, "monthly");
-        },
+        timeInterval: config?.report?.timeInterval || 60,
+        task: (start, end) => executeReportTask(start, end, 'monthly'),
     });
 
     const loadVoices = async (voiceName) => {
         const voices = await getVoices() || [];
-
         const found = voices.find(v => {
-            const n = v.Name || v.name;   // soporta ambas claves
+            const n = v.Name || v.name;
             return n && n.toLowerCase().includes(voiceName.toLowerCase());
         });
-
-        if (found) {
-            setVoiceGet(found);
-        }
+        if (found) setVoiceGet(found);
     };
 
     return (
@@ -228,54 +176,42 @@ export const App = () => {
                 maxWidth={false}
                 disableGutters
                 sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100vh", // ocupa toda la pantalla
-                    overflow: "hidden", // evita scroll doble
+                    display: 'grid',
+                    gridTemplateRows: '8% 87% 5%',
+                    height: '100vh',
+                    overflow: 'hidden'
                 }}
             >
-                {/* AppBar fijo */}
-                <Box
-                    sx={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: `${appBarHeight}px`,
-                        zIndex: 1200,
-                    }}
-                >
-                    <AppbarBar />
+                {/* 10%: Appbar */}
+                <Box sx={{ overflow: 'hidden' }}>
+                    <AppbarBar position="static" containerPadding="2.5%" />
                 </Box>
 
-                {/* Contenido principal */}
+                {/* 80%: Contenido enrutado, con scroll propio */}
                 <Box
                     sx={{
-                        flex: 1,
-                        marginTop: `${appBarHeight}px`, // deja espacio bajo AppBar
-                        overflow: "hidden",
-                        width: "95%",
-                        alignSelf: "center",
+                        minHeight: 0,           // permite que overflow funcione dentro de grid
+                        overflow: 'auto',       // scroll del contenido central
+                        px: '2.5%'              // equivalente a tu width 95% centrado
                     }}
                 >
                     <AppRoutes />
                 </Box>
 
-                {/* Footer dentro del flujo (no fixed) */}
+                {/* 10%: Footer */}
                 <Box
                     sx={{
-                        height: `${footerHeight}px`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden'
                     }}
                 >
                     <Copyright />
                 </Box>
             </Container>
 
-            {loading && (<Loading />)}
+            {loading && <Loading />}
         </HashRouter>
     );
-}
+};

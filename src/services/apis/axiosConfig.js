@@ -1,80 +1,129 @@
+// axiosConfig.js — configuración robusta y logging uniforme
 import axios from 'axios';
-
 import { getAuth, subscribeAuth } from '@shared/hooks/authStore.js';
 import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
+import { logger } from '@shared/utils/logger.js';
 
-const fileName = 'axiosConfig';
+const log = logger.scope('axios');
 
-const log = (level, message) => {
-  if (typeof window !== 'undefined' && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
-  }
-};
+/** Normaliza baseURL a partir de host (con protocolo) + puerto opcional */
+function buildBaseURL(env) {
+    const host = (env?.apiBaseUrl || '').toString().trim().replace(/\/+$/, ''); // sin trailing slash
+    const port = (env?.apiBasePort ?? '').toString().trim();
 
-const env = getEnv();
-const defaultURL = 'http://localhost:8080';
+    if (!host) return 'http://localhost:8080';
 
-const baseURL =
-    env?.apiBaseUrl && env?.apiBasePort
-        ? `${env.apiBaseUrl}:${env.apiBasePort}`
-        : defaultURL;
+    // Si host ya trae puerto (p. ej. http://10.0.0.5:9000), respeta y no agregues otro
+    const hasPort = /^https?:\/\/[^/]+:\d+$/i.test(host);
+    if (hasPort || !port) return host;
 
-const timeout =
-    env?.apiBaseTimeout ? env?.apiBaseTimeout : '30';
+    // Agrega puerto cuando venga separado
+    return `${host}:${port}`;
+}
 
-log('info', `API BaseURL Inicial: ${baseURL}`);
-log('info', `API BaseTimeout Inicial: ${timeout}`);
+/** Timeout en ms. Tu .env trae segundos, default 30s */
+function resolveTimeoutMs(env) {
+    const sec = Number(env?.apiBaseTimeout);
+    return Number.isFinite(sec) ? Math.max(0, sec) * 1000 : 30000;
+}
 
 // Configuración inicial
+const initialEnv = getEnv();
+const initialBaseURL = buildBaseURL(initialEnv);
+const initialTimeout = resolveTimeoutMs(initialEnv);
+
+log.info('init', { baseURL: initialBaseURL, timeoutMs: initialTimeout });
+
 export const instanceAxios = axios.create({
-    baseURL,
-    timeout,
-    headers: {
-        'Content-Type': 'application/json'
-    },
+    baseURL: initialBaseURL,
+    timeout: initialTimeout,
+    headers: { 'Content-Type': 'application/json' },
 });
 
-// Interceptor para insertar token actualizado dinámicamente
+// ───────────────────────────────── Interceptors ─────────────────────────────────
+
+// Request: token + métrica de tiempo
 instanceAxios.interceptors.request.use(
     (config) => {
         const token = getAuth()?.key;
         if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-            log('debug', 'Token agregado al header');
+            // Header por solicitud (asegura prioridad)
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${token}`;
         }
+        // Marcas para medir duración
+        config.metadata = { startTs: Date.now(), url: config.url, method: config.method, baseURL: config.baseURL };
+        log.debug?.('req', { method: config.method, url: config.url, timeout: config.timeout });
         return config;
     },
     (error) => {
-        log('error', `Error en request interceptor: ${error.message}`);
+        log.error('req.error', { message: error?.message || String(error) });
         return Promise.reject(error);
     }
 );
 
-// Escucha cambios en .env para actualizar baseURL dinámicamente
-subscribeEnv((env) => {
-    if (env?.apiBaseUrl && env?.apiBasePort) {
-        const newBaseURL = `${env.apiBaseUrl}:${env.apiBasePort}`;
-        if (newBaseURL !== instanceAxios.defaults.baseURL) {
-            log('info', `API BaseURL actualizada dinámicamente: ${newBaseURL}`);
-            instanceAxios.defaults.baseURL = newBaseURL;
+// Response: éxito y errores
+instanceAxios.interceptors.response.use(
+    (response) => {
+        const meta = response.config?.metadata;
+        if (meta?.startTs) {
+            const durMs = Date.now() - meta.startTs;
+            log.debug?.('res', { status: response.status, method: meta.method, url: meta.url, durMs });
+        } else {
+            log.debug?.('res', { status: response.status, url: response.config?.url });
         }
+        return response;
+    },
+    (error) => {
+        const cfg = error?.config || {};
+        const meta = cfg.metadata || {};
+        const durMs = meta.startTs ? Date.now() - meta.startTs : undefined;
+
+        // Detecta cancelaciones para no confundir con errores
+        const isCanceled =
+            axios.isCancel?.(error) || error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED';
+
+        if (isCanceled) {
+            log.warn('res.cancelled', { method: meta.method, url: meta.url, durMs });
+            return Promise.reject(error);
+        }
+
+        const status = error?.response?.status ?? null;
+        const message = error?.response?.data?.message || error?.message || 'unknown';
+
+        log.error('res.error', { status, method: meta.method, url: meta.url, durMs, message });
+        return Promise.reject(error);
+    }
+);
+
+// ─────────────────────────── Suscripciones dinámicas ───────────────────────────
+
+// Cambios en .env → actualizan baseURL y timeout en caliente
+subscribeEnv((env) => {
+    const newBaseURL = buildBaseURL(env);
+    if (newBaseURL !== instanceAxios.defaults.baseURL) {
+        instanceAxios.defaults.baseURL = newBaseURL;
+        log.info('env.baseURL.updated', { baseURL: newBaseURL });
     }
 
-    if (env?.apiBaseTimeout) {
-        const newTimeout =  Number(env.apiBaseTimeout);
-        log('info', `API BaseTimeout actualizada dinámicamente: ${newTimeout}`);
+    const newTimeout = resolveTimeoutMs(env);
+    if (newTimeout !== instanceAxios.defaults.timeout) {
         instanceAxios.defaults.timeout = newTimeout;
+        log.info('env.timeout.updated', { timeoutMs: newTimeout });
     }
 });
 
-// Suscribirse a cambios en el token de autenticación
+// Cambios en token → actualiza default header para nuevas requests
 subscribeAuth((auth) => {
     const newToken = auth?.key;
     if (newToken) {
-        instanceAxios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
-        log('debug', 'Token actualizado en headers');
+        instanceAxios.defaults.headers = instanceAxios.defaults.headers || {};
+        instanceAxios.defaults.headers.Authorization = `Bearer ${newToken}`;
+        log.debug?.('auth.token.set');
     } else {
-        delete instanceAxios.defaults.headers['Authorization'];
-        log('warn', 'Token eliminado de headers');
+        if (instanceAxios.defaults.headers) {
+            delete instanceAxios.defaults.headers.Authorization;
+        }
+        log.warn('auth.token.cleared');
     }
 });

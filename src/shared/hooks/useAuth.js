@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
 
-const fileName = 'useAuth';
+import { logger } from '@shared/utils/logger';
 
-// Función auxiliar de log
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
+const NOOP = Object.freeze({ info(){}, warn(){}, error(){}, debug(){} });
+const log = (logger?.scope?.('useElectronAuth')) ?? NOOP;
 
 export function useElectronAuth() {
     const [auth, setAuth] = useState(null);
@@ -18,12 +14,12 @@ export function useElectronAuth() {
                 if (window?.electronAPI?.getAuth) {
                     const result = await window.electronAPI.getAuth();
                     setAuth(result);
-                    log('info', 'Autenticación inicial obtenida');
+                    log.info('Autenticación inicial obtenida');
                 } else {
-                    log('warn', 'getAuth no está disponible en electronAPI');
+                    log.warn('getAuth no está disponible en electronAPI');
                 }
             } catch (error) {
-                log('error', `Error al obtener autenticación: ${error.message}`);
+                log.error(`Error al obtener autenticación: ${error.message}`);
             }
         }
 
@@ -32,10 +28,10 @@ export function useElectronAuth() {
         if (window?.electronAPI?.onAuthUpdate) {
             window.electronAPI.onAuthUpdate((newAuth) => {
                 setAuth(newAuth);
-                log('info', 'Autenticación actualizada mediante onAuthUpdate');
+                log.info('Autenticación actualizada mediante onAuthUpdate');
             });
         } else {
-            log('warn', 'onAuthUpdate no está disponible en electronAPI');
+            log.warn('onAuthUpdate no está disponible en electronAPI');
         }
     }, []);
 

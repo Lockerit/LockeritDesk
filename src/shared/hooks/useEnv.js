@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
 
-const fileName = 'useEnv';
+import { logger } from '@shared/utils/logger';
 
-// Función auxiliar de log
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
+const NOOP = Object.freeze({ info(){}, warn(){}, error(){}, debug(){} });
+const log = (logger?.scope?.('useElectronEnv')) ?? NOOP;
 
 export function useElectronEnv() {
     const [env, setEnv] = useState(null);
@@ -18,12 +14,12 @@ export function useElectronEnv() {
                 if (window?.electronAPI?.getEnv) {
                     const envVars = await window.electronAPI.getEnv();
                     setEnv(envVars);
-                    log('info', 'Variables de entorno iniciales obtenidas');
+                    log.info('Variables de entorno iniciales obtenidas');
                 } else {
-                    log('warn', 'getEnv no está disponible en electronAPI');
+                    log.warn('getEnv no está disponible en electronAPI');
                 }
             } catch (err) {
-                log('error', `Error al obtener .env: ${err.message}`);
+                log.error(`Error al obtener .env: ${err.message}`);
             }
         }
 
@@ -33,16 +29,16 @@ export function useElectronEnv() {
         if (window?.electronAPI?.onEnvUpdate) {
             unsubscribe = window.electronAPI.onEnvUpdate((newEnv) => {
                 setEnv(newEnv);
-                log('info', 'Variables de entorno actualizadas mediante onEnvUpdate');
+                log.info('Variables de entorno actualizadas mediante onEnvUpdate');
             });
         } else {
-            log('warn', 'onEnvUpdate no está disponible en electronAPI');
+            log.warn('onEnvUpdate no está disponible en electronAPI');
         }
 
         return () => {
             if (unsubscribe) {
                 unsubscribe();
-                log('info', 'onEnvUpdate desuscrito en cleanup');
+                log.info('onEnvUpdate desuscrito en cleanup');
             }
         };
     }, []);

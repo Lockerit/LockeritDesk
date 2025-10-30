@@ -4,56 +4,77 @@ import {
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
 } from '@mui/material';
-import { useState, forwardRef, useEffect } from 'react';
+import { useState, forwardRef, useEffect, useMemo, useCallback } from 'react';
 
-
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx'; // Hook para tamaño pantalla
+import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
+import { logger } from '@shared/utils/logger.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
+
+const fileName = 'ShowErrorAPI';
+const log = logger.scope(fileName);
+
+// Sanear/recortar para logs
+function trimForLog(value, max = 240) {
+    try {
+        const s = typeof value === 'string'
+            ? value
+            : (value?.message ?? JSON.stringify(value));
+        return String(s).replace(/\s+/g, ' ').trim().slice(0, max);
+    } catch {
+        return '(msg no serializable)';
+    }
+}
 
 export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = true }) => {
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
-    // 1) Reinicia el contador cada vez que se abre el modal o cambia el timeout
+    const msgPreview = useMemo(() => trimForLog(msg), [msg]);
+
+    // Apertura/cambio de timeout
     useEffect(() => {
         if (!open) return;
         setSecondsLeft(timeout);
-    }, [open, timeout]);
+        log.info('modal abierto', { isError, timeout, msg: msgPreview });
+    }, [open, timeout, isError, msgPreview]);
 
-    // 2) Tiqueo del contador (1s) mientras esté abierto y queden segundos
+    // Tiqueo 1s
     useEffect(() => {
         if (!open || secondsLeft <= 0) return;
         const id = setInterval(() => setSecondsLeft((prev) => prev - 1), 1000);
         return () => clearInterval(id);
     }, [open, secondsLeft]);
 
-    // 3) Autocierre al llegar a 0 (incluye timeout en deps porque se usa en setSecondsLeft)
+    // Autocierre por timeout
     useEffect(() => {
         if (!open || secondsLeft !== 0) return;
+        log.warn('modal autocerrado por timeout', { timeout, msg: msgPreview });
         setSecondsLeft(timeout);
-        onConfirm();
-    }, [open, secondsLeft, onConfirm, timeout]);
+        onConfirm?.();
+    }, [open, secondsLeft, onConfirm, timeout, msgPreview]);
+
+    const handleConfirm = useCallback(() => {
+        log.info('modal cerrado por usuario', { msg: msgPreview });
+        onConfirm?.();
+    }, [onConfirm, msgPreview]);
 
     return (
         <Dialog
             open={open}
             onClose={() => { }}
             keepMounted={false}
-            hideBackdrop               // 👈 evita bloquear clics en el fondo
+            hideBackdrop
             disableEscapeKeyDown
-            disableEnforceFocus        // 👈 no fuerza el foco al modal
+            disableEnforceFocus
             disableAutoFocus
             disableRestoreFocus
-            sx={{
-                pointerEvents: "auto",   // 👈 asegura que botones sean clickeables
-                zIndex: 1500,            // encima del keypad
-            }}
+            sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
                 sx: {
                     width: scaledDimension(
@@ -73,7 +94,6 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
             slots={{ transition: Transition }}
         >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
-                {/* Encabezado superior */}
                 <Box
                     sx={{
                         display: 'flex',
@@ -85,14 +105,11 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
                         top: 8 * scale,
                     }}
                 >
-                    <Typography variant="body2">
-                        {formatTime(secondsLeft)}
-                    </Typography>
-                    <IconButton onClick={onConfirm}>
+                    <Typography variant="body2">{formatTime(secondsLeft)}</Typography>
+                    <IconButton onClick={handleConfirm}>
                         <Close />
                     </IconButton>
                 </Box>
-
                 <DialogTitle>Información</DialogTitle>
             </Box>
 
@@ -115,15 +132,9 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
                 </Typography>
             </DialogContent>
 
-            <DialogActions
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    width: '100%',
-                }}
-            >
+            <DialogActions sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                 <Button
-                    onClick={onConfirm}
+                    onClick={handleConfirm}
                     color="primary"
                     variant="contained"
                     fullWidth
@@ -134,4 +145,4 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
             </DialogActions>
         </Dialog>
     );
-}
+};

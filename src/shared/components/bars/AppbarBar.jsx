@@ -1,3 +1,4 @@
+// AppbarBar.jsx — alineado y con logging unificado
 import { Logout, CancelPresentation } from '@mui/icons-material';
 import {
     AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem, ListItemIcon
@@ -5,39 +6,49 @@ import {
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
 import avatarImg from '@assets/Icono.jpg';
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
-
 import { Clock } from './Clock.jsx';
+import { logger } from '@shared/utils/logger.js';
 
 const USER_STORAGE_KEY = 'userInit';
+const fileName = 'AppbarBar';
+const log = logger.scope(fileName);
 
-export const AppbarBar = () => {
+export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) => {
     const { userInit, setUserInit } = useUser();
     const [showData, setShowData] = useState(false);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
+
     const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
-    const sizeAvatar = Math.max(30, 50 * scale); // mínimo 40px, escala hasta 80px o más
+    const scale = size.factor || 1;
+    const sizeAvatar = Math.max(40, Math.min(80, 50 * scale));
 
     const config = useElectronConfig();
     const avatarBoxRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
+        log.info('Montando AppbarBar');
+    }, []);
+
+    useEffect(() => {
         if (!userInit || !config) return;
 
-        if (userInit?.authenticatedOpera || userInit?.authenticatedAdmin) {
-            setShowData(true);
+        const isAuth = Boolean(userInit?.authenticatedOpera || userInit?.authenticatedAdmin);
+        setShowData(isAuth);
+
+        if (isAuth) {
             const avatarPath = config?.login?.avatarPath ?? '';
-            setAvatarSelect(getValidAvatar(avatarPath));
+            const valid = getValidAvatar(avatarPath);
+            setAvatarSelect(valid);
+            log.debug(`Usuario autenticado | avatar=${valid === avatarImg ? 'default' : 'custom'}`);
         } else {
-            setShowData(false);
             setAvatarSelect(avatarImg);
+            log.debug('Usuario no autenticado');
         }
     }, [config, userInit]);
 
@@ -50,53 +61,57 @@ export const AppbarBar = () => {
             return avatar;
         }
         return avatarImg;
-    }
+    };
 
     const persistUser = (updatedUser) => {
         setUserInit(updatedUser);
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-    }
+    };
 
     const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
+        log.debug('Menú de usuario abierto');
     };
 
     const handleMenuClose = () => {
-        const updatedUser = { ...userInit, closeWindow: false };
+        const updatedUser = { ...userInit, closeSession: false, closeWindow: false };
         persistUser(updatedUser);
         setAnchorEl(null);
-
-        setTimeout(() => {
-            avatarBoxRef.current?.focus?.();
-        }, 100);
+        setTimeout(() => avatarBoxRef.current?.focus?.(), 100);
+        log.debug('Menú de usuario cerrado');
     };
 
     const handleLogout = () => {
         handleMenuClose();
-
-        const updatedUser = { ...userInit, closeSession: true };
+        const updatedUser = { ...userInit, closeSession: true, closeWindow: false };
         persistUser(updatedUser);
         navigate('/', { replace: true });
+        log.info('Cerrar sesión solicitado');
     };
 
     const openConfirmClose = () => {
-        const updatedUser = { ...userInit, closeWindow: true };
+        const updatedUser = { ...userInit, closeSession: false, closeWindow: true };
         persistUser(updatedUser);
         setAnchorEl(null);
         navigate('/', { replace: true });
+        log.info('Salir solicitado');
     };
 
     return (
         <AppBar
-            position="fixed"
+            position={position}
             elevation={0}
-            sx={{
-                height: `${Math.max(50, Math.min(100, 70 * scale))}px`, // entre 30px y 80px
-                justifyContent: 'center', // centra el contenido verticalmente
-            }}
+            sx={{ height: '100%', justifyContent: 'center' }}
         >
-            <Toolbar>
-                {/* Usuario (izquierda) */}
+            <Toolbar
+                disableGutters
+                sx={{
+                    px: containerPadding,
+                    minHeight: '100%',
+                    gap: 2
+                }}
+            >
+                {/* Izquierda: usuario */}
                 <Box sx={{ flex: 1 }}>
                     <Box
                         ref={avatarBoxRef}
@@ -104,38 +119,37 @@ export const AppbarBar = () => {
                         sx={{ display: 'flex', gap: 1 * scale, cursor: 'pointer', alignItems: 'center' }}
                         onClick={handleMenuOpen}
                     >
-                        <Avatar alt="Avatar" src={avatarSelect}
-                            sx={{
-                                width: sizeAvatar,
-                                height: sizeAvatar
-                            }}
-                        />
+                        <Avatar alt="Avatar" src={avatarSelect} sx={{ width: sizeAvatar, height: sizeAvatar }} />
                         {showData && (
                             <>
-                                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                                     {(config?.customer || '')}{' | '}
                                 </Typography>
-                                <Typography variant="h5">
-                                    {(userInit?.authenticatedOpera ? (config?.login?.userOpera || '') : userInit?.authenticatedAdmin ? (config?.login?.userAdmin || '') : '')}
+                                <Typography variant="h6">
+                                    {userInit?.authenticatedOpera
+                                        ? (config?.login?.userOpera || '')
+                                        : userInit?.authenticatedAdmin
+                                            ? (config?.login?.userAdmin || '')
+                                            : ''}
                                 </Typography>
                             </>
                         )}
                     </Box>
                 </Box>
 
-                {/* Reloj (centro) */}
+                {/* Centro: reloj */}
                 <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                     <Clock />
                 </Box>
 
-                {/* Ubicación (derecha) */}
+                {/* Derecha: ubicación */}
                 <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 * scale }}>
                     {showData && (
                         <>
-                            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                                {(config?.pointName || '')} {' | '}
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                {(config?.pointName || '')}{' | '}
                             </Typography>
-                            <Typography variant="h5">
+                            <Typography variant="h6">
                                 {(config?.pointId || '')}
                             </Typography>
                         </>
@@ -143,7 +157,7 @@ export const AppbarBar = () => {
                 </Box>
             </Toolbar>
 
-            {/* Menú desplegable */}
+            {/* Menú */}
             <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -153,19 +167,15 @@ export const AppbarBar = () => {
             >
                 {showData && (
                     <MenuItem onClick={handleLogout}>
-                        <ListItemIcon>
-                            <Logout />
-                        </ListItemIcon>
+                        <ListItemIcon><Logout /></ListItemIcon>
                         Cerrar sesión
                     </MenuItem>
                 )}
                 <MenuItem onClick={openConfirmClose}>
-                    <ListItemIcon>
-                        <CancelPresentation />
-                    </ListItemIcon>
+                    <ListItemIcon><CancelPresentation /></ListItemIcon>
                     Salir
                 </MenuItem>
             </Menu>
         </AppBar>
     );
-}
+};

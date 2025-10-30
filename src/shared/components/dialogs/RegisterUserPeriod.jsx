@@ -29,14 +29,15 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-// Logging centralizado
-const log = (level, message) => {
-  if (typeof window !== 'undefined' && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
-  }
-};
+// const fileName = 'RegisterUserPeriod';
 
-const fileName = 'RegisterUserPeriod';
+// Logging centralizado
+// const log = (level, message) => {
+//   if (typeof window !== 'undefined' && window.electronAPI?.log) {
+//     window.electronAPI.log(level, `[${fileName}] ${message}`);
+//   }
+// };
+
 
 export const RegisterUserPeriod = ({
   open,
@@ -237,7 +238,7 @@ export const RegisterUserPeriod = ({
     // Mostrar errores en snackbar si los hay
     if (errores.length > 0) {
       const msg = errores.join(" | ");
-      log("warn", `Errores de validación: ${msg}`);
+      // log("warn", `Errores de validación: ${msg}`);
       showAlert(msg, "error");
     }
 

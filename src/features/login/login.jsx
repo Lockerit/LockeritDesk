@@ -7,7 +7,6 @@ import {
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-
 import logo from '@assets/Logo.png';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
@@ -15,16 +14,11 @@ import { useUser } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
+import { logger } from '@shared/utils/logger.js';
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'Login';
-
-// Logging centralizado
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
+const log = logger.scope(fileName);
 
 export const Login = () => {
     const { userInit, setUserInit } = useUser();
@@ -34,16 +28,14 @@ export const Login = () => {
     const [fullScreen, setFullScreen] = useState(false);
     const [screenLogin, setScreenLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
-    const [errorsEmpty, setErrorsEmpty] = useState({
-        username: false,
-        password: false,
-    });
+    const [errorsEmpty, setErrorsEmpty] = useState({ username: false, password: false });
     const [msgErrorLogin] = useState('Usuario o contraseña incorrectos');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+
     const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const scale = size.factor || 1;
 
     const navigate = useNavigate();
     const config = useElectronConfig();
@@ -55,13 +47,12 @@ export const Login = () => {
             !userInit?.closeSession && !userInit?.closeWindow) {
             return 'Iniciar Sesión';
         }
-        if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
+        else if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
             return 'Cerrar Sesión';
         }
-        if (userInit?.closeWindow) {
+        else {
             return 'Salir';
         }
-        return 'Iniciar Sesión';
     }, [
         userInit?.authenticatedOpera,
         userInit?.authenticatedAdmin,
@@ -69,126 +60,124 @@ export const Login = () => {
         userInit?.closeWindow,
     ]);
 
+    // Montaje
+    useEffect(() => {
+        log.info('Montando Login');
+    }, []);
 
-    // Solo inicializar usuario
+    // Solo inicializar usuario desde userInit
     useEffect(() => {
         if (!userInit) return;
 
         if (userInit?.remember) {
-            setUserName(userInit?.user.toLowerCase());
+            setUserName(userInit?.user?.toLowerCase() || '');
             setRemember(true);
         }
+        if (userInit?.fullScreen) setFullScreen(true);
 
-        if (userInit?.fullScreen) {
-            setFullScreen(true);
-        }
-
+        log.info(`userInit cargado: authOp=${!!userInit?.authenticatedOpera} authAdm=${!!userInit?.authenticatedAdmin} remember=${!!userInit?.remember} fullScreen=${!!userInit?.fullScreen}`);
     }, [userInit]);
 
     // Solo redirección
     useEffect(() => {
         if (!userInit || redirected.current) return;
 
-        if (userInit?.authenticatedOpera || userInit?.authenticatedAdmin) {
-            setScreenLogin(false);
-        }
-        else {
-            setScreenLogin(true);
-        }
+        const isOp = !!userInit?.authenticatedOpera;
+        const isAdm = !!userInit?.authenticatedAdmin;
+        setScreenLogin(!(isOp || isAdm));
 
-        if (userInit?.authenticatedOpera && !userInit?.closeSession && !userInit?.closeWindow) {
+        if (isOp && !userInit?.closeSession && !userInit?.closeWindow) {
             if (location.pathname !== "/ppal") {
                 redirected.current = true;
-                log('info', 'Usuario autenticado en sesión principal, redirigiendo a /ppal');
+                log.info('Redirección → /ppal (operador autenticado)');
                 navigate("/ppal", { replace: true });
             }
-        } else if (userInit?.authenticatedAdmin && !userInit?.closeSession && !userInit?.closeWindow) {
+        } else if (isAdm && !userInit?.closeSession && !userInit?.closeWindow) {
             if (location.pathname !== "/adminlockers") {
                 redirected.current = true;
-                log('info', 'Usuario autenticado en sesión principal, redirigiendo a /adminlockers');
+                log.info('Redirección → /adminlockers (admin autenticado)');
                 navigate("/adminlockers", { replace: true });
             }
         }
     }, [userInit, location, navigate]);
 
     const handleTogglePassword = () => {
-        setShowPassword((prev) => !prev);
+        setShowPassword(prev => !prev);
+        log.info(`Toggle mostrar contraseña → ${!showPassword}`);
     };
 
     const handleChangeFullScreen = () => {
-        window.electronAPI.setFullScreen(fullScreen);
-        window.electronAPI.setFrame(!fullScreen);
+        try {
+            window.electronAPI.setFullScreen(fullScreen);
+            window.electronAPI.setFrame(!fullScreen);
+            log.info(`Aplicado modo pantalla → fullScreen=${fullScreen}`);
+        } catch {
+            log.warn('No se pudo aplicar modo de pantalla desde IPC');
+        }
     };
 
     const closeWindows = async () => {
         try {
             if (window?.electronAPI?.exitApp) {
+                log.info('Solicitando cierre de aplicación');
                 window.electronAPI.exitApp();
             } else {
-                const msg = 'Canal IPC "exitApp" no disponible';
-                log('warn', `${msg}`);
-                console.warn(msg);
+                log.warn('Canal IPC exitApp no disponible');
             }
         } catch (err) {
-            log('error', `Error al cerrar la app: ${err.message}`);
-            console.error('Error al intentar cerrar la app:', err);
+            log.error(`Error al cerrar la app: ${err?.message || err}`);
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        log.info('Submit login/logout/exit disparado');
 
         const successSession = await validateInitSession(e);
         if (!successSession) {
-            log('warn', `Intento de inicio de sesión fallido para usuario: ${userName}`);
+            log.warn('Intento de autenticación fallido');
             return showAlert(msgErrorLogin, 'error');
         }
 
         let newSession = null;
 
+        // LOGIN
         if (!userInit?.authenticatedOpera && !userInit?.authenticatedAdmin && !userInit?.closeSession && !userInit?.closeWindow) {
-
-            // Login
             newSession = {
-                authenticatedOpera: successSession === 1 ? true : false,
-                authenticatedAdmin: successSession === 2 ? true : false,
-                customer: config.customer,
-                user: remember ? userName.toLowerCase() : '',
+                authenticatedOpera: successSession === 1,
+                authenticatedAdmin: successSession === 2,
+                customer: config?.customer,
+                user: remember ? (userName?.toLowerCase() || '') : '',
                 remember,
                 fullScreen,
-                pointName: config.pointName,
-                pointId: config.pointId,
-                avatar: config.login.avatarPath,
+                pointName: config?.pointName,
+                pointId: config?.pointId,
+                avatar: config?.login?.avatarPath,
                 closeSession: false,
                 closeWindow: false,
             };
             setUserInit(newSession);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newSession));
-            log('info', `Inicio de sesión exitoso para usuario: ${newSession.user}`);
+            log.info(`Login exitoso como ${successSession === 1 ? 'OPERADOR' : 'ADMIN'}`);
 
-            if (successSession === 1) {
-                navigate('/ppal', { replace: true });
-            }
-
-            if (successSession === 2) {
-                navigate('/adminlockers', { replace: true });
-            }
+            if (successSession === 1) navigate('/ppal', { replace: true });
+            if (successSession === 2) navigate('/adminlockers', { replace: true });
             handleChangeFullScreen();
-        } else if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
+            return;
+        }
 
-            let isCloseAllowed = true;
-
-            isCloseAllowed = successSession === 1 && userInit?.authenticatedOpera ? true : successSession === 2 && userInit?.authenticatedAdmin ? true : false;
+        // LOGOUT
+        if ((userInit?.authenticatedOpera || userInit?.authenticatedAdmin) && userInit?.closeSession) {
+            const isCloseAllowed =
+                (successSession === 1 && userInit?.authenticatedOpera) ||
+                (successSession === 2 && userInit?.authenticatedAdmin);
 
             if (!isCloseAllowed) {
-                log('warn', `Intento de cierre de sesión fallido para usuario: ${userName}`);
-                return showAlert(`No se pudo cerrar sesión, usuario: ${userInit?.user}`, 'error');
+                log.warn('Intento de cierre de sesión no autorizado');
+                return showAlert(`No se pudo cerrar sesión, usuario: ${userInit?.user || ''}`, 'error');
             }
 
-            const userAux = remember ? userName.toLowerCase() : '';
-
-            // Logout
+            const userAux = remember ? (userName?.toLowerCase() || '') : '';
             newSession = {
                 authenticatedOpera: false,
                 authenticatedAdmin: false,
@@ -207,21 +196,20 @@ export const Login = () => {
             setUserName(userAux);
             setPass('');
             showAlert('Sesión cerrada exitosamente.', 'success');
-            log('info', `Cierre de sesión para usuario: ${userAux}`);
-        } else if (userInit?.closeWindow) {
-            const userAux = remember ? userName.toLowerCase() : '';
-            log('info', `Cierre de la aplicación para usuario: ${userAux}`);
+            log.info('Logout exitoso');
+            return;
+        }
+
+        // EXIT
+        if (userInit?.closeWindow) {
             const updatedUser = { ...userInit, closeWindow: false };
             setUserInit(updatedUser);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-            if (userInit?.authenticatedOpera) {
-                navigate('/ppal', { replace: true });
-            } else if (userInit?.authenticatedAdmin) {
-                navigate('/adminlockers', { replace: true });
-            }
-            setTimeout(() => {
-                closeWindows();
-            }, 500);
+            if (userInit?.authenticatedOpera) navigate('/ppal', { replace: true });
+            else if (userInit?.authenticatedAdmin) navigate('/adminlockers', { replace: true });
+
+            log.info('Cierre de aplicación solicitado (flujo Exit)');
+            setTimeout(() => closeWindows(), 500);
         }
     };
 
@@ -237,31 +225,36 @@ export const Login = () => {
 
         if (usernameError || passwordError) {
             const errores = [];
-            if (usernameError) errores.push("El Usuario es obligatorio");
+            if (usernameError) errores.push('El Usuario es obligatorio');
             if (passwordError) errores.push('La contraseña es obligatoria');
 
             const msg = errores.join(' | ');
-            log('warn', `Errores de validación: ${msg}`);
+            log.warn(`Validación incompleta: ${msg}`);
             showAlert(msg, 'error');
             return false;
         }
 
         if (!config || !config.login) {
-            log('error', 'No se encontró la configuración de login.');
+            log.error('Configuración de login no disponible');
             showAlert('Configuración de login no disponible.', 'error');
             return false;
         }
 
-        if (userName.toLowerCase().trim() === config?.login?.userOpera.toLowerCase().trim() && pass.trim() === config?.login?.passOpera.trim()) {
+        const u = userName.toLowerCase().trim();
+        const p = pass.trim();
+
+        if (u === config?.login?.userOpera?.toLowerCase()?.trim() && p === config?.login?.passOpera?.trim()) {
             isValid = 1;
         }
-
-        if (userName.toLowerCase().trim() === config?.login?.userAdmin.toLowerCase().trim() && pass.trim() === config?.login?.passAdmin.trim()) {
+        if (u === config?.login?.userAdmin?.toLowerCase()?.trim() && p === config?.login?.passAdmin?.trim()) {
             isValid = 2;
         }
 
         if (!isValid) {
-            log('warn', `Credenciales inválidas: usuario=${userName}`);
+            // No registrar credenciales; solo el resultado
+            log.warn('Credenciales inválidas');
+        } else {
+            log.info(`Validación de sesión OK tipo=${isValid === 1 ? 'OPERADOR' : 'ADMIN'}`);
         }
 
         return isValid;
@@ -273,11 +266,11 @@ export const Login = () => {
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
 
         if (userInit?.authenticatedAdmin) {
+            log.info('Back → /adminlockers');
             navigate('/adminlockers', { replace: true });
-            log('info', 'Redirigiendo a /adminlokers desde Login');
         } else if (userInit?.authenticatedOpera) {
+            log.info('Back → /ppal');
             navigate('/ppal', { replace: true });
-            log('info', 'Redirigiendo a /ppal desde Login');
         }
     };
 
@@ -306,10 +299,10 @@ export const Login = () => {
                         minHeight: "40%",
                         width: scaledDimension(
                             {
-                                xs: { base: 90, min: 85, max: 95 }, // en % para mobile
-                                sm: { base: 80, min: 70, max: 85 }, // tablet
-                                md: { base: 60, min: 55, max: 70 }, // desktop medio
-                                lg: { base: 45, min: 40, max: 50 }, // desktop grande
+                                xs: { base: 90, min: 85, max: 95 },
+                                sm: { base: 80, min: 70, max: 85 },
+                                md: { base: 60, min: 55, max: 70 },
+                                lg: { base: 45, min: 40, max: 50 },
                             },
                             scale
                         ),
@@ -324,7 +317,7 @@ export const Login = () => {
                     {/* Logo */}
                     <Box
                         sx={{
-                            flex: `0 0 12%%`, // dinámico con scale
+                            flex: `0 0 12%%`,
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
@@ -334,7 +327,7 @@ export const Login = () => {
                         <img src={logo} alt="Título" style={{ maxHeight: 150 * scale }} />
                     </Box>
 
-                    {/* Título */}
+                    {/* Título (reserva de espacio) */}
                     <Box
                         sx={{
                             flex: '0 0 10%',
@@ -344,8 +337,7 @@ export const Login = () => {
                             flexDirection: "column",
                             width: "100%",
                         }}
-                    >
-                    </Box>
+                    />
 
                     {/* Inputs */}
                     <Box
@@ -355,7 +347,7 @@ export const Login = () => {
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "center",
-                            gap: 2 * scale, // separación dinámica
+                            gap: 2 * scale,
                         }}
                     >
                         <Box sx={{ display: "flex", alignItems: "flex-end", my: 2 * scale }}>
@@ -366,7 +358,7 @@ export const Login = () => {
                                 setValue={setUserName}
                                 error={errorsEmpty.username}
                                 helperText={errorsEmpty.username ? "Ingresa el usuario" : ""}
-                                inputProps={{ maxLength: 20 }}   // 👈 bloquea a 20
+                                inputProps={{ maxLength: 20 }}
                             />
                         </Box>
 
@@ -379,12 +371,15 @@ export const Login = () => {
                                 type={showPassword ? "text" : "password"}
                                 error={errorsEmpty.password}
                                 helperText={errorsEmpty.password ? "Ingresa la contraseña" : ""}
-                                inputProps={{ maxLength: 10 }}   // 👈 bloquea a 10
+                                inputProps={{ maxLength: 10 }}
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
-                                            <IconButton onClick={handleTogglePassword} edge="end"
-                                                sx={{ "& .MuiSvgIcon-root": { fontSize: `${32 * scale}px` } }}>
+                                            <IconButton
+                                                onClick={handleTogglePassword}
+                                                edge="end"
+                                                sx={{ "& .MuiSvgIcon-root": { fontSize: `${32 * scale}px` } }}
+                                            >
                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                             </IconButton>
                                         </InputAdornment>
@@ -406,48 +401,42 @@ export const Login = () => {
                             mt: 5 * scale,
                         }}
                     >
+                        {screenLogin && (
+                            <Box
+                                sx={{
+                                    width: "100%",
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={remember}
+                                            onChange={(e) => setRemember(e.target.checked)}
+                                            color="primary"
+                                            sx={{ '& .MuiSvgIcon-root': { fontSize: `${32 * scale}px` } }}
+                                        />
+                                    }
+                                    sx={{ mb: 2 * scale }}
+                                    label={<Typography variant='h5'>Recordar usuario</Typography>}
+                                />
 
-                        {screenLogin && (<Box sx={{
-                            width: "100%",
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }} >
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={remember}
-                                        onChange={(e) => setRemember(e.target.checked)}
-                                        color="primary"
-                                        sx={{
-                                            '& .MuiSvgIcon-root': {
-                                                fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
-                                            },
-                                        }} // checkbox escalado
-                                    />
-                                }
-                                sx={{ mb: 2 * scale }}
-                                label={<Typography variant='h5'>Recordar usuario</Typography>}
-                            />
-
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={fullScreen}
-                                        onChange={(e) => setFullScreen(e.target.checked)}
-                                        color="primary"
-                                        sx={{
-                                            '& .MuiSvgIcon-root': {
-                                                fontSize: `${32 * scale}px`, // aquí controlas el tamaño real
-                                            },
-                                        }} // checkbox escalado
-                                    />
-                                }
-                                sx={{ mb: 2 * scale }}
-                                label={<Typography variant='h5'>Pantalla completa</Typography>}
-                            />
-                        </Box>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={fullScreen}
+                                            onChange={(e) => setFullScreen(e.target.checked)}
+                                            color="primary"
+                                            sx={{ '& .MuiSvgIcon-root': { fontSize: `${32 * scale}px` } }}
+                                        />
+                                    }
+                                    sx={{ mb: 2 * scale }}
+                                    label={<Typography variant='h5'>Pantalla completa</Typography>}
+                                />
+                            </Box>
                         )}
 
                         <Button variant="contained" color="success" type="submit" fullWidth>
@@ -462,8 +451,8 @@ export const Login = () => {
                             </Button>
                         )}
                     </Box>
-                </Paper >
-            </Box >
+                </Paper>
+            </Box>
 
             <SnackAlert
                 open={snackbarOpen}
@@ -473,4 +462,4 @@ export const Login = () => {
             />
         </>
     );
-}
+};
