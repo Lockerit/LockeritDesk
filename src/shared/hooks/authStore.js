@@ -47,7 +47,7 @@ export function subscribeAuth(callback) {
     if (typeof callback !== 'function') return () => { };
     subscribers.add(callback);
     if (currentAuth) {
-        try { callback(currentAuth); } catch (e) { log.warn('subscribe.callback.error'); }
+        try { callback(currentAuth); } catch (e) { log.warn('subscribe.callback.error', { error: e.message }); }
     }
     return () => { subscribers.delete(callback); };
 }
@@ -65,7 +65,7 @@ export function setAuth(auth) {
     const prev = currentAuth;
     currentAuth = auth ?? null;
 
-    try { log.info('setAuth.updated', { prev: redact(prev), next: redact(currentAuth) }); } catch { }
+    log.info('setAuth.updated', { prev: redact(prev), next: redact(currentAuth) });
 
     for (const cb of subscribers) {
         try { cb(currentAuth); } catch { log.warn('notify.callback.error'); }
@@ -88,12 +88,12 @@ export async function initAuthBridge({ verbose = false } = {}) {
             setAuth(initial);
             if (verbose) log.info('ipc.initial.loaded');
         } else log.warn('ipc.getAuth.missing');
-    } catch (e) { log.error('ipc.initial.error'); }
+    } catch (e) { log.error('ipc.initial.error', { error: e.message }); }
 
     if (typeof api.onAuthUpdate === 'function') {
         // Evita doble attach accidental
         if (!ipcAuthUpdateHandler) {
-            ipcAuthUpdateHandler = (newAuth) => { try { setAuth(newAuth); } catch { } };
+            ipcAuthUpdateHandler = (newAuth) => { setAuth(newAuth); };
             api.onAuthUpdate(ipcAuthUpdateHandler);
             if (verbose) log.info('ipc.listener.attached');
         }
@@ -103,7 +103,8 @@ export async function initAuthBridge({ verbose = false } = {}) {
 export function disposeAuthBridge() {
     const api = typeof window !== 'undefined' ? window.electronAPI : null;
     if (api?.offAuthUpdate && ipcAuthUpdateHandler) {
-        try { api.offAuthUpdate(ipcAuthUpdateHandler); log.info('ipc.listener.detached'); } catch { }
+        api.offAuthUpdate(ipcAuthUpdateHandler);
+        log.info('ipc.listener.detached');
     }
     ipcAuthUpdateHandler = null;
     ipcInitialized = false;
@@ -116,4 +117,4 @@ export function resetAuthStore() {
 }
 
 // Auto-init no ruidoso
-(async () => { try { await initAuthBridge(); } catch { } })();
+(async () => { await initAuthBridge(); })();

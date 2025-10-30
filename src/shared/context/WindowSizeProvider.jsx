@@ -1,7 +1,9 @@
 // src/shared/context/WindowSizeProvider.jsx
 import { useState, useEffect, useRef } from "react";
-import { WindowSizeContext } from "./WindowSizeContext.jsx";
+
 import { logger } from "@shared/utils/logger.js";
+
+import { WindowSizeContext } from "./WindowSizeContext.jsx";
 
 const fileName = "WindowSizeProvider";
 const log = logger.scope(fileName);

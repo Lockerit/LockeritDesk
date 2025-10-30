@@ -1,32 +1,33 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useEffect } from "react";
+
 import { getDateRange } from "@shared/utils/getDateRange.js";
 
 dayjs.extend(utc);
 
 // ===== Logger seguro =====
-const LOG_SCOPE = "scheduleReport";
-const NOOP = Object.freeze({ info() { }, warn() { }, error() { }, debug() { } });
-const log = (() => {
-    if (typeof window !== "undefined" && window.electronAPI?.log) {
-        const send = (level, msg, meta) => window.electronAPI.log(level, `[${LOG_SCOPE}] ${msg}`, meta);
-        return {
-            info: (m, meta) => send("info", m, meta),
-            warn: (m, meta) => send("warn", m, meta),
-            error: (m, meta) => send("error", m, meta),
-            debug: (m, meta) => send("debug", m, meta),
-        };
-    }
+const LOG_SCOPE = 'scheduleReport';
+const NOOP = Object.freeze({
+    info() { }, warn() { }, error() { }, debug() { },
+});
+
+function buildLogger() {
+    let out;
     try {
-        return {
-            info: (m, meta) => console.info(`[${LOG_SCOPE}]`, m, meta ?? ""),
-            warn: (m, meta) => console.warn(`[${LOG_SCOPE}]`, m, meta ?? ""),
-            error: (m, meta) => console.error(`[${LOG_SCOPE}]`, m, meta ?? ""),
-            debug: (m, meta) => console.debug(`[${LOG_SCOPE}]`, m, meta ?? ""),
+        out = {
+            info: (m, meta) => console.info(`[${LOG_SCOPE}]`, m, meta ?? ''),
+            warn: (m, meta) => console.warn(`[${LOG_SCOPE}]`, m, meta ?? ''),
+            error: (m, meta) => console.error(`[${LOG_SCOPE}]`, m, meta ?? ''),
+            debug: (m, meta) => console.debug(`[${LOG_SCOPE}]`, m, meta ?? ''),
         };
-    } catch { return NOOP; }
-})();
+    } catch {
+        out = NOOP;
+    }
+    return out;
+}
+
+const log = buildLogger();
 
 // ===== Helpers de persistencia =====
 const lastKey = (f) => `lastExecution_${f}`;

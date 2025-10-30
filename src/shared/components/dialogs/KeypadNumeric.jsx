@@ -4,7 +4,7 @@ import {
 import {
   Grid, Button, TextField, Box, Typography, Dialog, DialogContent, IconButton, Slide
 } from '@mui/material';
-import { useState, useRef, forwardRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, forwardRef, useEffect, useCallback } from 'react';
 
 import { paymentService } from '@services/apis/assignLocker.js';
 import { OpenReserveLocker } from '@services/apis/openReserveLocker.js';
@@ -15,6 +15,7 @@ import { useModal } from "@shared/context/ModalContext.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
+import { logger } from '@shared/utils/logger.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { speak, stopSpeaking } from '@shared/utils/speak.js';
 import { formatTime, phoneRegex, keys, formatNumberPhone, formatCurrency } from '@shared/utils/utils.js';
@@ -25,10 +26,11 @@ import { Loading } from './Loading.jsx';
 import { ShowErrorAPI } from './ShowErrorAPI.jsx';
 import { ShowLocker } from './ShowLocker.jsx';
 
-// Logger
-import { logger } from '@shared/utils/logger.js';
 const fileName = 'KeypadNumeric';
 const log = logger.scope(fileName);
+
+// ... resto igual ...
+
 
 // Utils de privacidad
 const maskPhone = (p) => {
@@ -97,7 +99,15 @@ export const KeypadNumeric = ({
     setConfirmDialogOpen(false);
     setInsertMoneyOpen(false);
     log.debug('Inputs reseteados');
-  }, [setPhone, setPassword, setConfirmPassword, setConfirmDialogOpen]);
+  }, [
+    setPhone,
+    setPassword,
+    setConfirmPassword,
+    setActiveInput,
+    setErrorsEmpty,
+    setConfirmDialogOpen,
+    setInsertMoneyOpen
+  ]);
 
   const cancel = useCallback(() => {
     log.info('Cancelación solicitada');
@@ -105,12 +115,20 @@ export const KeypadNumeric = ({
     onClose?.();
   }, [clearInputs, onClose]);
 
+  const cancelInsertMoney = useCallback(() => {
+    try { cleanupRef.current && cleanupRef.current(); } catch { /* noop */ }
+    cancelObservable.setCancel(true);
+    setAmountPay(0);
+    closeWebSocket();
+    setInsertMoneyOpen(false);
+    log.info('InsertMoney cancelado');
+  }, [setAmountPay, setInsertMoneyOpen]);
 
   // Montaje / desmontaje
   useEffect(() => {
     log.info(`Montaje | operation=${operation} | timeout=${timeout}`);
     return () => {
-      try { closeWebSocket(); } catch { }
+      closeWebSocket();
       log.debug('Desmontaje');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -215,16 +233,6 @@ export const KeypadNumeric = ({
 
     log.info(`Config cargada | amountService=${rawAmount} | timeoutInsert=${tmo?.timeoutInsertMoney} | timeoutShowMessage=${tmo?.timeoutShowMessage}`);
   }, [isConfigReady, config]);
-
-  const cancelInsertMoney = useCallback(() => {
-    try { cleanupRef.current && cleanupRef.current(); } catch { }
-    cancelObservable.setCancel(true);
-    setAmountPay(0);
-    closeWebSocket();
-    setInsertMoneyOpen(false);
-    log.info('InsertMoney cancelado');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Lectura/escritura segura
   const getInputValue = () => {
@@ -495,22 +503,23 @@ export const KeypadNumeric = ({
     log.info('ConfirmDialog cerrado por usuario');
   };
 
+  // en confirmAssignLocker
   const confirmAssignLocker = () => {
     setShowLockerOpen(false);
     clearInputs();
-    try { closeWebSocket(); } catch { }
+    closeWebSocket();
     cancel();
     log.info('ShowLocker confirmado y flujo finalizado');
   };
 
+  // en confirmShowErrorAPI
   const confirmShowErrorAPI = () => {
     setShowErrorAPIOpen(false);
     cancelInsertMoney();
     setAmountPay(0);
-    try { closeWebSocket(); } catch { }
+    closeWebSocket();
     log.info('ShowErrorAPI confirmado');
   };
-
   const renderButton = (value) => {
     const commonProps = {
       variant: "contained",

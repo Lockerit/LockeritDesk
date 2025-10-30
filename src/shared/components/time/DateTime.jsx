@@ -124,7 +124,7 @@ export const DateTime = ({
 
     // Para evitar spam, memo de previews
     const prevValue = useMemo(() => fmt(value), [value]);
-    const prevTemp = useMemo(() => fmt(tempValue), [tempValue]);
+    const _prevTemp = useMemo(() => fmt(tempValue), [tempValue]);
 
     useEffect(() => {
         if (open) {

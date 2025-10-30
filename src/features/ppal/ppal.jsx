@@ -15,9 +15,9 @@ import { useModal } from '@shared/context/ModalContext.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { logger } from '@shared/utils/logger.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { speak, stopSpeaking } from '@shared/utils/speak.js';
-import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'Ppal';
 const log = logger.scope(fileName);
@@ -44,7 +44,7 @@ export const Ppal = () => {
 
     useEffect(() => {
         log.info(`Montando Ppal | scale=${scale}, size=${JSON.stringify({ w: size.width, h: size.height })}`);
-    }, []); // solo montaje
+    }, [scale, size]); // solo montaje
 
     const speakWelcome = useCallback(() => {
         try {
@@ -66,12 +66,8 @@ export const Ppal = () => {
     // Forzar detener TTS al cerrar app (evento enviado desde main)
     useEffect(() => {
         const stopSpeech = () => {
-            try {
-                window.speechSynthesis?.cancel?.();
-            } catch { }
-            try {
-                stopSpeaking();
-            } catch { }
+            window.speechSynthesis?.cancel?.();
+            stopSpeaking();
             log.info('TTS detenido por evento de cierre de app');
         };
         window.electronAPI?.onAppClose(stopSpeech);

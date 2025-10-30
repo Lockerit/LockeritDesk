@@ -6,9 +6,9 @@ import {
 import { useState, forwardRef, useEffect, useMemo, useCallback } from 'react';
 
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { logger } from '@shared/utils/logger.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
-import { logger } from '@shared/utils/logger.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;

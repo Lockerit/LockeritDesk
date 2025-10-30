@@ -13,8 +13,8 @@ import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyP
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { logger } from '@shared/utils/logger.js';
+import { scaledDimension } from '@shared/utils/scaledDimension.js';
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'Login';

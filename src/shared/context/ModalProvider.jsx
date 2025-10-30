@@ -1,7 +1,9 @@
 // src/shared/context/ModalProvider.jsx
 import { useState, useEffect, useRef } from "react";
-import { ModalContext } from "./ModalContext";
+
 import { logger } from "@shared/utils/logger.js";
+
+import { ModalContext } from "./ModalContext";
 
 const fileName = "ModalProvider";
 const log = logger.scope(fileName);

@@ -1,9 +1,10 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 
 import { VirtualKeyboard } from "@shared/components/inputs/VirtualKeyboard";
+import { logger } from "@shared/utils/logger.js";
+
 import { KeyboardContext } from "./KeyboardContext";
 import { useWindowSizeContext } from "./WindowSizeContext";
-import { logger } from "@shared/utils/logger.js";
 
 const fileName = "KeyboardProvider";
 const log = logger.scope(fileName);

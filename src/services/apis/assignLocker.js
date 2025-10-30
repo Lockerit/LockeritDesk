@@ -1,16 +1,10 @@
-// assignLocker.js — logging uniforme y mínimo
-import {
-    connectWebSocket,
-    closeWebSocket,
-    isWebSocketConnected,
-    onMessage,
-    waitWebSocketReady,
-} from '@services/realtime/websocket.js';
+import { connectWebSocket, closeWebSocket, isWebSocketConnected, onMessage, waitWebSocketReady } from '@services/realtime/websocket.js';
 import { API_ROUTES } from '@shared/constants/pathService.js';
 import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
-import { instanceAxios } from './axiosConfig.js';
 import { logger } from '@shared/utils/logger.js';
+
+import { instanceAxios } from './axiosConfig.js';
 
 const fileName = 'assignLocker';
 const log = logger.scope(fileName);

@@ -7,9 +7,9 @@ import { useState, forwardRef, useEffect, useMemo, useRef } from 'react';
 
 import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { logger } from '@shared/utils/logger.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
-import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'InsertMoney';
 const log = logger.scope(fileName);

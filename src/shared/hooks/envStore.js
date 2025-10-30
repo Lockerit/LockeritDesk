@@ -45,7 +45,7 @@ export function subscribeEnv(callback) {
     }
     subscribers.add(callback);
     if (currentEnv) {
-        try { callback(currentEnv); } catch (e) { log.warn('subscribe.callback.error'); }
+        try { callback(currentEnv); } catch (e) { log.warn('subscribe.callback.error', { error: e.message }); }
     }
     return () => subscribers.delete(callback);
 }
@@ -57,11 +57,11 @@ export function setEnv(env) {
     }
     const prev = currentEnv;
     currentEnv = env ?? null;
-    try {
-        log.info('setEnv.updated', { prev: redactEnv(prev), next: redactEnv(currentEnv) });
-    } catch { }
+
+    log.info('setEnv.updated', { prev: redactEnv(prev), next: redactEnv(currentEnv) });
+
     for (const cb of subscribers) {
-        try { cb(currentEnv); } catch (e) { log.warn('notify.callback.error'); }
+        try { cb(currentEnv); } catch (e) { log.warn('notify.callback.error', { error: e.message }); }
     }
 }
 
@@ -88,12 +88,12 @@ export async function initEnvBridge() {
             log.warn('ipc.getEnv.missing');
         }
     } catch (e) {
-        log.error('ipc.initial.error');
+        log.error('ipc.initial.error', { error: e.message });
     }
 
     if (typeof api.onEnvUpdate === 'function') {
         ipcHandler = (newEnv) => {
-            try { setEnv(newEnv); } catch { }
+            setEnv(newEnv);
         };
         api.onEnvUpdate(ipcHandler);
         log.info('ipc.listener.attached');
@@ -105,10 +105,8 @@ export async function initEnvBridge() {
 export function disposeEnvBridge() {
     const api = typeof window !== 'undefined' ? window.electronAPI : null;
     if (api?.offEnvUpdate && ipcHandler) {
-        try {
-            api.offEnvUpdate(ipcHandler);
-            log.info('ipc.listener.detached');
-        } catch { }
+        api.offEnvUpdate(ipcHandler);
+        log.info('ipc.listener.detached');
     }
     ipcHandler = null;
     ipcInited = false;
@@ -122,5 +120,5 @@ export function resetEnvStore() {
 
 // Auto-init best-effort
 (async () => {
-    try { await initEnvBridge(); } catch { }
+   await initEnvBridge();
 })();

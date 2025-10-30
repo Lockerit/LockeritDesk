@@ -1,8 +1,9 @@
 // openReserveLocker.js — POST abrir casillero reservado con reintentos y logging
 import { API_ROUTES } from '@shared/constants/pathService.js';
 import { getEnv } from '@shared/hooks/envStore.js';
-import { instanceAxios } from './axiosConfig.js';
 import { logger } from '@shared/utils/logger.js';
+
+import { instanceAxios } from './axiosConfig.js';
 
 const log = logger.scope('openReserveLocker');
 

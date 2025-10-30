@@ -4,12 +4,11 @@ import { getEnv } from '@shared/hooks/envStore.js';
 import { logger } from '@shared/utils/logger.js'; // opcional si ya lo tienes
 
 const log = logger?.scope?.('websocket') ?? {
-    info: (...a) => console.info('[ws]', ...a),
-    warn: (...a) => console.warn('[ws]', ...a),
-    error: (...a) => console.error('[ws]', ...a),
-    debug: (...a) => void 0,
+    info: (...args) => console.info('[ws]', ...args),
+    warn: (...args) => console.warn('[ws]', ...args),
+    error: (...args) => console.error('[ws]', ...args),
+    debug: () => { },
 };
-
 let socket = null;
 let connectingPromise = null;
 
@@ -17,7 +16,7 @@ let isConnected = false;
 let shouldReconnect = true;
 let wasEverOpen = false;
 
-let messageListeners = new Set();
+const messageListeners = new Set();
 
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -64,7 +63,7 @@ function startHeartbeat() {
             // si no llega nada en X ms, cerramos para forzar reconexión
             heartbeatTimeout = setTimeout(() => {
                 log.warn('heartbeat.timeout');
-                try { socket.close(4000, 'heartbeat timeout'); } catch { }
+                socket.close(4000, 'heartbeat timeout');
             }, HEARTBEAT_TIMEOUT_MS);
         } catch (e) {
             log.warn('heartbeat.send.error', { msg: e?.message });
@@ -97,7 +96,7 @@ export const connectWebSocket = () => {
         try {
             // cierra socket previo si quedó en estado colgado
             if (socket && socket.readyState !== WebSocket.CLOSED) {
-                try { socket.close(4001, 'reconnect:start'); } catch { }
+                socket.close(4001, 'reconnect:start');
             }
 
             socket = new WebSocket(url);
@@ -163,6 +162,7 @@ export const connectWebSocket = () => {
                     });
                     log.debug('message', { data });
                 } catch (e) {
+                    log.debug('error', { eventData: event.data, msg: e?.message });
                     log.warn('message.parse.error', { raw: event.data });
                 }
             });

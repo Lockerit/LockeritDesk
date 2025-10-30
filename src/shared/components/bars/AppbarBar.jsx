@@ -10,8 +10,9 @@ import avatarImg from '@assets/Icono.jpg';
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
-import { Clock } from './Clock.jsx';
 import { logger } from '@shared/utils/logger.js';
+
+import { Clock } from './Clock.jsx';
 
 const USER_STORAGE_KEY = 'userInit';
 const fileName = 'AppbarBar';

@@ -106,4 +106,4 @@ export function resetLoggerStore() {
 }
 
 // Auto-init best effort
-(async () => { try { await initLoggerBridge(); } catch { } })();
+(async () => { await initLoggerBridge(); })();

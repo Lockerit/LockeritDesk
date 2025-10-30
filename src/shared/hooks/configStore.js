@@ -1,7 +1,5 @@
 import { logger as baseLogger } from '@shared/utils/logger';
 
-// configStore.js
-/* global logger */
 let currentConfig = null;
 const subscribers = new Set();
 

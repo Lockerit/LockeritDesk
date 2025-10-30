@@ -1,5 +1,6 @@
 // axiosConfig.js — configuración robusta y logging uniforme
 import axios from 'axios';
+
 import { getAuth, subscribeAuth } from '@shared/hooks/authStore.js';
 import { getEnv, subscribeEnv } from '@shared/hooks/envStore.js';
 import { logger } from '@shared/utils/logger.js';
