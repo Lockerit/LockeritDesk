@@ -1,5 +1,5 @@
 {
-  "level": "info",
+  "level": "debug",
   "dirname": "logs",
   "filename": "app-%DATE%.log",
   "datePattern": "YYYY-MM-DD",

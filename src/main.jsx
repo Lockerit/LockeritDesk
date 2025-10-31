@@ -35,33 +35,33 @@ export const RootApp = () => {
   }, [factor]);
 
   // Listener de CSP una sola vez
-  useEffect(() => {
-    const currentMetaCSP =
-      document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || null;
-    const storedCSP = localStorage.getItem('lastAppliedCSP') || null;
-    log.info('csp.init', { currentMetaCSP, storedCSP });
+  // useEffect(() => {
+  //   const currentMetaCSP =
+  //     document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || null;
+  //   const storedCSP = localStorage.getItem('lastAppliedCSP') || null;
+  //   log.info('csp.init', { currentMetaCSP, storedCSP });
 
-    if (window?.electronAPI?.onUpdateCSP) {
-      const handler = (newCsp) => {
-        const currentMeta =
-          document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content');
-        if (newCsp && newCsp !== currentMeta) {
-          localStorage.setItem('lastAppliedCSP', newCsp);
-          setPendingCSP(newCsp);
-          log.info('csp.changed', { from: currentMeta, to: newCsp });
-        } else {
-          log.debug?.('csp.nochange');
-        }
-      };
+  //   if (window?.electronAPI?.onUpdateCSP) {
+  //     const handler = (newCsp) => {
+  //       const currentMeta =
+  //         document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content');
+  //       if (newCsp && newCsp !== currentMeta) {
+  //         localStorage.setItem('lastAppliedCSP', newCsp);
+  //         setPendingCSP(newCsp);
+  //         log.info('csp.changed', { from: currentMeta, to: newCsp });
+  //       } else {
+  //         log.debug?.('csp.nochange');
+  //       }
+  //     };
 
-      window.electronAPI.onUpdateCSP(handler);
-      log.info('csp.listener.attached');
-      // Si tienes offUpdateCSP disponible:
-      // return () => window.electronAPI.offUpdateCSP?.(handler);
-    } else {
-      log.warn('csp.listener.unavailable');
-    }
-  }, []);
+  //     window.electronAPI.onUpdateCSP(handler);
+  //     log.info('csp.listener.attached');
+  //     // Si tienes offUpdateCSP disponible:
+  //     // return () => window.electronAPI.offUpdateCSP?.(handler);
+  //   } else {
+  //     log.warn('csp.listener.unavailable');
+  //   }
+  // }, []);
 
   if (!size?.factor || size.factor <= 0) {
     return <Loading open message="Cargando aplicación..." />;
@@ -69,7 +69,7 @@ export const RootApp = () => {
 
   return (
     <>
-      {pendingCSP && (
+      {/* {pendingCSP && (
         <Stack
           sx={{
             position: 'fixed',
@@ -84,7 +84,7 @@ export const RootApp = () => {
             La configuración de seguridad cambió. Por favor cierra la aplicación y vuelve a abrirla.
           </Alert>
         </Stack>
-      )}
+      )} */}
 
       <UserProvider>
         <ModalProvider>

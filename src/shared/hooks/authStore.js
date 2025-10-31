@@ -47,7 +47,7 @@ export function subscribeAuth(callback) {
     if (typeof callback !== 'function') return () => { };
     subscribers.add(callback);
     if (currentAuth) {
-        try { callback(currentAuth); } catch (e) { log.warn('subscribe.callback.error', { error: e.message }); }
+        try { callback(currentAuth); } catch (e) { log.warn(`subscribe.callback.error, { error: ${e.message} }`); }
     }
     return () => { subscribers.delete(callback); };
 }
@@ -65,7 +65,7 @@ export function setAuth(auth) {
     const prev = currentAuth;
     currentAuth = auth ?? null;
 
-    log.info('setAuth.updated', { prev: redact(prev), next: redact(currentAuth) });
+    log.info(`setAuth.updated, { prev: ${JSON.stringify(prev)}, next: ${JSON.stringify(currentAuth)} }`);
 
     for (const cb of subscribers) {
         try { cb(currentAuth); } catch { log.warn('notify.callback.error'); }
@@ -88,7 +88,7 @@ export async function initAuthBridge({ verbose = false } = {}) {
             setAuth(initial);
             if (verbose) log.info('ipc.initial.loaded');
         } else log.warn('ipc.getAuth.missing');
-    } catch (e) { log.error('ipc.initial.error', { error: e.message }); }
+    } catch (e) { log.error(`ipc.initial.error, { error: ${e.message} }`); }
 
     if (typeof api.onAuthUpdate === 'function') {
         // Evita doble attach accidental

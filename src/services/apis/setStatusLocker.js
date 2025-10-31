@@ -41,29 +41,23 @@ export const SetStatusLocker = async (payload) => {
     const url = API_ROUTES.SET_STATUS_LOCKER;
 
     // Validación mínima (opcional, ajusta a tu contrato)
-    if (!payload || !payload.lockerId || !payload.status) {
-        log.warn('invalid.payload', { payload: redactPayload(payload) });
+    if (!payload || !payload.lockerCode || !payload.newStatus) {
+        log.warn(`invalid.payload, { payload: ${JSON.stringify(payload)} }`);
         return {
             success: false,
-            data: { message: 'lockerId y status son requeridos' },
+            data: { message: 'lockerCode y newStatus son requeridos' },
             status: 400,
         };
     }
 
-    log.info('start', {
-        baseURL: instanceAxios.defaults.baseURL,
-        url,
-        timeoutMs: effectiveTimeout,
-        maxRetries,
-        payload: redactPayload(payload),
-    });
+    log.info(`Petición setStatusLocker, { baseURL: ${instanceAxios.defaults.baseURL}, url: ${url}, timeoutMs: ${effectiveTimeout}, maxRetries: ${maxRetries}, payload: ${JSON.stringify(redactPayload(payload), null, 2)} }`);
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            log.debug?.('attempt', { attempt });
+            log.debug?.(`Reintento, { attempt: ${attempt} }`);
             const response = await instanceAxios.post(url, payload, { timeout: effectiveTimeout });
 
-            log.info('success', { status: response.status, attempt });
+            log.info(`Petición exitosa, { status: ${response.status}, attempt: ${attempt} }`);
             return {
                 success: true,
                 data: response.data,
@@ -72,13 +66,13 @@ export const SetStatusLocker = async (payload) => {
         } catch (error) {
             const status = error?.response?.status ?? null;
             const message = error?.response?.data?.message || error?.message || 'unknown';
-            log.error('attempt.fail', { attempt, status, message });
+            log.error(`Petición fallida, { attempt: ${attempt}, status: ${status}, message: ${message} }`);
 
             // Reintentos: 5xx, 429 o fallo de red (status null)
             const shouldRetry = (status === null || status >= 500 || status === 429) && attempt < maxRetries;
             if (shouldRetry) {
                 const delay = retryDelayMs(env, attempt);
-                log.warn('retry.sleep', { attempt, delayMs: delay });
+                log.warn(`Petición fallida, reintentando, { attempt: ${attempt}, delayMs: ${delay} }`);
                 await new Promise((r) => setTimeout(r, delay));
                 continue;
             }

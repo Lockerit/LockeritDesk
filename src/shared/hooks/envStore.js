@@ -45,7 +45,7 @@ export function subscribeEnv(callback) {
     }
     subscribers.add(callback);
     if (currentEnv) {
-        try { callback(currentEnv); } catch (e) { log.warn('subscribe.callback.error', { error: e.message }); }
+        try { callback(currentEnv); } catch (e) { log.warn(`subscribe.callback.error, { error: ${e.message} }`); }
     }
     return () => subscribers.delete(callback);
 }
@@ -58,10 +58,10 @@ export function setEnv(env) {
     const prev = currentEnv;
     currentEnv = env ?? null;
 
-    log.info('setEnv.updated', { prev: redactEnv(prev), next: redactEnv(currentEnv) });
+    log.info(`setEnv.updated, { prev: ${JSON.stringify(prev)}, next: ${JSON.stringify(currentEnv)} }`);
 
     for (const cb of subscribers) {
-        try { cb(currentEnv); } catch (e) { log.warn('notify.callback.error', { error: e.message }); }
+        try { cb(currentEnv); } catch (e) { log.warn(`notify.callback.error, { error: ${e.message} }`); }
     }
 }
 
@@ -88,7 +88,7 @@ export async function initEnvBridge() {
             log.warn('ipc.getEnv.missing');
         }
     } catch (e) {
-        log.error('ipc.initial.error', { error: e.message });
+        log.error(`ipc.initial.error, { error: ${e.message} }`);
     }
 
     if (typeof api.onEnvUpdate === 'function') {

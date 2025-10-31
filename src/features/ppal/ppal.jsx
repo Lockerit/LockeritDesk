@@ -51,7 +51,7 @@ export const Ppal = () => {
             stopSpeaking();
             let msg = config?.voice?.message?.welcome || '';
             msg = msg.replace('{{amount}}', config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
-            msg = msg.replace('{{pesos}}', config?.paramsHtml?.currency?.currencyPesos || 'pesos');
+            msg = msg.replace('{{pesos}}', config?.paramsHtml?.currency?.currencyDescription || 'pesos');
             if (msg) {
                 log.debug('TTS: reproducir mensaje de bienvenida');
                 speak(msg);

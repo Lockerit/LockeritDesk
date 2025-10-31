@@ -43,13 +43,8 @@ export const WindowSizeProvider = ({ children, initialSize }) => {
     const prevRef = useRef(size);
 
     useEffect(() => {
-        log.info("mounted", {
-            width: size.width,
-            height: size.height,
-            orientation: size.orientation,
-            factor: size.factor,
-        });
-        return () => log.info("unmounted");
+        log.info(`Size montado, {width: ${size.width},height: ${size.height},orientation: ${size.orientation},factor: ${size.factor},}`);
+        return () => log.info("Size desmontado");
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -60,12 +55,7 @@ export const WindowSizeProvider = ({ children, initialSize }) => {
         const factorDelta = Math.abs((size.factor ?? 0) - (prev.factor ?? 0));
 
         if (orientationChanged || factorDelta >= 0.01) {
-            log.info("resize", {
-                width: size.width,
-                height: size.height,
-                orientation: size.orientation,
-                factor: size.factor,
-            });
+            log.info(`resize, {width: ${size.width},height: ${size.height},orientation: ${size.orientation},factor: ${size.factor}}`);
             prevRef.current = size;
         }
     }, [size]);
@@ -84,12 +74,7 @@ export const WindowSizeProvider = ({ children, initialSize }) => {
                 const next = calcFactor(newSize.width, newSize.height);
                 setSize(next);
                 // Log inmediato para eventos de Electron (menos frecuentes)
-                log.info("screenData", {
-                    width: next.width,
-                    height: next.height,
-                    orientation: next.orientation,
-                    factor: next.factor,
-                });
+                log.info(`screenData, {width: ${next.width},height: ${next.height},orientation: ${next.orientation},factor: ${next.factor}}`);
             });
             log.info("electron.onScreenData.subscribed");
         } else {

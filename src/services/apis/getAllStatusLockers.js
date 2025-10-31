@@ -29,14 +29,14 @@ export const GetAllStatusLockers = async () => {
     const maxRetries = retries(env);
 
     const url = API_ROUTES.GET_ALL_STATUS_LOCKERS;
-    log.info('start', { baseURL: instanceAxios.defaults.baseURL, url, timeoutMs: effectiveTimeout, maxRetries });
+    log.info(`Petición getAllStatusLockers, { baseURL: ${instanceAxios.defaults.baseURL}, url: ${url}, timeoutMs: ${effectiveTimeout}, maxRetries: ${maxRetries} }`);
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            log.debug?.('attempt', { attempt, url });
+            log.debug?.(`Reintento, { attempt: ${attempt}, url: ${url} }`);
             const response = await instanceAxios.get(url, { timeout: effectiveTimeout });
 
-            log.info('success', { status: response.status, attempt });
+            log.info(`Petición exitosa, { status: ${response.status}, attempt: ${attempt} }`);
             return {
                 success: true,
                 data: response.data,
@@ -45,13 +45,13 @@ export const GetAllStatusLockers = async () => {
         } catch (error) {
             const status = error?.response?.status ?? null;
             const message = error?.response?.data?.message || error?.message || 'unknown';
-            log.error('attempt.fail', { attempt, status, message });
+            log.error(`Petición fallida, { attempt: ${attempt}, status: ${status}, message: ${message} }`);
 
             // Reintentar en 5xx y 429 si aún hay intentos
             const shouldRetry = (status === null || status >= 500 || status === 429) && attempt < maxRetries;
             if (shouldRetry) {
                 const ms = retryDelayMs(env, attempt);
-                log.warn('retry.sleep', { attempt, delayMs: ms });
+                log.warn(`Petición fallida, reintentando, { attempt: ${attempt}, delayMs: ${ms} }`);
                 await new Promise((r) => setTimeout(r, ms));
                 continue;
             }

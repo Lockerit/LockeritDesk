@@ -41,20 +41,14 @@ export const OpenByCodeLocker = async (payload) => {
     const maxRetries = retries(env);
     const url = API_ROUTES.OPEN_BY_CODE_LOCKER;
 
-    log.info('start', {
-        baseURL: instanceAxios.defaults.baseURL,
-        url,
-        timeoutMs: effectiveTimeout,
-        maxRetries,
-        payload: redactPayload(payload),
-    });
+    log.info(`Petición openByCodeLocker, { baseURL: ${instanceAxios.defaults.baseURL}, url: ${url}, timeoutMs: ${effectiveTimeout}, maxRetries: ${maxRetries}, payload: ${JSON.stringify(redactPayload(payload), null, 2)} }`);
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            log.debug?.('attempt', { attempt });
+            log.debug?.(`Reintento, { attempt: ${attempt} }`);
             const response = await instanceAxios.post(url, payload, { timeout: effectiveTimeout });
 
-            log.info('success', { status: response.status, attempt });
+            log.info(`Petición exitosa, { status: ${response.status}, attempt: ${attempt} }`);
             return {
                 success: true,
                 data: response.data,
@@ -63,13 +57,13 @@ export const OpenByCodeLocker = async (payload) => {
         } catch (error) {
             const status = error?.response?.status ?? null;
             const message = error?.response?.data?.message || error?.message || 'unknown';
-            log.error('attempt.fail', { attempt, status, message });
+            log.error(`Petición fallida, { attempt: ${attempt}, status: ${status}, message: ${message} }`);
 
             // Reintentar en 5xx y 429 si aún hay intentos
             const shouldRetry = (status === null || status >= 500 || status === 429) && attempt < maxRetries;
             if (shouldRetry) {
                 const delay = retryDelayMs(env, attempt);
-                log.warn('retry.sleep', { attempt, delayMs: delay });
+                log.warn(`Petición fallida, reintentando, { attempt: ${attempt}, delayMs: ${delay} }`);
                 await new Promise((r) => setTimeout(r, delay));
                 continue;
             }

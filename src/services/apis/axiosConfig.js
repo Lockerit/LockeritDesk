@@ -33,7 +33,7 @@ const initialEnv = getEnv();
 const initialBaseURL = buildBaseURL(initialEnv);
 const initialTimeout = resolveTimeoutMs(initialEnv);
 
-log.info('init', { baseURL: initialBaseURL, timeoutMs: initialTimeout });
+log.info(`init, { baseURL: ${initialBaseURL}, timeoutMs: ${initialTimeout} }`);
 
 export const instanceAxios = axios.create({
     baseURL: initialBaseURL,
@@ -54,11 +54,11 @@ instanceAxios.interceptors.request.use(
         }
         // Marcas para medir duración
         config.metadata = { startTs: Date.now(), url: config.url, method: config.method, baseURL: config.baseURL };
-        log.debug?.('req', { method: config.method, url: config.url, timeout: config.timeout });
+        log.debug?.(`req, { method: ${config.method}, url: ${config.url}, timeout: ${config.timeout} }`);
         return config;
     },
     (error) => {
-        log.error('req.error', { message: error?.message || String(error) });
+        log.error(`req.error, { message: ${error?.message || String(error)} }`);
         return Promise.reject(error);
     }
 );
@@ -69,9 +69,9 @@ instanceAxios.interceptors.response.use(
         const meta = response.config?.metadata;
         if (meta?.startTs) {
             const durMs = Date.now() - meta.startTs;
-            log.debug?.('res', { status: response.status, method: meta.method, url: meta.url, durMs });
+            log.debug?.(`res, { status: ${response.status}, method: ${meta.method}, url: ${meta.url}, durMs: ${durMs} }`);
         } else {
-            log.debug?.('res', { status: response.status, url: response.config?.url });
+            log.debug?.(`res, { status: ${response.status}, url: ${response.config?.url} }`);
         }
         return response;
     },
@@ -85,14 +85,14 @@ instanceAxios.interceptors.response.use(
             axios.isCancel?.(error) || error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED';
 
         if (isCanceled) {
-            log.warn('res.cancelled', { method: meta.method, url: meta.url, durMs });
+            log.warn(`res.cancelled, { method: ${meta.method}, url: ${meta.url}, durMs: ${durMs} }`);
             return Promise.reject(error);
         }
 
         const status = error?.response?.status ?? null;
         const message = error?.response?.data?.message || error?.message || 'unknown';
 
-        log.error('res.error', { status, method: meta.method, url: meta.url, durMs, message });
+        log.error(`res.error, { status: ${status}, method: ${meta.method}, url: ${meta.url}, durMs: ${durMs}, message: ${message} }`);
         return Promise.reject(error);
     }
 );
@@ -104,13 +104,13 @@ subscribeEnv((env) => {
     const newBaseURL = buildBaseURL(env);
     if (newBaseURL !== instanceAxios.defaults.baseURL) {
         instanceAxios.defaults.baseURL = newBaseURL;
-        log.info('env.baseURL.updated', { baseURL: newBaseURL });
+        log.info(`env.baseURL.updated, { baseURL: ${newBaseURL} }`);
     }
 
     const newTimeout = resolveTimeoutMs(env);
     if (newTimeout !== instanceAxios.defaults.timeout) {
         instanceAxios.defaults.timeout = newTimeout;
-        log.info('env.timeout.updated', { timeoutMs: newTimeout });
+        log.info(`env.timeout.updated, { timeoutMs: ${newTimeout} }`);
     }
 });
 

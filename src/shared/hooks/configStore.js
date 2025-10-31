@@ -58,7 +58,7 @@ export function subscribeConfig(callback) {
         try {
             callback(currentConfig);
         } catch (e) {
-            log.error('subscribe.initial.notify.error', { message: e?.message });
+            log.error(`subscribe.initial.notify.error, { message: ${e?.message} }`);
         }
     }
     // Retorna unsubscribe
@@ -79,10 +79,7 @@ export function setConfig(config) {
 
     // Logs de cambio (redactado)
     try {
-        log.info('setConfig.updated', {
-            prev: redactConfig(prev),
-            next: redactConfig(config),
-        });
+        log.info(`setConfig.updated, {prev: ${JSON.stringify(prev)}, next: ${JSON.stringify(config)} }`);
     } catch {
         // Ignorar errores de serialización
     }
@@ -92,7 +89,7 @@ export function setConfig(config) {
         try {
             cb(currentConfig);
         } catch (e) {
-            log.error('subscriber.callback.error', { message: e?.message });
+            log.error(`subscriber.callback.error, { message: ${e?.message} }`);
         }
     }
 }
@@ -106,9 +103,9 @@ if (hasElectron && window.electronAPI?.onConfigUpdate) {
             setConfig(newConfig);
             log.debug('ipc.onConfigUpdate.received');
         });
-        log.info('ipc.listener.attached');
+        log.info(`ipc.listener.attached`);
     } catch (e) {
-        log.error('ipc.listener.attach.error', { message: e?.message });
+        log.error(`ipc.listener.attach.error, { message: ${e?.message} }`);
     }
 } else {
     log.warn('ipc.listener.unavailable');
@@ -122,7 +119,7 @@ if (hasElectron && window.electronAPI?.onConfigUpdate) {
             setConfig(initialConfig);
             log.info('ipc.initialConfig.loaded');
         } catch (err) {
-            log.error('ipc.initialConfig.error', { message: err?.message });
+            log.error(`ipc.initialConfig.error, { message: ${err?.message} }`);
         }
     } else {
         log.warn('ipc.initialConfig.unavailable');

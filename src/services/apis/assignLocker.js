@@ -28,31 +28,26 @@ export const assignLocker = async (payload, timeoutMs) => {
         if (e.detail) {
             cancelled = true;
             abortController.abort();
-            log.info('http.cancel.requested');
+            log.info('Operación cancelada por el usuario');
         }
     };
+
     cancelObservable.onCancel(cancelListener);
 
-    log.info('http.assign.start', {
-        uri: instanceAxios.getUri?.() || 'n/a',
-        route: API_ROUTES.ASSIGN_LOCKER,
-        timeoutMs,
-        maxRetries,
-        retryDelayMs,
-    });
+    log.info(`Petición AssignLocker, { uri: ${instanceAxios.getUri?.() || 'n/a'}, route: ${API_ROUTES.ASSIGN_LOCKER}, timeoutMs: ${timeoutMs}, maxRetries: ${maxRetries}, retryDelayMs: ${retryDelayMs} }`);
 
     try {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             if (cancelled) {
                 _abortCancel = true;
-                log.warn('http.assign.canceled', { attempt });
+                log.warn(`Operación cancelada por el usuario, { ${attempt} }`);
                 cancelObservable.setCancel(false);
                 return { success: false, data: '', status: 499 };
             }
 
             try {
                 abortController = new AbortController();
-                log.debug?.('http.assign.try', { attempt });
+                log.debug?.(`Reintento, { ${attempt} }`);
 
                 const response = await instanceAxios.post(
                     API_ROUTES.ASSIGN_LOCKER,
@@ -60,24 +55,24 @@ export const assignLocker = async (payload, timeoutMs) => {
                     { timeout: timeoutMs, signal: abortController.signal }
                 );
 
-                log.info('http.assign.ok', { status: response.status });
+                log.info(`Petición exitosa, { status: ${response.status} }`);
                 return { success: true, data: response.data, status: response.status };
 
             } catch (error) {
                 // Petición cancelada
                 if (instanceAxios.isCancel?.(error) || error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') {
                     _abortCancel = true;
-                    log.warn('http.assign.cancelled.byUser', { attempt });
+                    log.warn(`Operación cancelada por el usuario, { ${attempt} }`);
                     return { success: false, data: '', status: 499 };
                 }
 
                 const status = error?.response?.status || 500;
                 const message = error?.response?.data?.message || error?.message || 'unknown';
-                log.error('http.assign.error', { attempt, status, message });
+                log.error(`Petición fallida, { attempt: ${attempt}, status: ${status}, message: ${message} }`);
 
                 // Reintenta solo para 500 y si hay intentos disponibles
                 if (status === 500 && attempt < maxRetries) {
-                    log.warn('http.assign.retry.delay', { retryDelayMs, nextAttempt: attempt + 1 });
+                    log.warn(`Petición fallida, reintentando, { retryDelayMs: ${retryDelayMs}, nextAttempt: ${attempt + 1} }`);
                     await new Promise((res) => setTimeout(res, retryDelayMs));
                     continue;
                 }
@@ -104,7 +99,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
         const effectiveTimeout =
             timeoutMs ?? ((env?.apiBaseTimeout ? Number(env.apiBaseTimeout) * 1000 : 30000));
 
-        log.info('svc.payment.start', { effectiveTimeout });
+        log.info(`Inicio Payment, { effectiveTimeout: ${effectiveTimeout} }`);
 
         // Si ya hay WS abierto, ciérralo primero
         if (isWebSocketConnected()) {
@@ -164,7 +159,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
                 return 'HTTP complete';
             })
             .catch((err) => {
-                log.error('svc.payment.http.exception', { message: err?.message || String(err) });
+                log.error(`svc.payment.http.exception, { message: ${err?.message || String(err)} }`);
                 closeWebSocket();
                 throw err;
             });
@@ -173,7 +168,7 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
         const httpTimeout = new Promise((_, reject) =>
             setTimeout(() => {
                 const msg = 'HTTP timeout (002)';
-                log.error('svc.payment.http.timeout', { effectiveTimeout });
+                log.error(`svc.payment.http.timeout, { effectiveTimeout: ${effectiveTimeout} }`);
                 closeWebSocket();
                 reject(new Error(msg));
             }, effectiveTimeout)
@@ -182,12 +177,12 @@ export const paymentService = async (payload, timeoutMs, onTotalUpdate, onLoadin
         await Promise.race([httpPromise, httpTimeout]);
 
         closeWebSocket();
-        log.info('svc.payment.done', { wsComplete, httpStatus: httpResponse?.status ?? null });
+        log.info(`svc.payment.done, { wsComplete: ${wsComplete}, httpStatus: ${httpResponse?.status ?? null} }`);
 
         return { websocket: wsComplete, http: httpResponse };
 
     } catch (error) {
-        log.error('svc.payment.error', { message: error?.message || String(error) });
+        log.error(`svc.payment.error, { message: ${error?.message || String(error)} }`);
         closeWebSocket();
         return { websocket: false, http: null, error: error?.message || 'Unexpected error (003)' };
     }
@@ -198,6 +193,6 @@ subscribeEnv((env) => {
     if (env?.apiBaseTimeout) {
         const newTimeout = Number(env.apiBaseTimeout);
         instanceAxios.defaults.timeout = newTimeout;
-        log.info('env.timeout.updated', { newTimeout });
+        log.info(`env.timeout.updated, { newTimeout: ${newTimeout} }`);
     }
 });

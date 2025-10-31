@@ -16,7 +16,7 @@ import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { phoneRegex, formatCurrency, emailRegex, formatNumberPhone } from '@shared/utils/utils.js';
-
+import { logger } from '@shared/utils/logger.js';
 
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { Loading } from './Loading.jsx';
@@ -29,26 +29,16 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-// const fileName = 'RegisterUserPeriod';
+const log = logger.scope('RegisterUserPeriod');
 
-// Logging centralizado
-// const log = (level, message) => {
-//   if (typeof window !== 'undefined' && window.electronAPI?.log) {
-//     window.electronAPI.log(level, `[${fileName}] ${message}`);
-//   }
-// };
-
-
-export const RegisterUserPeriod = ({
-  open,
-  onClose
-}) => {
+export const RegisterUserPeriod = ({ open, onClose }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
   const [errorsEmpty, setErrorsEmpty] = useState({
     nameUser: false,
     idNumber: false,
+    email: false,
     phone: false,
     period: false,
     startDate: false,
@@ -74,68 +64,73 @@ export const RegisterUserPeriod = ({
     showLockerOpen, setShowLockerOpen,
   } = useModal();
 
-  // Refs para cambiar el foco
   const size = useWindowSizeContext();
-  const scale = size.factor || 1; // de tu hook useElectronScreenData()
+  const scale = size.factor || 1;
   const cleanupRef = useRef(null);
   const config = useElectronConfig();
 
+  // Montaje/desmontaje
+  useEffect(() => {
+    log.info('Montando RegisterUserPeriod');
+    return () => log.info('Desmontando RegisterUserPeriod');
+  }, []);
+
+  // Carga de config
   useEffect(() => {
     if (!config) return;
-
-    if (config?.paramsHtml?.modalTimeouts?.timeoutShowMessage) {
-      setTimeoutShowMessage(config?.paramsHtml?.modalTimeouts?.timeoutShowMessage);
+    const t = config?.paramsHtml?.modalTimeouts?.timeoutShowMessage;
+    if (t) {
+      setTimeoutShowMessage(t);
+      log.info(`Config cargado, { timeoutShowMessage: ${t} }`);
     }
-
   }, [config]);
 
+  // Reacción a open/period/startDate
   useEffect(() => {
-    if (open) {
+    log.debug('props', { open, period, startDate: startDate?.format?.('YYYY-MM-DD') });
+    if (!open) return;
 
-      // 👇 si no hay startDate válido, arrancar con hoy
-      if (!startDate || !dayjs(startDate).isValid()) {
-        const today = dayjs();
-        setStartDate(today);
-        setEndDate(today.add(1, "month").subtract(1, "day")); // calcula fin de mes de inmediato
-      }
-
-      // 👇 si ya hay fecha pero periodo es mensual, asegurar cálculo
-      if (period === "Mensual" && startDate) {
-        setEndDate(dayjs(startDate).add(1, "month").subtract(1, "day"));
-      }
+    if (!startDate || !dayjs(startDate).isValid()) {
+      const today = dayjs();
+      setStartDate(today);
+      setEndDate(today.add(1, "month").subtract(1, "day"));
+      log.info(`startDate, { start: ${today.format('YYYY-MM-DD')} }`);
+    }
+    if (period === "Mensual" && startDate) {
+      const end = dayjs(startDate).add(1, "month").subtract(1, "day");
+      setEndDate(end);
+      log.debug(`Mensual, { start: ${startDate.format('YYYY-MM-DD')}, end: ${end.format('YYYY-MM-DD')} }`);
     }
   }, [open, period, startDate]);
 
-  // Cuando cambia startDate o period, recalculamos endDate
+  // Recalcular fin/valor/porcentaje ante cambios
   useEffect(() => {
     if (!startDate || !config) return;
 
     let newEndDate;
-
-    if (period === "Semanal") { // Semanal
-      newEndDate = dayjs(startDate).add(6, "day"); // inicio + 6 días
-      setAmount(
-        Math.round(config?.paramsHtml?.currency?.coinBoxRequiredAmount * 7 * (1 - (config?.reserve?.porcentWeekly / 100)))
-      );
+    if (period === "Semanal") {
+      newEndDate = dayjs(startDate).add(6, "day");
+      const val = Math.round(config?.paramsHtml?.currency?.coinBoxRequiredAmount * 7 * (1 - (config?.reserve?.porcentWeekly / 100)));
+      setAmount(val);
       setPorcentage(config?.reserve?.porcentWeekly);
-    } else if (period === "Quincenal") { // Quincenal
-      newEndDate = dayjs(startDate).add(14, "day"); // inicio + 14 días
-      setAmount(
-        Math.round(config?.paramsHtml?.currency?.coinBoxRequiredAmount * 15 * (1 - (config?.reserve?.porcentFortnightly / 100)))
-      );
+      setEndDate(newEndDate);
+      log.info(`Recalculo semanal, { start: ${startDate.format('YYYY-MM-DD')}, end: ${newEndDate.format('YYYY-MM-DD')}, amount: ${val}, pct: ${config?.reserve?.porcentWeekly} }`);
+    } else if (period === "Quincenal") {
+      newEndDate = dayjs(startDate).add(14, "day");
+      const val = Math.round(config?.paramsHtml?.currency?.coinBoxRequiredAmount * 15 * (1 - (config?.reserve?.porcentFortnightly / 100)));
+      setAmount(val);
       setPorcentage(config?.reserve?.porcentFortnightly);
+      setEndDate(newEndDate);
+      log.info(`Recalculo quincenal, { start: ${startDate.format('YYYY-MM-DD')}, end: ${newEndDate.format('YYYY-MM-DD')}, amount: ${val}, pct: ${config?.reserve?.porcentFortnightly} }`);
     } else if (period === "Mensual") {
-      newEndDate = dayjs(startDate)
-        .add(1, "month")   // vas al mismo día del mes siguiente
-        .subtract(1, "day"); // le restas 1 día
-      setAmount(
-        Math.round(config?.paramsHtml?.currency?.coinBoxRequiredAmount * 30 * (1 - (config?.reserve?.porcentMonthly / 100)))
-      );
+      newEndDate = dayjs(startDate).add(1, "month").subtract(1, "day");
+      const val = Math.round(config?.paramsHtml?.currency?.coinBoxRequiredAmount * 30 * (1 - (config?.reserve?.porcentMonthly / 100)));
+      setAmount(val);
       setPorcentage(config?.reserve?.porcentMonthly);
+      setEndDate(newEndDate);
+      log.info(`Recalculo mensual, { start: ${startDate.format('YYYY-MM-DD')}, end: ${newEndDate.format('YYYY-MM-DD')}, amount: ${val}, pct: ${config?.reserve?.porcentMonthly} }`);
     }
-    setEndDate(newEndDate);
-  }, [startDate, period, config]); // se ejecuta al cambiar inicio o periodo
-
+  }, [startDate, period, config]);
 
   const clearInputs = () => {
     if (cleanupRef.current) cleanupRef.current();
@@ -143,30 +138,38 @@ export const RegisterUserPeriod = ({
     setIdNumber('');
     setPhone('');
     setEmail('');
-    setPeriod("Mensual"); // vuelve siempre a Mensual
+    setPeriod("Mensual");
     const today = dayjs();
     setStartDate(today);
     setEndDate(today.endOf("month"));
-    // setErrorsEmpty({ phone: false, password: false, confirmPassword: false });
-    // cancelConfirmation();
-  }
+    setErrorsEmpty({
+      nameUser: false,
+      idNumber: false,
+      email: false,
+      phone: false,
+      period: false,
+      startDate: false,
+    });
+    log.debug('Limpiando inputs');
+  };
 
   const cancel = () => {
+    log.info('Cancelando y cerrando dialog');
     clearInputs();
-    onClose();
+    onClose?.();
   };
 
   const showAlert = (msg, severity = 'error') => {
     setSnackbarMessage(msg);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
+    log.warn(`Alerta, { severity: ${severity}, msg: ${msg} }`);
   };
 
   const validateAllInputs = () => {
     let hasError = false;
     const errores = [];
 
-    // Nombres completos
     const trimmedName = nameUser.trim();
     if (!trimmedName) {
       errores.push("Los nombres son obligatorios");
@@ -180,7 +183,6 @@ export const RegisterUserPeriod = ({
       setErrorsEmpty(prev => ({ ...prev, nameUser: false }));
     }
 
-    // Número de identificación
     const trimmedId = idNumber.trim();
     if (!trimmedId) {
       errores.push("El número de identificación es obligatorio");
@@ -198,7 +200,6 @@ export const RegisterUserPeriod = ({
       setErrorsEmpty(prev => ({ ...prev, idNumber: false }));
     }
 
-    // Correo electrónico
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
       errores.push("El correo electrónico es obligatorio");
@@ -216,11 +217,9 @@ export const RegisterUserPeriod = ({
       setErrorsEmpty(prev => ({ ...prev, email: false }));
     }
 
-    // Número celular
-
     const trimmedPhone = phone.trim();
     if (!trimmedPhone) {
-      errores.push("El número celiular es obligatorio");
+      errores.push("El número celular es obligatorio");
       setErrorsEmpty(prev => ({ ...prev, phone: true }));
       hasError = true;
     } else if (trimmedPhone.length > 10) {
@@ -235,44 +234,44 @@ export const RegisterUserPeriod = ({
       setErrorsEmpty(prev => ({ ...prev, phone: false }));
     }
 
-    // Mostrar errores en snackbar si los hay
     if (errores.length > 0) {
-      const msg = errores.join(" | ");
-      // log("warn", `Errores de validación: ${msg}`);
-      showAlert(msg, "error");
+      showAlert(errores.join(" | "), "error");
+      log.warn(`Validación fallida, { count: ${errores.length} }`);
+    } else {
+      log.info(`Validación exitosa`);
     }
-
-    return !hasError; // true si todo válido
+    return !hasError;
   };
 
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const allValid = validateAllInputs();
-    if (allValid) {
-      setConfirmDialogOpen(true); // Mostrar el diálogo de confirmación
+    log.info('Iniciando Petición de registro de usuario');
+    if (validateAllInputs()) {
+      setConfirmDialogOpen(true);
+      log.info('Confirmando Petición de registro de usuario');
     }
-  }
+  };
 
   const confirmShowErrorAPI = () => {
     setShowErrorAPIOpen(false);
+    log.info('Cerrando error API dialog');
   };
 
   const confirmAssignLocker = () => {
     setShowLockerOpen(false);
     setConfirmDialogOpen(false);
+    log.info('Cerrando locker dialog');
     cancel();
   };
 
   const cancelConfirmation = () => {
     setConfirmDialogOpen(false);
+    log.info('Cerrando confirm dialog');
   };
 
   const confirmSendData = async () => {
-
-    setLoading(false);
     setMessageLoading('Registrando Usuario...');
+    setLoading(true);
 
     const payload = {
       nameUser,
@@ -284,42 +283,43 @@ export const RegisterUserPeriod = ({
       endDate: dayjs(endDate).format("YYYY-MM-DD"),
       amount,
       porcentage
-    }
+    };
+
+    log.info(`Reserva solicitada, { period: {${period}}, startDate: ${payload.startDate}, endDate: ${payload.endDate}, amount: ${amount}, porcentage: ${porcentage} }`);
 
     try {
-      setLoading(true);
-
       const result = await Reserve(payload);
 
       if (result?.success) {
-
         const lockerCode = result?.data?.lockerCode || result?.http?.data?.lockerCode || '';
+        log.info('reserve.call.success', { lockerCode: lockerCode || 'n/a' });
+
         if (lockerCode) {
-          setLocker(lockerCode)
+          setLocker(lockerCode);
           setShowLockerOpen(true);
+          log.info(`Reserva exitosa, { lockerCode: ${lockerCode} }`);
         } else {
           setMessageErrorAPI('No se recibió código de casillero');
           setShowErrorAPIOpen(true);
+          log.warn(`Reserva fallida, { reason: No se recibió código de casillero }`);
         }
       } else {
-        if (result?.status === 500) {
-          setMessageErrorAPI('No se pudo registrar usuario, ¡Inténtalo nuevamente!');
-        } else {
-          setMessageErrorAPI(result?.data?.message || 'No se pudo registrar usuario, ¡Inténtalo nuevamente!');
-        }
+        const msg = result?.status === 500
+          ? 'No se pudo registrar usuario, ¡Inténtalo nuevamente!'
+          : (result?.data?.message || 'No se pudo registrar usuario, ¡Inténtalo nuevamente!');
+        setMessageErrorAPI(msg);
         setShowErrorAPIOpen(true);
+        log.error(`Reserva fallida, { status: ${result?.status}, msg: ${msg} }`);
       }
-
-      setLoading(false);
-
     } catch (error) {
-      setMessageErrorAPI(error);
+      const msg = String(error);
+      setMessageErrorAPI(msg);
       setShowErrorAPIOpen(true);
-      setLoading(false);
+      log.error(`Reserva fallida, { msg: ${msg} }`);
     } finally {
       setLoading(false);
+      log.info('Reserva finalizada');
     }
-    setLoading(false);
   };
 
   return (
@@ -330,87 +330,44 @@ export const RegisterUserPeriod = ({
         keepMounted={false}
         component="form"
         onSubmit={handleSubmit}
-        hideBackdrop               // evita bloquear clics en el fondo
+        hideBackdrop
         disableEscapeKeyDown
-        disableEnforceFocus        // no fuerza el foco al modal
+        disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
         PaperProps={{
           sx: {
             width: scaledDimension(
               {
-                xs: { base: 90, min: 80, max: 90 }, // en % para mobile
-                sm: { base: 90, min: 80, max: 90 }, // tablet
-                md: { base: 60, min: 50, max: 70 }, // desktop medio
-                lg: { base: 50, min: 40, max: 50 }, // desktop grande
+                xs: { base: 90, min: 80, max: 90 },
+                sm: { base: 90, min: 80, max: 90 },
+                md: { base: 60, min: 50, max: 70 },
+                lg: { base: 50, min: 40, max: 50 },
               },
               scale
             ),
-            maxWidth: 'none', // Lo dejas libre, sin límite de MUI
+            maxWidth: 'none',
             height: '100%',
-            // minHeight: '80%',
-            borderRadius: `${Math.max(8, 16 * scale)}px`, // Opcional: esquinas redondeadas escaladas
-            p: 2 * scale // Opcional: padding escalado
+            borderRadius: `${Math.max(8, 16 * scale)}px`,
+            p: 2 * scale
           }
         }}
-        slots={{
-          transition: Transition,
-        }}
-        sx={{ zIndex: 1300, height: '100%' }} // Asegura que el diálogo esté por encima de otros elementos
+        slots={{ transition: Transition }}
+        sx={{ zIndex: 1300, height: '100%' }}
       >
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2 * scale,
-            position: 'relative',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '5%'
-          }}
-        >
-          {/* Encabezado superior: tiempo y botón cerrar */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              gap: 1 * scale,
-              position: 'absolute',
-              right: 3 * scale,
-              top: 3 * scale,
-            }}
-          >
-            <IconButton onClick={cancel}>
-              <Close sx={{ fontSize: 40 * scale }} />
-            </IconButton>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative', alignItems: 'center', justifyContent: 'center', height: '5%' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 * scale, position: 'absolute', right: 3 * scale, top: 3 * scale }}>
+            <IconButton onClick={cancel}><Close sx={{ fontSize: 40 * scale }} /></IconButton>
           </Box>
-
           <Box sx={{ mt: 2 * scale }}>
-            {/* Texto centrado */}
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 'bold', textAlign: 'center', p: 2 * scale }}
-            >
+            <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center', p: 2 * scale }}>
               Registrar usuario
             </Typography>
           </Box>
         </Box>
 
-
         <DialogContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              alignItems: "center",
-              height: "100%",
-              width: "100%",
-              px: 4 * scale,
-            }}
-          >
+          <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center", height: "100%", width: "100%", px: 4 * scale }}>
             <Box sx={{ display: "flex", alignItems: "center", flex: 1, width: '100%' }}>
               <Person sx={{ mr: 2 * scale, fontSize: 52 * scale }} />
               <TextFieldVirtKeyPad
@@ -466,13 +423,11 @@ export const RegisterUserPeriod = ({
                 <Select
                   labelId="period-select-label"
                   value={period}
-                  defaultValue={period}
-                  onChange={(e) => setPeriod(e.target.value)}
-                  sx={{
-                    fontSize: `${32 * scale}px`,
-                    fontWeight: "bold",
-                    color: "#009640",
+                  onChange={(e) => {
+                    setPeriod(e.target.value);
+                    log.debug('period.change', { period: e.target.value });
                   }}
+                  sx={{ fontSize: `${32 * scale}px`, fontWeight: "bold", color: "#009640" }}
                 >
                   <MenuItem value="Semanal">Semanal</MenuItem>
                   <MenuItem value="Quincenal">Quincenal</MenuItem>
@@ -486,7 +441,7 @@ export const RegisterUserPeriod = ({
               <TextFieldVirtKeyPad
                 label="Fecha de inicialización"
                 value={startDate?.format("YYYY-MM-DD")}
-                setValue={setStartDate}
+                setValue={() => { }}
                 disabled
               />
             </Box>
@@ -496,7 +451,7 @@ export const RegisterUserPeriod = ({
               <TextFieldVirtKeyPad
                 label="Fecha de finalización"
                 value={endDate?.format("YYYY-MM-DD")}
-                setValue={setEndDate}
+                setValue={() => { }}
                 disabled
               />
             </Box>
@@ -506,7 +461,7 @@ export const RegisterUserPeriod = ({
               <TextFieldVirtKeyPad
                 label="Valor a pagar"
                 value={formatCurrency(amount)}
-                setValue={setAmount}
+                setValue={() => { }}
                 disabled
               />
             </Box>
@@ -516,58 +471,33 @@ export const RegisterUserPeriod = ({
               <TextFieldVirtKeyPad
                 label="Descuento (%)"
                 value={porcentage}
-                setValue={setPorcentage}
+                setValue={() => { }}
                 disabled
               />
             </Box>
 
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 2 * scale,         // separación entre botones
-                width: "100%",
-                pt: 4 * scale,
-              }}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={cancel}
-                sx={{ flex: 1 }}        // ocupa la mitad
-              >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 * scale, width: "100%", pt: 4 * scale }}>
+              <Button variant="contained" color="secondary" onClick={cancel} sx={{ flex: 1 }}>
                 Cancelar
                 <Close sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
               </Button>
 
-              <Button
-                variant="contained"
-                color="success"
-                type="submit"
-                sx={{ flex: 1 }}        // ocupa la otra mitad
-              >
+              <Button variant="contained" color="success" type="submit" sx={{ flex: 1 }}>
                 Registrar
                 <DoneAll sx={{ fontSize: 40 * scale, ml: 3 * scale }} />
               </Button>
             </Box>
-
           </Box>
         </DialogContent>
-      </Dialog >
+      </Dialog>
 
-      <SnackAlert
-        open={snackbarOpen}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-        onClose={() => setSnackbarOpen(false)}
-      />
+      <SnackAlert open={snackbarOpen} message={snackbarMessage} severity={snackbarSeverity} onClose={() => setSnackbarOpen(false)} />
 
       <ConfirmDialog
         open={confirmDialogOpen}
-        onConfirm={confirmSendData}
-        onCancel={cancelConfirmation}
-        tittle={'Confirmar'}
+        onConfirm={() => { log.info('confirm.accept'); confirmSendData(); }}
+        onCancel={() => { log.info('confirm.cancel'); cancelConfirmation(); }}
+        tittle="Confirmar"
         items={[
           { label: "Nombre completo", value: nameUser },
           { label: "Identificación", value: formatCurrency(idNumber, { onlyThousands: true }) },
@@ -581,7 +511,7 @@ export const RegisterUserPeriod = ({
           { label: "Nota", value: config?.sendSMS ? '¡Se enviará mensaje de texto al usuario!' : '' },
         ]}
         isPhone={false}
-        hideBackdrop    // evita que bloquee clicks
+        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -589,10 +519,10 @@ export const RegisterUserPeriod = ({
 
       <ShowErrorAPI
         open={showErrorAPIOpen}
-        onConfirm={confirmShowErrorAPI}
+        onConfirm={() => { log.info('error.dialog.ok'); confirmShowErrorAPI(); }}
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
-        hideBackdrop    // evita que bloquee clicks
+        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
@@ -600,23 +530,19 @@ export const RegisterUserPeriod = ({
 
       <ShowLocker
         open={showLockerOpen}
-        onConfirm={confirmAssignLocker}
+        onConfirm={() => { log.info('locker.dialog.ok'); confirmAssignLocker(); }}
         locker={locker}
-        title={'Casillero reservado:'}
-        msg={'Datos registrados exitosamente'}
+        title="Casillero reservado:"
+        msg="Datos registrados exitosamente"
         timeout={timeoutShowMessage}
-        backColor={'info.main'}
-        hideBackdrop    // 👈 evita que bloquee clicks
+        backColor="info.main"
+        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
         disableRestoreFocus
       />
 
-      {
-        loading && (<Loading
-          message={messageLoading}
-        />)
-      }
+      {loading && <Loading message={messageLoading} />}
     </>
   );
-}
+};

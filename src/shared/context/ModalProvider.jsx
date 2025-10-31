@@ -50,7 +50,7 @@ export const ModalProvider = ({ children }) => {
         setShowLockerOpen(false);
         setShowErrorAPIOpen(false);
         setRegisterUserPeriodOpen(false);
-        log.info("closeAllModals", before);
+        log.info(`closeAllModals, before: ${JSON.stringify(before)}`);
     };
 
     // Inputs KeyPad (NO logueamos password/confirmPassword/email)
@@ -68,8 +68,8 @@ export const ModalProvider = ({ children }) => {
 
     // Montaje / Desmontaje
     useEffect(() => {
-        log.info("mounted");
-        return () => log.info("unmounted");
+        log.info("Modal montado");
+        return () => log.info("Modal desmontado");
     }, []);
 
     // Persistencia
@@ -98,32 +98,32 @@ export const ModalProvider = ({ children }) => {
     const prevAmountRef = useRef(String(amountPay) || "0");
 
     useEffect(() => {
-        log.info("keypad", { open: keypadOpen });
+        log.info(`keypad, { open: ${keypadOpen} }`);
     }, [keypadOpen]);
 
     useEffect(() => {
-        if (operation) log.info("operation", { operation });
+        if (operation) log.info(`operation, { operation: ${operation} }`);
     }, [operation]);
 
     useEffect(() => {
-        log.info("insertMoney", { open: insertMoneyOpen });
+        log.info(`insertMoney, { open: ${insertMoneyOpen} }`);
     }, [insertMoneyOpen]);
 
     useEffect(() => {
-        log.info("showLocker", { open: showLockerOpen });
+        log.info(`showLocker, { open: ${showLockerOpen} }`);
     }, [showLockerOpen]);
 
     useEffect(() => {
-        log.info("showErrorAPI", { open: showErrorAPIOpen });
+        log.info(`showErrorAPI, { open: ${showErrorAPIOpen} }`);
     }, [showErrorAPIOpen]);
 
     useEffect(() => {
-        log.info("registerUserPeriod", { open: registerUserPeriodOpen });
+        log.info(`registerUserPeriod, { open: ${registerUserPeriodOpen} }`);
     }, [registerUserPeriodOpen]);
 
     useEffect(() => {
         // Solo loguea teléfono enmascarado
-        if (phone) log.info("phone.set", { phone: maskPhone(phone) });
+        if (phone) log.info(`Número celular, { phone: ${maskPhone(phone)} }`);
     }, [phone]);
 
     useEffect(() => {
@@ -136,15 +136,15 @@ export const ModalProvider = ({ children }) => {
         const curNum = Number(cur) || 0;
 
         if (prevNum === 0 && curNum > 0) {
-            log.info("amountPay.started", { amount: curNum });
+            log.info(`Inicia monto, { amount: ${curNum} }`);
         } else if (prevNum > 0 && curNum === 0) {
-            log.info("amountPay.reset");
+            log.info(`Monto reiniciado, { amount: ${prevNum} }`);
         }
         prevAmountRef.current = cur;
     }, [amountPay]);
 
     useEffect(() => {
-        if (locker) log.info("locker.assigned", { locker });
+        if (locker) log.info(`Locker asignado, { locker: ${locker} }`);
     }, [locker]);
 
     return (
