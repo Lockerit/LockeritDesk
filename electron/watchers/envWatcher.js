@@ -1,17 +1,18 @@
-// electron/watchers/envWatcher.js  (ESM)
+// electron/watchers/envWatcher.js  (ESM) — versión ajustada
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import dotenv from 'dotenv';
 
-import logger from '../logger/logger.js';
+import { getLogger } from '../logger/logger.js';
 
 // __filename/__dirname en ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const fileName = path.parse(__filename).name;
+const log = getLogger(fileName);
 
 /**
  * Observa y emite cambios en .env.
@@ -20,13 +21,13 @@ const fileName = path.parse(__filename).name;
  */
 export function watchEnvFile(envPath, messenger = { send: () => { } }) {
     if (!envPath || !fs.existsSync(envPath)) {
-        logger.error(`[${fileName}] Archivo .env NO encontrado en: ${envPath}`);
+        log.error(`[${fileName}] Archivo .env NO encontrado en: ${envPath || '(sin ruta)'}`);
         return;
     }
 
     const safeSend = (payload) => {
         try { messenger.send('env-updated', payload); }
-        catch (e) { logger.warn(`[${fileName}] messenger.send falló: ${e?.message || e}`); }
+        catch (e) { log.warn(`[${fileName}] messenger.send falló: ${e?.message || e}`); }
     };
 
     const loadAndSendEnv = () => {
@@ -45,17 +46,22 @@ export function watchEnvFile(envPath, messenger = { send: () => { } }) {
                 wsBasePath: parsedEnv.REACT_APP_WS_PATH,
             };
 
-            logger.debug?.(`[${fileName}] .env parseado: ${JSON.stringify(updatedEnv)}`);
+            log.info(`[${fileName}] .env actualizado`, { path: envPath });
+            log.debug?.(
+                `[${fileName}] .env parseado (claves)`,
+                { keys: Object.keys(updatedEnv) }
+            );
+
             safeSend(updatedEnv);
         } catch (err) {
-            logger.error(`[${fileName}] Error al cargar/parsear .env: ${err.message}`);
+            log.error(`[${fileName}] Error al cargar/parsear .env: ${err.message}`);
         }
     };
 
-    logger.info(`[${fileName}] Observando: ${envPath}`);
+    log.info(`[${fileName}] Observando .env`, { path: envPath });
     loadAndSendEnv();
 
-    // Debounce para múltiples eventos de cambio
+    // Debounce
     let timer = null;
     const trigger = () => {
         clearTimeout(timer);
@@ -67,7 +73,7 @@ export function watchEnvFile(envPath, messenger = { send: () => { } }) {
             if (eventType === 'change') trigger();
         });
     } catch (err) {
-        logger.warn(`[${fileName}] fs.watch falló: ${err.message}, usando fs.watchFile`);
+        log.warn(`[${fileName}] fs.watch falló: ${err.message}, usando fs.watchFile`);
     }
 
     fs.watchFile(envPath, { interval: 1000 }, (curr, prev) => {

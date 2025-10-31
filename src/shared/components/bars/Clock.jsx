@@ -1,7 +1,6 @@
 import { Typography, Box } from '@mui/material';
 import { useState, useEffect } from 'react';
 
-
 export const Clock = () => {
     const [horaActual, setHoraActual] = useState(new Date());
 

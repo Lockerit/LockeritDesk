@@ -1,214 +1,270 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 import { VirtualKeyboard } from "@shared/components/inputs/VirtualKeyboard";
+import { logger } from "@shared/utils/logger.js";
 
 import { KeyboardContext } from "./KeyboardContext";
 import { useWindowSizeContext } from "./WindowSizeContext";
 
-export const KeyboardProvider = ({ children }) => {
+const log = logger.scope("KeyboardProvider");
+const LS_KEY = "vk.position.v1";
+
+export const KeyboardProvider = ({ children, usePortal = true }) => {
     const [showKeyboard, setShowKeyboard] = useState(false);
     const [activeField, setActiveField] = useState(null);
-    const [position, setPosition] = useState({ x: 100, y: 100 });
 
-    const dragging = useRef(false);
-    const offset = useRef({ x: 0, y: 0 });
+    // Posición en píxeles, persistente
+    const [position, setPosition] = useState(() => {
+        const saved = JSON.parse(localStorage.getItem(LS_KEY) || "null");
+        if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) return saved;
+        return { x: 100, y: 100 };
+    });
 
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
-    // Helpers estables
+    // Métricas del teclado
+    const kbWidthRef = useRef(0);
+    const kbHeightRef = useRef(0);
+
+    // Drag state
+    const draggingRef = useRef(false);
+    const offsetRef = useRef({ x: 0, y: 0 });
+    const posRef = useRef(position);
+    const rafRef = useRef(null);
+
     const clamp = useCallback((v, min, max) => Math.max(min, Math.min(max, v)), []);
 
-    // Abrir/cerrar con identidad estable (evita re-renders innecesarios y warnings)
-    const openKeyboard = useCallback(
-        (anchorNode, fieldSetter, value, inputRef) => {
-            const kbWidth = window.innerWidth * 0.9;
-            const kbHeight = 300 * scale;
+    const computeMaxXY = useCallback(() => {
+        const w = Math.min(window.innerWidth * 0.9, window.innerWidth); // 90vw
+        const h = Math.max(300 * scale, 220); // alto mínimo
+        kbWidthRef.current = w;
+        kbHeightRef.current = h;
+        return {
+            maxX: window.innerWidth - w,
+            maxY: window.innerHeight - h,
+        };
+    }, [scale]);
 
-            let x = (window.innerWidth - kbWidth) / 2;
-            let y = (window.innerHeight - kbHeight) / 2;
+    const setPosClamped = useCallback((x, y) => {
+        const { maxX, maxY } = computeMaxXY();
+        const nx = clamp(x, 0, Math.max(0, maxX));
+        const ny = clamp(y, 0, Math.max(0, maxY));
+        posRef.current = { x: nx, y: ny };
+        setPosition(posRef.current);
+    }, [clamp, computeMaxXY]);
 
-            if (anchorNode?.getBoundingClientRect) {
-                const rect = anchorNode.getBoundingClientRect();
+    const openKeyboard = useCallback((anchorNode, fieldSetter, value, inputRef) => {
+        // Calcular posición inicial (debajo o encima del anchor si es posible)
+        computeMaxXY();
+        let x, y;
 
-                if (rect.bottom + kbHeight < window.innerHeight) {
-                    y = rect.bottom + 8;
-                } else if (rect.top - kbHeight > 0) {
-                    y = rect.top - kbHeight - 8;
-                } else {
-                    y = (window.innerHeight - kbHeight) / 2;
-                }
+        if (anchorNode?.getBoundingClientRect) {
+            const rect = anchorNode.getBoundingClientRect();
+            const kbW = kbWidthRef.current;
+            const kbH = kbHeightRef.current;
 
-                x = clamp(
-                    rect.left + rect.width / 2 - kbWidth / 2,
-                    0,
-                    window.innerWidth - kbWidth
-                );
+            // Preferencia: debajo; si no cabe, encima; si no, centrado
+            if (rect.bottom + kbH < window.innerHeight) {
+                y = rect.bottom + 8;
+            } else if (rect.top - kbH > 0) {
+                y = rect.top - kbH - 8;
+            } else {
+                y = (window.innerHeight - kbH) / 2;
             }
+            x = clamp(rect.left + rect.width / 2 - kbW / 2, 0, window.innerWidth - kbW);
+        } else {
+            // Centro
+            x = (window.innerWidth - kbWidthRef.current) / 2;
+            y = (window.innerHeight - kbHeightRef.current) / 2;
+        }
 
-            setPosition({ x, y });
-            setActiveField({ setValue: fieldSetter, value, inputRef, key: Date.now() });
-            setShowKeyboard(true);
-        },
-        [clamp, scale]
-    );
+        setPosClamped(x, y);
+        setActiveField({ setValue: fieldSetter, value, inputRef, key: Date.now() });
+        setShowKeyboard(true);
+
+        log.debug(`keyboard.open, { x: ${Math.round(x)}, y: ${Math.round(y)} }`);
+    }, [clamp, computeMaxXY, setPosClamped]);
 
     const closeKeyboard = useCallback(() => {
         setShowKeyboard(false);
         setActiveField(null);
+        log.debug("keyboard.close");
     }, []);
 
-    // Drag & drop (mouse)
-    const onMouseMove = useCallback(
-        (e) => {
-            if (!dragging.current) return;
+    // Persistir posición
+    useEffect(() => {
+        localStorage.setItem(LS_KEY, JSON.stringify(position));
+    }, [position]);
 
-            const kbWidth = window.innerWidth * 0.9;
-            const kbHeight = 300 * scale;
-            const maxX = window.innerWidth - kbWidth;
-            const maxY = window.innerHeight - kbHeight;
+    // Re-clamp al cambiar tamaño/orientación
+    useEffect(() => {
+        const onResize = () => {
+            computeMaxXY();
+            setPosClamped(posRef.current.x, posRef.current.y);
+        };
+        window.addEventListener("resize", onResize, { passive: true });
+        window.addEventListener("orientationchange", onResize, { passive: true });
+        return () => {
+            window.removeEventListener("resize", onResize);
+            window.removeEventListener("orientationchange", onResize);
+        };
+    }, [computeMaxXY, setPosClamped]);
 
-            const newX = clamp(e.clientX - offset.current.x, 0, maxX);
-            const newY = clamp(e.clientY - offset.current.y, 0, maxY);
-            setPosition({ x: newX, y: newY });
-        },
-        [clamp, scale]
-    );
+    // Cerrar con Escape
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key === "Escape" && showKeyboard) closeKeyboard();
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [showKeyboard, closeKeyboard]);
 
-    const onMouseUp = useCallback(() => {
-        dragging.current = false;
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-    }, [onMouseMove]);
+    // Pointer Events: down/move/up
+    const onPointerDown = useCallback((e) => {
+        // Si el click viene de algo interactivo, no iniciar drag
+        if (
+            e.target.closest('[data-nodrag]') ||
+            e.target.closest('button, a, input, textarea, select')
+        ) {
+            return; // permite que onClick de la X funcione
+        }
 
-    const onMouseDown = useCallback(
-        (e) => {
-            dragging.current = true;
-            offset.current = {
-                x: e.clientX - position.x,
-                y: e.clientY - position.y,
-            };
-            document.addEventListener("mousemove", onMouseMove);
-            document.addEventListener("mouseup", onMouseUp);
-        },
-        [onMouseMove, onMouseUp, position.x, position.y]
-    );
+        e.preventDefault();
+        e.stopPropagation();
+        draggingRef.current = true;
+        offsetRef.current = {
+            x: e.clientX - posRef.current.x,
+            y: e.clientY - posRef.current.y,
+        };
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        log.debug(`drag.start, { x: ${Math.round(posRef.current.x)}, y: ${Math.round(posRef.current.y)} }`);
+    }, []);
 
-    // Drag & drop (touch)
-    const onTouchMove = useCallback(
-        (e) => {
-            if (!dragging.current) return;
+    const schedulePos = useCallback((nx, ny) => {
+        // Animación con RAF para evitar reflows excesivos
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => setPosClamped(nx, ny));
+    }, [setPosClamped]);
 
-            const t = e.touches[0];
-            const kbWidth = window.innerWidth * 0.9;
-            const kbHeight = 300 * scale;
-            const maxX = window.innerWidth - kbWidth;
-            const maxY = window.innerHeight - kbHeight;
+    const onPointerMove = useCallback((e) => {
+        if (!draggingRef.current) return;
+        e.preventDefault();
 
-            const newX = clamp(t.clientX - offset.current.x, 0, maxX);
-            const newY = clamp(t.clientY - offset.current.y, 0, maxY);
-            setPosition({ x: newX, y: newY });
+        const { maxX, maxY } = computeMaxXY();
+        const nx = clamp(e.clientX - offsetRef.current.x, 0, Math.max(0, maxX));
+        const ny = clamp(e.clientY - offsetRef.current.y, 0, Math.max(0, maxY));
+        schedulePos(nx, ny);
+    }, [clamp, computeMaxXY, schedulePos]);
 
-            e.preventDefault(); // evita scroll mientras arrastras
-        },
-        [clamp, scale]
-    );
+    const onPointerUp = useCallback((e) => {
+        if (!draggingRef.current) return;
+        draggingRef.current = false;
+        e.preventDefault();
+        e.currentTarget.releasePointerCapture?.(e.pointerId);
+        log.debug(`drag.end, { x: ${Math.round(posRef.current.x)}, y: ${Math.round(posRef.current.y)} }`);
+    }, []);
 
-    const onTouchEnd = useCallback(() => {
-        dragging.current = false;
-        document.removeEventListener("touchmove", onTouchMove);
-        document.removeEventListener("touchend", onTouchEnd);
-    }, [onTouchMove]);
-
-    const onTouchStart = useCallback(
-        (e) => {
-            dragging.current = true;
-            const t = e.touches[0];
-            offset.current = {
-                x: t.clientX - position.x,
-                y: t.clientY - position.y,
-            };
-            document.addEventListener("touchmove", onTouchMove, { passive: false });
-            document.addEventListener("touchend", onTouchEnd);
-        },
-        [onTouchEnd, onTouchMove, position.x, position.y]
-    );
-
-    // Limpieza defensiva de listeners
+    // Limpieza defensiva
     useEffect(() => {
         return () => {
-            document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp);
-            document.removeEventListener("touchmove", onTouchMove);
-            document.removeEventListener("touchend", onTouchEnd);
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
-    }, [onMouseMove, onMouseUp, onTouchMove, onTouchEnd]);
+    }, []);
 
-    // Valor de contexto memorizado
-    const ctxValue = useMemo(
-        () => ({ openKeyboard, closeKeyboard }),
-        [openKeyboard, closeKeyboard]
-    );
+    const ctxValue = useMemo(() => ({ openKeyboard, closeKeyboard }), [openKeyboard, closeKeyboard]);
+
+    const keyboardNode = showKeyboard ? (
+        <div
+            id="draggable-keyboard"
+            style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 9999,
+                pointerEvents: "none", // contenedor no capta eventos excepto el panel
+            }}
+            aria-hidden={!showKeyboard}
+        >
+            <div
+                style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    // Render sin jank
+                    transform: `translate(${position.x}px, ${position.y}px)`,
+                    width: "90vw",
+                    maxWidth: "90vw",
+                    minWidth: `${320 * scale}px`,
+                    pointerEvents: "auto", // este sí capta
+                    background: "#f5f5f5",
+                    borderRadius: 8 * scale,
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+                    border: `${1 * scale}px solid #0c315e`,
+                    userSelect: "none",
+                    padding: 8 * scale,
+                    touchAction: "none", // evita scroll durante drag
+                }}
+            >
+                <div
+                    role="button"
+                    aria-label="Mover teclado virtual"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{
+                        width: "100%",
+                        cursor: "grab",
+                        padding: 4,
+                        fontWeight: "bold",
+                        color: "#0c315e",
+                        background: "#ffffff",
+                        border: `${1 * scale}px solid #0c315e`,
+                        borderRadius: 6 * scale,
+                        marginBottom: 8 * scale,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                    }}
+                >
+                    Arrastra para mover el teclado
+                    <button
+                        type="button"
+                        data-nodrag
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={closeKeyboard}
+                        aria-label="Cerrar teclado"
+                        style={{
+                            marginLeft: 8,
+                            cursor: "pointer",
+                            color: "#0c315e",
+                            background: "transparent",
+                            border: "none",
+                            fontSize: 16 * scale,
+                            fontWeight: "bold",
+                        }}
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                {activeField && (
+                    <VirtualKeyboard
+                        key={activeField.key}
+                        inputValue={activeField.value}
+                        onChange={(val) => activeField.setValue(val)}
+                        onEnter={closeKeyboard}
+                        activeField={activeField}
+                    />
+                )}
+            </div>
+        </div>
+    ) : null;
 
     return (
         <KeyboardContext.Provider value={ctxValue}>
             {children}
-
-            {showKeyboard && (
-                <div
-                    id="draggable-keyboard"
-                    style={{
-                        position: "fixed",
-                        left: position.x,
-                        top: position.y,
-                        zIndex: 9999,
-                        width: "90vw",
-                        maxWidth: "90vw",
-                        minWidth: `${320 * scale}px`,
-                        background: "#f5f5f5",
-                        borderRadius: 8 * scale,
-                        boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
-                        border: `${1 * scale}px solid #0c315e`,
-                        userSelect: "none",
-                        padding: 8 * scale,
-                    }}
-                >
-                    <div
-                        onMouseDown={onMouseDown}
-                        onTouchStart={onTouchStart}
-                        style={{
-                            width: "100%",
-                            cursor: "move",
-                            padding: 4,
-                            fontWeight: "bold",
-                            color: "#0c315e",
-                            background: "#ffffff",
-                            border: `${1 * scale}px solid #0c315e`,
-                            borderRadius: 6 * scale,
-                            marginBottom: 8 * scale,
-                        }}
-                    >
-                        Arrastra para mover el teclado
-                        <span
-                            style={{ float: "right", cursor: "pointer", color: "#0c315e" }}
-                            onClick={closeKeyboard}
-                            aria-label="Cerrar teclado"
-                        >
-                            ✕
-                        </span>
-                    </div>
-
-                    {activeField && (
-                        <VirtualKeyboard
-                            key={activeField.key}
-                            inputValue={activeField.value}
-                            onChange={(val) => activeField.setValue(val)}
-                            onEnter={closeKeyboard}
-                            activeField={activeField}
-                        />
-                    )}
-                </div>
-            )}
+            {usePortal ? createPortal(keyboardNode, document.body) : keyboardNode}
         </KeyboardContext.Provider>
     );
 };

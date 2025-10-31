@@ -6,16 +6,22 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import utc from "dayjs/plugin/utc";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { logger } from '@shared/utils/logger.js';
 
 dayjs.extend(utc);
 
-const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
+const fileName = 'DateTime';
+const log = logger.scope(fileName);
 
+// Utilidad para mostrar una vista corta en logs
+const fmt = (d) => (d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '');
+
+const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
     const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const scale = size.factor || 1;
 
     return (
         <Box
@@ -34,33 +40,21 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
             <Typography
                 onClick={onCancel}
                 color='secondary'
-                sx={{
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    '&:hover': { color: 'primary.main' },
-                }}
+                sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
             >
                 Cancelar
             </Typography>
             <Typography
                 onClick={setToday}
                 color='secondary'
-                sx={{
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    '&:hover': { color: 'primary.main' },
-                }}
+                sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
             >
                 Ahora
             </Typography>
             <Typography
                 onClick={onAccept}
                 color='secondary'
-                sx={{
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    '&:hover': { color: 'primary.main' },
-                }}
+                sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
             >
                 Aceptar
             </Typography>
@@ -69,9 +63,8 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
 };
 
 const NumberColumn = ({ label, values, selected, onSelect }) => {
-
     const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const scale = size.factor || 1;
 
     return (
         <Box
@@ -87,7 +80,6 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
                 alignItems: 'center',
             }}
         >
-            {/* Título de la columna */}
             <Typography
                 variant='subtitle2'
                 sx={{
@@ -100,7 +92,6 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
                 {label}
             </Typography>
 
-            {/* Lista de números */}
             <List dense sx={{ width: '100%' }}>
                 {values.map((val) => (
                     <ListItem key={val} disablePadding>
@@ -124,23 +115,76 @@ export const DateTime = ({
     onChange,
     showTime = true,
     disabled = false,
-    disablePastDates = false, // 👈 NUEVA PROP OPCIONAL
+    disablePastDates = false,
 }) => {
     const [open, setOpen] = useState(false);
-    const [tempValue, setTempValue] = useState(value); // estado temporal
+    const [tempValue, setTempValue] = useState(value);
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
+    // Para evitar spam, memo de previews
+    const prevValue = useMemo(() => fmt(value), [value]);
+    const _prevTemp = useMemo(() => fmt(tempValue), [tempValue]);
+
     useEffect(() => {
         if (open) {
-            setTempValue(value); // resetea temporal al abrir
+            setTempValue(value);
+            log.info('abrir selector', { showTime, value: prevValue });
         }
-    }, [open, value]);
+    }, [open, value, showTime, prevValue]);
 
-    // Función para deshabilitar días pasados si se requiere
+    const handleClose = useCallback(() => {
+        setOpen(false);
+        log.info('cerrar selector');
+    }, []);
+
+    const handleAccept = useCallback(() => {
+        onChange(tempValue);
+        log.info('aceptar fecha/hora', { final: fmt(tempValue) });
+        setOpen(false);
+    }, [onChange, tempValue]);
+
+    const handleCancel = useCallback(() => {
+        setTempValue(value);
+        log.info('cancelar cambios', { restore: prevValue });
+        setOpen(false);
+    }, [value, prevValue]);
+
+    const handleSetToday = useCallback(() => {
+        const now = dayjs();
+        setTempValue(now);
+        log.info('ajustar a ahora', { now: fmt(now) });
+    }, []);
+
+    // Deshabilitar días pasados si aplica
     const shouldDisableDate = (date) => {
-        if (!disablePastDates) return false; // ❌ no deshabilitar nada
-        return date.isBefore(dayjs().startOf("day")); // ✅ bloquea fechas anteriores al hoy
+        if (!disablePastDates) return false;
+        return date.isBefore(dayjs().startOf('day'));
+    };
+
+    // Log de cambios de calendario
+    const onCalendarChange = (newDate) => {
+        if (!newDate) return;
+        const next = showTime
+            ? newDate
+                .hour(tempValue?.hour() ?? 0)
+                .minute(tempValue?.minute() ?? 0)
+                .second(tempValue?.second() ?? 0)
+            : newDate.startOf('day');
+        setTempValue(next);
+        log.debug('cambio calendario', { day: newDate.format('YYYY-MM-DD'), temp: fmt(next) });
+    };
+
+    const onHourChange = (h) => {
+        const next = tempValue.hour(h);
+        setTempValue(next);
+        log.debug('cambio hora', { hour: h, temp: fmt(next) });
+    };
+
+    const onMinuteChange = (m) => {
+        const next = tempValue.minute(m);
+        setTempValue(next);
+        log.debug('cambio minuto', { minute: m, temp: fmt(next) });
     };
 
     return (
@@ -151,31 +195,20 @@ export const DateTime = ({
                 value={value}
                 open={open}
                 onOpen={() => setOpen(true)}
-                onClose={() => setOpen(false)}
+                onClose={handleClose}
                 format={showTime ? "YYYY-MM-DD HH:mm" : "YYYY-MM-DD"}
                 slots={{
                     layout: (props) => (
                         <Box>
                             {props.tabs}
 
-                            {/* Calendario + columnas */}
                             <Box sx={{ display: "flex", gap: 2 * scale, p: 2 * scale }}>
                                 <DateCalendar
                                     views={["year", "month", "day"]}
                                     openTo="day"
                                     value={tempValue}
-                                    onChange={(newDate) => {
-                                        if (!newDate) return;
-                                        setTempValue(
-                                            showTime
-                                                ? newDate
-                                                    .hour(tempValue?.hour() ?? 0)
-                                                    .minute(tempValue?.minute() ?? 0)
-                                                    .second(tempValue?.second() ?? 0)
-                                                : newDate.startOf("day")
-                                        );
-                                    }}
-                                    shouldDisableDate={shouldDisableDate} // 👈 aquí se aplica
+                                    onChange={onCalendarChange}
+                                    shouldDisableDate={shouldDisableDate}
                                 />
 
                                 {showTime && (
@@ -184,31 +217,28 @@ export const DateTime = ({
                                             label="Horas"
                                             values={Array.from({ length: 24 }, (_, i) => i)}
                                             selected={tempValue.hour()}
-                                            onSelect={(h) => setTempValue(tempValue.hour(h))}
+                                            onSelect={onHourChange}
                                         />
                                         <NumberColumn
                                             label="Minutos"
                                             values={Array.from({ length: 60 }, (_, i) => i)}
                                             selected={tempValue.minute()}
-                                            onSelect={(m) => setTempValue(tempValue.minute(m))}
+                                            onSelect={onMinuteChange}
                                         />
                                     </Box>
                                 )}
                             </Box>
 
-                            {/* Botones */}
                             <CustomActionBar
                                 onAccept={() => {
                                     props.onAccept?.();
-                                    onChange(tempValue);
-                                    setOpen(false);
+                                    handleAccept();
                                 }}
                                 onCancel={() => {
                                     props.onCancel?.();
-                                    setTempValue(value);
-                                    setOpen(false);
+                                    handleCancel();
                                 }}
-                                setToday={() => setTempValue(dayjs())}
+                                setToday={handleSetToday}
                             />
                         </Box>
                     ),

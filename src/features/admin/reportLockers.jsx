@@ -10,10 +10,15 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { DateTime } from "@shared/components/time/DateTime.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { logger } from '@shared/utils/logger.js'; // [+log]
 
 import { TableReportLockers } from "./TableReportLockers.jsx";
 
 dayjs.extend(utc);
+
+// [+log]
+const fileName = 'ReportLockers';
+const log = logger.scope(fileName);
 
 export const ReportLockers = () => {
     const [endDate, setEndDate] = useState(dayjs());
@@ -34,7 +39,15 @@ export const ReportLockers = () => {
         if (!config) return;
         const t = config?.paramsHtml?.modalTimeouts?.timeoutShowMessage;
         if (typeof t === 'number') setTimeoutShowMessage(t);
+        // [+log]
+        log.info('Config cargada para ReportLockers');
     }, [config]);
+
+    // Log básico de cambios de rango (bajo ruido)
+    useEffect(() => {
+        // [+log]
+        log.info(`Cambio de rango → start=${startDate.format('YYYY-MM-DD HH:mm:ss')} end=${endDate.format('YYYY-MM-DD HH:mm:ss')}`);
+    }, [startDate, endDate]);
 
     // fetch con deps estables
     const fetchDataReportLocker = useCallback(
@@ -55,10 +68,18 @@ export const ReportLockers = () => {
             };
 
             try {
+                // [+log]
+                log.info(`GET /report → inicio startUTC=${payload.startDate} endUTC=${payload.endDate}`);
+                const t0 = Date.now();
+
                 const result = await GetReportLockers(payload);
 
+                const ms = Date.now() - t0;
                 if (result?.success) {
+                    const rows = Array.isArray(result?.data) ? result.data.length : 0;
                     setReportData(result?.data || []);
+                    // [+log]
+                    log.info(`GET /report → ok rows=${rows} timeMs=${ms}`);
 
                     if (showMsg) {
                         let msg = '';
@@ -81,12 +102,18 @@ export const ReportLockers = () => {
 
                     setMessageErrorAPI(msg);
                     setShowErrorAPIOpen(true);
+                    // [+log]
+                    log.error(`GET /report → fail: ${msg}`);
                 }
             } catch (err) {
                 setMessageErrorAPI(err.message || 'Error al obtener reporte');
                 setShowErrorAPIOpen(true);
+                // [+log]
+                log.error(`GET /report → exception: ${err.message || err}`);
             } finally {
                 setLoading(false);
+                // [+log]
+                log.info('GET /report → fin');
             }
         },
         [startDate, endDate]
@@ -94,6 +121,8 @@ export const ReportLockers = () => {
 
     // Carga inicial
     useEffect(() => {
+        // [+log]
+        log.info('Montando vista ReportLockers, solicitando datos iniciales');
         fetchDataReportLocker(false);
     }, [fetchDataReportLocker]);
 
@@ -134,9 +163,13 @@ export const ReportLockers = () => {
                             fontSize: `${24 * scale}px`,
                             fontWeight: 'normal',
                         }}
-                        onClick={() => fetchDataReportLocker(true)}
+                        onClick={() => {
+                            // [+log]
+                            log.info('Click generar reporte');
+                            fetchDataReportLocker(true);
+                        }}
                     >
-                        Generar reporte
+                        Generar
                         <Summarize sx={{ fontSize: 28 * scale, ml: 3 * scale }} />
                     </Button>
                 </Box>
@@ -160,7 +193,11 @@ export const ReportLockers = () => {
             {showErrorAPIOpen && (
                 <ShowErrorAPI
                     open={showErrorAPIOpen}
-                    onConfirm={() => setShowErrorAPIOpen(false)}
+                    onConfirm={() => {
+                        setShowErrorAPIOpen(false);
+                        // [+log]
+                        log.info('Cerrar modal de resultado de reporte');
+                    }}
                     msg={messageErrorAPI}
                     timeout={timeoutShowMessage}
                     isError={isErrorMsj}

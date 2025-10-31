@@ -3,12 +3,16 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Typography, Button, Box, Slide, IconButton
 } from '@mui/material';
-import { useState, forwardRef, useEffect } from 'react';
+import { useState, forwardRef, useEffect, useMemo, useRef } from 'react';
 
 import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { logger } from '@shared/utils/logger.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
+
+const fileName = 'InsertMoney';
+const log = logger.scope(fileName);
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -26,36 +30,72 @@ export const InsertMoney = ({
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
-    // (Opcional) anunciar el monto cuando cambie
-    useEffect(() => {
-        const numericAmount = Number(String(amountPay || '').replace(/[^0-9.-]+/g, ''));
-        if (!numericAmount) return;
+    // snapshot para evitar logs repetidos
+    const lastLogged = useRef({ open: undefined, amountPay: undefined, timeout: undefined });
+
+    // Normaliza monto pagado a número
+    const numericAmountPay = useMemo(() => {
+        const n = Number(String(amountPay ?? '').replace(/[^0-9.-]+/g, ''));
+        return Number.isFinite(n) ? n : 0;
     }, [amountPay]);
 
-    // Reiniciar contador cuando se abre, cambia el timeout o cambia amountPay
+    useEffect(() => {
+        log.info(`Montaje | timeout=${timeout} | phone=${phone ?? ''}`);
+        return () => {
+            log.debug('Desmontaje');
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Log de cambios relevantes de props
+    useEffect(() => {
+        if (lastLogged.current.open !== open) {
+            log.debug(`Prop changed: open=${open}`);
+            lastLogged.current.open = open;
+        }
+        if (lastLogged.current.timeout !== timeout) {
+            log.info(`Prop changed: timeout=${timeout}`);
+            lastLogged.current.timeout = timeout;
+        }
+        if (lastLogged.current.amountPay !== amountPay) {
+            log.debug(`Prop changed: amountPay=${amountPay} | numeric=${numericAmountPay}`);
+            lastLogged.current.amountPay = amountPay;
+        }
+    }, [open, timeout, amountPay, numericAmountPay]);
+
+    // Reiniciar contador cuando abre o cambia timeout/amountPay
     useEffect(() => {
         if (open) {
             setSecondsLeft(timeout);
+            log.debug(`Reinicio contador | secondsLeft=${timeout}`);
         }
     }, [open, timeout, amountPay]);
 
-    // Intervalo de cuenta regresiva (no depende de secondsLeft)
+    // Intervalo de cuenta regresiva
     useEffect(() => {
         if (!open) return;
-
+        log.debug('Inicio intervalo de cuenta regresiva');
         const id = setInterval(() => {
             setSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
         }, 1000);
-
-        return () => clearInterval(id);
+        return () => {
+            clearInterval(id);
+            log.debug('Limpieza intervalo de cuenta regresiva');
+        };
     }, [open]);
 
-    // Cerrar al llegar a 0
+    // Autocerrar al llegar a 0
     useEffect(() => {
         if (open && secondsLeft === 0) {
-            onCancel();
+            log.warn('Tiempo agotado, cancelando flujo');
+            onCancel?.();
         }
     }, [open, secondsLeft, onCancel]);
+
+    const handleCancel = () => {
+        log.info('Cancelación solicitada por el usuario');
+        onCancel?.();
+    };
 
     return (
         <Dialog
@@ -99,7 +139,7 @@ export const InsertMoney = ({
                     }}
                 >
                     <Typography variant="body2">{formatTime(secondsLeft)}</Typography>
-                    <IconButton onClick={onCancel}>
+                    <IconButton onClick={handleCancel}>
                         <Close />
                     </IconButton>
                 </Box>
@@ -116,6 +156,7 @@ export const InsertMoney = ({
                 <Typography variant="h4" sx={{ textAlign: 'center', mt: 2 * scale, mb: 3 * scale }}>
                     Por favor deposite el dinero:
                 </Typography>
+
                 <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mt: 2 * scale, mb: 3 * scale }}>
                     {phone}
                 </Typography>
@@ -139,7 +180,7 @@ export const InsertMoney = ({
                 sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', height: '100%', width: '100%' }}
             >
                 <Button
-                    onClick={onCancel}
+                    onClick={handleCancel}
                     color="secondary"
                     variant="contained"
                     fullWidth

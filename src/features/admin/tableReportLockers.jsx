@@ -14,9 +14,14 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { TextFieldVirtKeyPad } from "@shared/components/inputs/TextFieldVirtKeyPad.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { logger } from '@shared/utils/logger.js';
 import { formatCurrency } from "@shared/utils/utils.js";
 
 dayjs.extend(utc);
+
+// [+log]
+const fileName = 'TableReportLockers';
+const log = logger.scope(fileName);
 
 export const TableReportLockers = ({ data, startDate, endDate }) => {
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
@@ -39,7 +44,15 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         if (!config) return;
         const t = config?.paramsHtml?.modalTimeouts?.timeoutShowMessage;
         if (typeof t === 'number') setTimeoutShowMessage(t);
+        // [+log]
+        log.info('Config cargada para TableReportLockers');
     }, [config]);
+
+    // Log de tamaño de dataset y rango
+    useEffect(() => {
+        // [+log]
+        log.info(`Entrada de datos → rows=${Array.isArray(data) ? data.length : 0} rango=${dayjs(startDate).format('YYYY-MM-DD HH:mm:ss')}..${dayjs(endDate).format('YYYY-MM-DD HH:mm:ss')}`);
+    }, [data, startDate, endDate]);
 
     // modo de zona horaria + formateador
     const timezoneMode = config?.report?.timezoneMode || "local";
@@ -48,9 +61,14 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         [timezoneMode]
     );
 
-    // Habilita/Deshabilita el botón según haya resultados filtrados
+    useEffect(() => {
+        // [+log]
+        log.info(`Timezone mode: ${timezoneMode}`);
+    }, [timezoneMode]);
+
+    // Filtro
     const filteredData = useMemo(() => {
-        return data.filter((row) => {
+        const res = data.filter((row) => {
             const query = search.toLowerCase();
             return (
                 String(row.LockerCode).toLowerCase().includes(query) ||
@@ -59,23 +77,36 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                 (row.OpenBy || "").toLowerCase().includes(query)
             );
         });
+        return res;
     }, [data, search]);
 
     useEffect(() => {
         setDisabledButton(filteredData.length === 0);
-    }, [filteredData.length]);
+        // [+log]
+        log.info(`Filtro aplicado → query="${search}" resultados=${filteredData.length}`);
+    }, [filteredData.length, search]);
 
-    const handleChangePage = (_event, newPage) => setPage(newPage);
+    const handleChangePage = (_event, newPage) => {
+        setPage(newPage);
+        // [+log]
+        log.info(`Paginación → page=${newPage}`);
+    };
 
     const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
+        const v = parseInt(event.target.value, 10);
+        setRowsPerPage(v);
         setPage(0);
+        // [+log]
+        log.info(`RowsPerPage → ${v}`);
     };
 
     const handleSort = (field) => {
         const isAsc = orderBy === field && order === "asc";
-        setOrder(isAsc ? "desc" : "asc");
+        const nextOrder = isAsc ? "desc" : "asc";
+        setOrder(nextOrder);
         setOrderBy(field);
+        // [+log]
+        log.info(`Orden → field=${field} order=${nextOrder}`);
     };
 
     const sortedData = useMemo(() => {
@@ -123,9 +154,16 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         };
 
         try {
+            // [+log]
+            log.info(`POST /report → enviarEmail startUTC=${payload.startDate} endUTC=${payload.endDate}`);
+            const t0 = Date.now();
+
             const result = await GetReportLockers(payload);
 
+            const ms = Date.now() - t0;
             if (result?.success) {
+                // [+log]
+                log.info(`POST /report → ok timeMs=${ms}`);
                 if (showMsg) {
                     let msg = '';
                     if (!result?.data) {
@@ -147,12 +185,18 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
 
                 setMessageErrorAPI(msg);
                 setShowErrorAPIOpen(true);
+                // [+log]
+                log.error(`POST /report → fail: ${msg}`);
             }
         } catch (err) {
             setMessageErrorAPI(err.message || 'Error al obtener reporte');
             setShowErrorAPIOpen(true);
+            // [+log]
+            log.error(`POST /report → exception: ${err.message || err}`);
         } finally {
             setLoading(false);
+            // [+log]
+            log.info('POST /report → fin');
         }
     };
 
@@ -201,10 +245,14 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                 fontSize: `${24 * scale}px`,
                                 fontWeight: 'normal',
                             }}
-                            onClick={() => fetchDataReportLocker(true)}
+                            onClick={() => {
+                                // [+log]
+                                log.info('Click enviar reporte');
+                                fetchDataReportLocker(true);
+                            }}
                             disabled={disabledButton}
                         >
-                            Enviar reporte
+                            Enviar
                             <ForwardToInbox sx={{ fontSize: 28 * scale, ml: 3 * scale }} />
                         </Button>
                     </Box>
@@ -378,7 +426,11 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
             {showErrorAPIOpen && (
                 <ShowErrorAPI
                     open={showErrorAPIOpen}
-                    onConfirm={() => setShowErrorAPIOpen(false)}
+                    onConfirm={() => {
+                        setShowErrorAPIOpen(false);
+                        // [+log]
+                        log.info('Cerrar modal de envío de reporte');
+                    }}
                     msg={messageErrorAPI}
                     timeout={timeoutShowMessage}
                     isError={isErrorMsj}

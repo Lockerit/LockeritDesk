@@ -8,7 +8,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   base: './',
-  build: { outDir: 'dist' },
+  build: { 
+    sourcemap: true,
+    outDir: 'dist' 
+  },
   resolve: {
     alias: {
       '@app': path.resolve(__dirname, 'src/app'),

@@ -1,7 +1,7 @@
-import { Alert, Stack } from '@mui/material';
+// src/main-renderer.jsx (Root y bootstrap con logging)
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { StrictMode, useMemo, useState, useEffect } from 'react';
+import { StrictMode, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './fonts.css';
@@ -14,82 +14,31 @@ import { UserProvider } from '@shared/context/UserProvider.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { WindowSizeProvider } from '@shared/context/WindowSizeProvider.jsx';
 import { createScaledTheme } from '@shared/theme/theme.js';
+import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'main-renderer';
-
-const log = (level, message) => {
-  if (typeof window !== 'undefined' && window.electronAPI?.log) {
-    window.electronAPI.log(level, `[${fileName}] ${message}`);
-  }
-};
+const log = logger.scope(fileName);
 
 export const RootApp = () => {
-  const [pendingCSP, setPendingCSP] = useState(null);
 
-  // Hook de contexto: SIEMPRE se llama
+  // Contexto de tamaño
   const size = useWindowSizeContext();
   const factor = Number(size?.factor) > 0 ? Number(size.factor) : 1;
 
-  // Hook: SIEMPRE se llama (no condicional)
-  const theme = useMemo(() => createScaledTheme(factor), [factor]);
+  // Tema escalado
+  const theme = useMemo(() => {
+    const t = createScaledTheme(factor);
+    log.debug?.('theme.scaled', { factor });
+    return t;
+  }, [factor]);
 
-  // Efecto: registra listener de CSP (una sola vez)
-  useEffect(() => {
-    const currentMetaCSP =
-      document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || null;
 
-    const storedCSP = localStorage.getItem('lastAppliedCSP') || null;
-
-    log('debug', `CSP actual en meta: ${currentMetaCSP}`);
-    log('debug', `CSP en localStorage: ${storedCSP}`);
-
-    if (window?.electronAPI?.onUpdateCSP) {
-      const handler = (newCsp) => {
-        const currentMeta =
-          document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content');
-
-        if (newCsp && newCsp !== currentMeta) {
-          log('info', `CSP cambió, guardando en localStorage y mostrando banner`);
-          localStorage.setItem('lastAppliedCSP', newCsp);
-          setPendingCSP(newCsp);
-        } else {
-          log('debug', `CSP recibida es igual a la actual, no se hace nada`);
-        }
-      };
-
-      window.electronAPI.onUpdateCSP(handler);
-
-      // Si tu preload expone offUpdateCSP, descomenta:
-      // return () => window.electronAPI.offUpdateCSP?.(handler);
-    }
-  }, []);
-
-  log('debug', `RootApp size ${JSON.stringify(size)}`);
-
-  // Ya NO hay Hooks debajo de este return condicional
   if (!size?.factor || size.factor <= 0) {
     return <Loading open message="Cargando aplicación..." />;
   }
 
   return (
     <>
-      {pendingCSP && (
-        <Stack
-          sx={{
-            position: 'fixed',
-            top: '30%',
-            transform: 'translateY(-50%)',
-            width: '100%',
-            zIndex: 9999,
-            alignItems: 'center',
-          }}
-        >
-          <Alert severity="warning">
-            La configuración de seguridad cambió. Por favor cierra la aplicación y vuelve a abrirla.
-          </Alert>
-        </Stack>
-      )}
-
       <UserProvider>
         <ModalProvider>
           <KeyboardProvider>
@@ -105,15 +54,29 @@ export const RootApp = () => {
 };
 
 const bootstrap = async () => {
-  const initialSize = await window.electronAPI.getScreenDataOnce();
+  try {
+    log.info('bootstrap.start');
+    const initialSize = await window.electronAPI.getScreenDataOnce();
+    log.info('bootstrap.screenData', { initialSize });
 
-  createRoot(document.getElementById('root')).render(
-    <StrictMode>
-      <WindowSizeProvider initialSize={initialSize}>
-        <RootApp />
-      </WindowSizeProvider>
-    </StrictMode>
-  );
+    const rootEl = document.getElementById('root');
+    if (!rootEl) {
+      log.error('bootstrap.noRootElement');
+      return;
+    }
+
+    createRoot(rootEl).render(
+      <StrictMode>
+        <WindowSizeProvider initialSize={initialSize}>
+          <RootApp />
+        </WindowSizeProvider>
+      </StrictMode>
+    );
+
+    log.info('bootstrap.rendered');
+  } catch (err) {
+    log.error('bootstrap.error', { message: err?.message || String(err) });
+  }
 };
 
 bootstrap();
