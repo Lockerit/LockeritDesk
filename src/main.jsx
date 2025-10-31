@@ -1,8 +1,7 @@
 // src/main-renderer.jsx (Root y bootstrap con logging)
-import { Alert, Stack } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { StrictMode, useMemo, useState, useEffect } from 'react';
+import { StrictMode, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './fonts.css';
@@ -21,7 +20,6 @@ const fileName = 'main-renderer';
 const log = logger.scope(fileName);
 
 export const RootApp = () => {
-  const [pendingCSP, setPendingCSP] = useState(null);
 
   // Contexto de tamaño
   const size = useWindowSizeContext();
@@ -34,34 +32,6 @@ export const RootApp = () => {
     return t;
   }, [factor]);
 
-  // Listener de CSP una sola vez
-  // useEffect(() => {
-  //   const currentMetaCSP =
-  //     document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || null;
-  //   const storedCSP = localStorage.getItem('lastAppliedCSP') || null;
-  //   log.info('csp.init', { currentMetaCSP, storedCSP });
-
-  //   if (window?.electronAPI?.onUpdateCSP) {
-  //     const handler = (newCsp) => {
-  //       const currentMeta =
-  //         document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content');
-  //       if (newCsp && newCsp !== currentMeta) {
-  //         localStorage.setItem('lastAppliedCSP', newCsp);
-  //         setPendingCSP(newCsp);
-  //         log.info('csp.changed', { from: currentMeta, to: newCsp });
-  //       } else {
-  //         log.debug?.('csp.nochange');
-  //       }
-  //     };
-
-  //     window.electronAPI.onUpdateCSP(handler);
-  //     log.info('csp.listener.attached');
-  //     // Si tienes offUpdateCSP disponible:
-  //     // return () => window.electronAPI.offUpdateCSP?.(handler);
-  //   } else {
-  //     log.warn('csp.listener.unavailable');
-  //   }
-  // }, []);
 
   if (!size?.factor || size.factor <= 0) {
     return <Loading open message="Cargando aplicación..." />;
@@ -69,23 +39,6 @@ export const RootApp = () => {
 
   return (
     <>
-      {/* {pendingCSP && (
-        <Stack
-          sx={{
-            position: 'fixed',
-            top: '30%',
-            transform: 'translateY(-50%)',
-            width: '100%',
-            zIndex: 9999,
-            alignItems: 'center',
-          }}
-        >
-          <Alert severity="warning">
-            La configuración de seguridad cambió. Por favor cierra la aplicación y vuelve a abrirla.
-          </Alert>
-        </Stack>
-      )} */}
-
       <UserProvider>
         <ModalProvider>
           <KeyboardProvider>

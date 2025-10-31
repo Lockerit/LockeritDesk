@@ -12,7 +12,7 @@ let ipcAuthUpdateHandler = null;
 let ipcInitialized = false;
 
 // Redacción defensiva de campos sensibles
-const redact = (obj) => {
+const _redact = (obj) => {
     if (!obj || typeof obj !== 'object') return obj;
     const SENSITIVE = new Set(['key', 'token', 'secret', 'password', 'pass', 'authorization']);
     const out = {};

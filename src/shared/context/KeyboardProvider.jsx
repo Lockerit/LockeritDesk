@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import { VirtualKeyboard } from "@shared/components/inputs/VirtualKeyboard";
 import { logger } from "@shared/utils/logger.js";
+
 import { KeyboardContext } from "./KeyboardContext";
 import { useWindowSizeContext } from "./WindowSizeContext";
 
@@ -15,10 +16,8 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
 
     // Posición en píxeles, persistente
     const [position, setPosition] = useState(() => {
-        try {
-            const saved = JSON.parse(localStorage.getItem(LS_KEY) || "null");
-            if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) return saved;
-        } catch { }
+        const saved = JSON.parse(localStorage.getItem(LS_KEY) || "null");
+        if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) return saved;
         return { x: 100, y: 100 };
     });
 
@@ -163,7 +162,7 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
         if (!draggingRef.current) return;
         draggingRef.current = false;
         e.preventDefault();
-        try { e.currentTarget.releasePointerCapture?.(e.pointerId); } catch { }
+        e.currentTarget.releasePointerCapture?.(e.pointerId);
         log.debug(`drag.end, { x: ${Math.round(posRef.current.x)}, y: ${Math.round(posRef.current.y)} }`);
     }, []);
 

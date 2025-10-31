@@ -17,7 +17,7 @@ const shallowEqual = (a, b) => {
     for (const k of ka) if (a[k] !== b[k]) return false;
     return true;
 };
-const redactEnv = (env) => {
+const _redactEnv = (env) => {
     if (!isObject(env)) return env;
     const SENSITIVE = new Set(['key', 'token', 'secret', 'password', 'pass', 'authorization', 'bearer', 'apikey', 'api_key']);
     const out = {};
@@ -25,7 +25,7 @@ const redactEnv = (env) => {
         if (SENSITIVE.has(String(k).toLowerCase())) {
             out[k] = v ? `${String(v).slice(0, 6)}…redacted` : v;
         } else if (isObject(v)) {
-            out[k] = redactEnv(v);
+            out[k] = _redactEnv(v);
         } else {
             out[k] = v;
         }

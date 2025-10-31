@@ -14,9 +14,9 @@ import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyP
 import { useModal } from "@shared/context/ModalContext.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { logger } from '@shared/utils/logger.js';
 import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { phoneRegex, formatCurrency, emailRegex, formatNumberPhone } from '@shared/utils/utils.js';
-import { logger } from '@shared/utils/logger.js';
 
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { Loading } from './Loading.jsx';

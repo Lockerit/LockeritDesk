@@ -24,7 +24,7 @@ const shallowEqual = (a, b) => {
 };
 
 // Redacción básica de campos sensibles
-const redactConfig = (cfg) => {
+const _redactConfig = (cfg) => {
     if (!isObject(cfg)) return cfg;
     const SENSITIVE_KEYS = new Set([
         'key', 'token', 'secret', 'password', 'pass', 'authorization',
@@ -34,7 +34,7 @@ const redactConfig = (cfg) => {
         if (SENSITIVE_KEYS.has(k.toLowerCase())) {
             out[k] = v ? `${String(v).slice(0, 6)}…redacted` : v;
         } else if (isObject(v)) {
-            out[k] = redactConfig(v);
+            out[k] = _redactConfig(v);
         } else {
             out[k] = v;
         }
