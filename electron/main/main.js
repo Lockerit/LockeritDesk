@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import dotenv from 'dotenv';
-import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, screen } from 'electron';
 import say from 'say';
 import 'source-map-support/register.js';
 
@@ -131,29 +131,8 @@ function sendScreenData() {
   log.debug(`[${fileName}] Enviando tamaño ${data.width} ${data.height} ${data.factor}`);
   if (win && !win.isDestroyed()) win.webContents.send('screen-data', data);
 }
-
-// -------------------- Crear/Recrear ventana --------------------
-let isRecreating = false;
-function recreateWindow() {
-  if (isRecreating) return;
-  isRecreating = true;
-  log.info(`[${fileName}] Re-creando ventana`);
-  if (win) {
-    win.once('closed', () => {
-      win = null;
-      setTimeout(() => {
-        createWindow();
-        isRecreating = false;
-      }, 100);
-    });
-    win.close();
-  } else {
-    createWindow();
-    isRecreating = false;
-  }
-}
-
-function createWindow({ fullscreen = true, frame = false } = {}) {
+// -------------------- Crear ventana --------------------
+function createWindow({ fullscreen = true, frame = true } = {}) {
   log.info(`[${fileName}] Creando ventana principal...`);
 
   const preloadPath = path.join(__dirname, '../preload/preload.js');
@@ -168,9 +147,9 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
     icon: path.join(__dirname, '..', 'assets', 'icon.ico'),
     webPreferences: {
       preload: preloadPath,
-      nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false,
+      nodeIntegration: false,
+      sandbox: true,
       backgroundThrottling: false,
       zoomFactor: 1
     }
@@ -218,6 +197,15 @@ function createWindow({ fullscreen = true, frame = false } = {}) {
     sendScreenData();
     log.info('[main] Reemitiendo estados iniciales', { channels: Array.from(messenger.last.keys()) });
     messenger.replayAll();
+  });
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (e, targetUrl) => {
+    const isApp = targetUrl.startsWith('http://localhost') || targetUrl.startsWith('file://');
+    if (!isApp) { e.preventDefault(); shell.openExternal(targetUrl); }
   });
 
   screen.on('display-metrics-changed', sendScreenData);
@@ -288,10 +276,6 @@ ipcMain.handle('log:write', (_evt, { level = 'info', scope = 'renderer', message
   return true;
 });
 
-ipcMain.on('reload-app', () => {
-  log.info(`[${fileName}] Recargando aplicación`);
-  recreateWindow();
-});
 
 ipcMain.handle('get-screen-data', async () => getScreenData());
 
@@ -384,19 +368,19 @@ ipcMain.handle('tts-get-voices', async () => {
   return [];
 });
 
-ipcMain.on('set-fullscreen', (_e, value) => {
-  if (win) win.setFullScreen(!!value);
+// -------------------- Ventana --------------------
+ipcMain.handle('window:get-state', () => {
+  return { fullscreen: !!(win && win.isFullScreen && win.isFullScreen()) };
 });
 
-ipcMain.on('set-frame', (_e, value) => {
-  if (!win) return;
-  const bounds = win.getBounds();
-  const isFullScreen = win.isFullScreen();
-  win.close();
-  createWindow({ frame: !!value, fullscreen: isFullScreen });
-  win.setBounds(bounds);
+ipcMain.handle('window:set-fullscreen', (_e, enabled) => {
+  if (win && typeof win.setFullScreen === 'function') {
+    win.setFullScreen(!!enabled);
+  }
+  return { fullscreen: !!(win && win.isFullScreen && win.isFullScreen()) };
 });
 
+// -------------------- Otros IPC --------------------
 ipcMain.on('app:exit', async () => {
   if (win && !win.isDestroyed()) win.webContents.send('app-close');
   setTimeout(() => app.quit(), 300);

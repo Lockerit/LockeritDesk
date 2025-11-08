@@ -25,7 +25,6 @@ export const Login = () => {
     const [userName, setUserName] = useState('');
     const [pass, setPass] = useState('');
     const [remember, setRemember] = useState(false);
-    const [fullScreen, setFullScreen] = useState(false);
     const [screenLogin, setScreenLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [errorsEmpty, setErrorsEmpty] = useState({ username: false, password: false });
@@ -51,7 +50,7 @@ export const Login = () => {
             return 'Cerrar Sesión';
         }
         else {
-            return 'Salir';
+            return 'Cerrar Aplicación';
         }
     }, [
         userInit?.authenticatedOpera,
@@ -73,9 +72,7 @@ export const Login = () => {
             setUserName(userInit?.user?.toLowerCase() || '');
             setRemember(true);
         }
-        if (userInit?.fullScreen) setFullScreen(true);
-
-        log.info(`userInit cargado: authOp=${!!userInit?.authenticatedOpera} authAdm=${!!userInit?.authenticatedAdmin} remember=${!!userInit?.remember} fullScreen=${!!userInit?.fullScreen}`);
+        log.info(`userInit cargado: authOp=${!!userInit?.authenticatedOpera} authAdm=${!!userInit?.authenticatedAdmin} remember=${!!userInit?.remember}`);
     }, [userInit]);
 
     // Solo redirección
@@ -104,16 +101,6 @@ export const Login = () => {
     const handleTogglePassword = () => {
         setShowPassword(prev => !prev);
         log.info(`Toggle mostrar contraseña → ${!showPassword}`);
-    };
-
-    const handleChangeFullScreen = () => {
-        try {
-            window.electronAPI.setFullScreen(fullScreen);
-            window.electronAPI.setFrame(!fullScreen);
-            log.info(`Aplicado modo pantalla → fullScreen=${fullScreen}`);
-        } catch {
-            log.warn('No se pudo aplicar modo de pantalla desde IPC');
-        }
     };
 
     const closeWindows = async () => {
@@ -149,7 +136,6 @@ export const Login = () => {
                 customer: config?.customer,
                 user: remember ? (userName?.toLowerCase() || '') : '',
                 remember,
-                fullScreen,
                 pointName: config?.pointName,
                 pointId: config?.pointId,
                 avatar: config?.login?.avatarPath,
@@ -162,7 +148,6 @@ export const Login = () => {
 
             if (successSession === 1) navigate('/ppal', { replace: true });
             if (successSession === 2) navigate('/adminlockers', { replace: true });
-            handleChangeFullScreen();
             return;
         }
 
@@ -184,7 +169,6 @@ export const Login = () => {
                 customer: '',
                 user: userAux,
                 remember,
-                fullScreen,
                 pointName: '',
                 pointId: '',
                 avatar: '',
@@ -422,19 +406,6 @@ export const Login = () => {
                                     }
                                     sx={{ mb: 2 * scale }}
                                     label={<Typography variant='h5'>Recordar usuario</Typography>}
-                                />
-
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={fullScreen}
-                                            onChange={(e) => setFullScreen(e.target.checked)}
-                                            color="primary"
-                                            sx={{ '& .MuiSvgIcon-root': { fontSize: `${32 * scale}px` } }}
-                                        />
-                                    }
-                                    sx={{ mb: 2 * scale }}
-                                    label={<Typography variant='h5'>Pantalla completa</Typography>}
                                 />
                             </Box>
                         )}

@@ -1,5 +1,5 @@
 // AppbarBar.jsx — alineado y con logging unificado
-import { Logout, CancelPresentation } from '@mui/icons-material';
+import { Logout, CancelPresentation, CheckCircleOutline, HighlightOff } from '@mui/icons-material';
 import {
     AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem, ListItemIcon
 } from '@mui/material';
@@ -23,6 +23,7 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     const [showData, setShowData] = useState(false);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
+    const [fullScreen, setFullScreen] = useState(false);
 
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
@@ -31,6 +32,13 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     const config = useElectronConfig();
     const avatarBoxRef = useRef(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let alive = true;
+        window?.electronAPI?.getState().then(st => { if (alive) setFullScreen(!!st.fullscreen); });
+        log.info('Estado de ventana obtenido al iniciar Login');
+        return () => { alive = false; };
+    }, []);
 
     useEffect(() => {
         log.info('Montando AppbarBar');
@@ -96,6 +104,13 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         setAnchorEl(null);
         navigate('/', { replace: true });
         log.info('Salir solicitado');
+    };
+
+    const applyFullScreen = async (next) => {
+        setFullScreen(!!next); // optimista
+        const st = await window?.electronAPI?.setFullScreen(!!next);
+        log.info(`Pantalla completa → ${!!st.fullscreen}`);
+        setFullScreen(!!st.fullscreen); // confirma estado real
     };
 
     return (
@@ -174,7 +189,11 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
                 )}
                 <MenuItem onClick={openConfirmClose}>
                     <ListItemIcon><CancelPresentation /></ListItemIcon>
-                    Salir
+                    Cerrar aplicación
+                </MenuItem>
+                <MenuItem onClick={applyFullScreen.bind(this, !fullScreen)}>
+                    <ListItemIcon> {fullScreen ? <HighlightOff /> : <CheckCircleOutline />}</ListItemIcon>
+                    {fullScreen ? 'Pantalla completa (No)' : 'Pantalla completa (Sí)'}
                 </MenuItem>
             </Menu>
         </AppBar>

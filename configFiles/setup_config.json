@@ -49,7 +49,7 @@
         "timeInterval": 60
     },
     "voice": {
-        "enabled": true,
+        "enabled": false,
         "timeInterval": 60,
         "name": "Sabina",
         "rate": 1.5,
