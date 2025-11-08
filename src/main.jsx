@@ -20,7 +20,7 @@ const log = logger.scope(fileName);
 
 export const RootApp = () => {
 
-  // Contexto de tamaño
+  // //Contexto de tamaño
   const size = useWindowSizeContext();
   const factor = Number(size?.factor) > 0 ? Number(size.factor) : 1;
 
