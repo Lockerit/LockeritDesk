@@ -11,7 +11,6 @@ import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
 import { KeypadNumeric } from '@shared/components/dialogs/KeypadNumeric.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
-import { useModal } from '@shared/context/ModalContext.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
@@ -31,6 +30,8 @@ export const Ppal = () => {
     const [timeoutKeypad, setTimeoutKeypad] = useState();
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const [disabledButton, setDisabledButton] = useState(false);
+    const [keypadOpen, setKeypadOpen] = useState();
+    const [operation, setOperation] = useState();
 
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
@@ -38,7 +39,6 @@ export const Ppal = () => {
     const navigate = useNavigate();
     const config = useElectronConfig();
     const location = useLocation();
-    const { keypadOpen, setKeypadOpen, operation, setOperation } = useModal();
 
     const intervalRef = useRef(null);
 

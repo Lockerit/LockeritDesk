@@ -11,7 +11,6 @@ import { OpenReserveLocker } from '@services/apis/openReserveLocker.js';
 import { OpenSessionLocker } from '@services/apis/openSessionLocker.js';
 import { closeWebSocket } from '@services/realtime/websocket.js';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
-import { useModal } from "@shared/context/ModalContext.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
@@ -64,18 +63,16 @@ export const KeypadNumeric = ({
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [amountPay, setAmountPay] = useState(0);
+  const [locker, setLocker] = useState('');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState();
+  const [insertMoneyOpen, setInsertMoneyOpen] = useState();
+  const [showLockerOpen, setShowLockerOpen] = useState();
+  const [showErrorAPIOpen, setShowErrorAPIOpen] = useState();
 
-  const {
-    phone, setPhone,
-    password, setPassword,
-    confirmPassword, setConfirmPassword,
-    amountPay, setAmountPay,
-    locker, setLocker,
-    confirmDialogOpen, setConfirmDialogOpen,
-    insertMoneyOpen, setInsertMoneyOpen,
-    showLockerOpen, setShowLockerOpen,
-    showErrorAPIOpen, setShowErrorAPIOpen
-  } = useModal();
 
   const size = useWindowSizeContext();
   const scale = size.factor || 1;
@@ -237,17 +234,19 @@ export const KeypadNumeric = ({
   // Lectura/escritura segura
   const getInputValue = () => {
     switch (activeInput) {
-      case 'phone': return phone;
-      case 'password': return password;
-      case 'confirmPassword': return confirmPassword;
+      case 'phone': return phone ?? '';
+      case 'password': return password ?? '';
+      case 'confirmPassword': return confirmPassword ?? '';
       default: return '';
     }
   };
+
   const setInputValue = (value) => {
+    const safe = value ?? '';
     switch (activeInput) {
-      case 'phone': setPhone(value); break;
-      case 'password': setPassword(value); break;
-      case 'confirmPassword': setConfirmPassword(value); break;
+      case 'phone': setPhone(safe); break;
+      case 'password': setPassword(safe); break;
+      case 'confirmPassword': setConfirmPassword(safe); break;
       default: break;
     }
   };

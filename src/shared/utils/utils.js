@@ -10,14 +10,15 @@ export const formatTime = (seconds) => {
 };
 
 export const formatNumberPhone = (numberPhone) => {
-    // Elimina todo lo que no sea dígito
-    const clean = numberPhone.replace(/\D/g, '');
+    if (numberPhone == null) return '';          // null / undefined
 
-    // Asegura que tiene 10 dígitos
-    if (clean.length !== 10) return numberPhone;
+    const value = String(numberPhone);           // asegura string
+    const clean = value.replace(/\D/g, '');      // solo dígitos
+
+    if (clean.length !== 10) return value;       // si no son 10, devuelves tal cual
 
     return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6)}`;
-}
+};
 
 export const anotherUtil = (value) => {
     return value.toUpperCase();

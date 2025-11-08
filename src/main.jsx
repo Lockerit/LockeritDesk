@@ -9,7 +9,6 @@ import './fonts.css';
 import { App } from '@app/App.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { KeyboardProvider } from '@shared/context/KeyboardProvider.jsx';
-import { ModalProvider } from '@shared/context/ModalProvider.jsx';
 import { UserProvider } from '@shared/context/UserProvider.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { WindowSizeProvider } from '@shared/context/WindowSizeProvider.jsx';
@@ -40,14 +39,12 @@ export const RootApp = () => {
   return (
     <>
       <UserProvider>
-        <ModalProvider>
           <KeyboardProvider>
             <ThemeProvider theme={theme}>
               <CssBaseline />
               <App />
             </ThemeProvider>
           </KeyboardProvider>
-        </ModalProvider>
       </UserProvider>
     </>
   );

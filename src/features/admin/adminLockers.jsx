@@ -9,7 +9,6 @@ import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
-import { useModal } from "@shared/context/ModalContext.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
@@ -31,6 +30,8 @@ export const AdminLockers = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+    const [registerUserPeriodOpen, setRegisterUserPeriodOpen] = useState();
+    
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
@@ -45,10 +46,6 @@ export const AdminLockers = () => {
     });
 
     const config = useElectronConfig();
-
-    const {
-        registerUserPeriodOpen, setRegisterUserPeriodOpen,
-    } = useModal();
 
     useEffect(() => {
         if (!config) return;
@@ -270,9 +267,9 @@ export const AdminLockers = () => {
                 failedLockers.push(locker.lockerCode);
             }
         }
-        
+
         setLoading(false);
-        
+
         if (failedLockers.length > 0) {
             if (failedLockers.length > 1) {
                 setMessageErrorAPI(`Los casilleros (${failedLockers.join(', ')}) no cambiaron de estado`);
@@ -291,7 +288,7 @@ export const AdminLockers = () => {
                 }
             }, 1000); // Espera 1s después del modal
         }
-        
+
         log.info(`Cambiar estado → ok=[${successfulLockers.join(',')}] fail=[${failedLockers.join(',')}] nuevo=${status}`);
 
         await fetchData();
