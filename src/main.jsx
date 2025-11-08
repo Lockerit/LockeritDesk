@@ -1,7 +1,7 @@
 // src/main-renderer.jsx (Root y bootstrap con logging)
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { StrictMode, useMemo } from 'react';
+import { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './fonts.css';
@@ -9,7 +9,6 @@ import './fonts.css';
 import { App } from '@app/App.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { KeyboardProvider } from '@shared/context/KeyboardProvider.jsx';
-import { ModalProvider } from '@shared/context/ModalProvider.jsx';
 import { UserProvider } from '@shared/context/UserProvider.jsx';
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { WindowSizeProvider } from '@shared/context/WindowSizeProvider.jsx';
@@ -21,14 +20,14 @@ const log = logger.scope(fileName);
 
 export const RootApp = () => {
 
-  // Contexto de tamaño
+  // //Contexto de tamaño
   const size = useWindowSizeContext();
   const factor = Number(size?.factor) > 0 ? Number(size.factor) : 1;
 
   // Tema escalado
   const theme = useMemo(() => {
     const t = createScaledTheme(factor);
-    log.debug?.('theme.scaled', { factor });
+    log.debug?.(`theme.scaled, { factor: ${factor} }`);
     return t;
   }, [factor]);
 
@@ -40,14 +39,12 @@ export const RootApp = () => {
   return (
     <>
       <UserProvider>
-        <ModalProvider>
           <KeyboardProvider>
-            <ThemeProvider key={`theme-${factor}`} theme={theme}>
+            <ThemeProvider theme={theme}>
               <CssBaseline />
               <App />
             </ThemeProvider>
           </KeyboardProvider>
-        </ModalProvider>
       </UserProvider>
     </>
   );
@@ -66,11 +63,9 @@ const bootstrap = async () => {
     }
 
     createRoot(rootEl).render(
-      <StrictMode>
-        <WindowSizeProvider initialSize={initialSize}>
-          <RootApp />
-        </WindowSizeProvider>
-      </StrictMode>
+      <WindowSizeProvider initialSize={initialSize}>
+        <RootApp />
+      </WindowSizeProvider>
     );
 
     log.info('bootstrap.rendered');

@@ -2,17 +2,21 @@ import { useEffect, useState } from 'react';
 
 import { logger } from '@shared/utils/logger';
 
-const NOOP = Object.freeze({ info(){}, warn(){}, error(){}, debug(){} });
+const NOOP = Object.freeze({ info() { }, warn() { }, error() { }, debug() { } });
 const log = (logger?.scope?.('useElectronConfig')) ?? NOOP;
 
 export function useElectronConfig() {
-    const [config, setConfig] = useState(null); // <-- cambia aquí
+    const [config, setConfig] = useState(null);
 
     useEffect(() => {
+        let alive = true;
+        let unsubscribe;
+
         async function fetchConfig() {
             try {
                 if (window?.electronAPI?.getConfig) {
                     const result = await window.electronAPI.getConfig();
+                    if (!alive) return;
                     setConfig(result);
                     log.info('Configuración inicial obtenida');
                 } else {
@@ -25,14 +29,24 @@ export function useElectronConfig() {
 
         fetchConfig();
 
-        if (window?.electronAPI?.onConfigUpdate) {
-            window.electronAPI.onConfigUpdate((newConfig) => {
+        const api = window?.electronAPI;
+        if (api?.onConfigUpdate) {
+            unsubscribe = api.onConfigUpdate((newConfig) => {
+                if (!alive) return;
                 setConfig(newConfig);
                 log.info('Configuración actualizada mediante onConfigUpdate');
             });
         } else {
             log.warn('onConfigUpdate no está disponible en electronAPI');
         }
+
+        return () => {
+            alive = false;
+            if (typeof unsubscribe === 'function') {
+                unsubscribe();
+                log.info('onConfigUpdate desuscrito en cleanup');
+            }
+        };
     }, []);
 
     return config;

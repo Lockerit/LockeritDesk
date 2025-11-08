@@ -71,9 +71,6 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
             keepMounted={false}
             hideBackdrop
             disableEscapeKeyDown
-            disableEnforceFocus
-            disableAutoFocus
-            disableRestoreFocus
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
                 sx: {
@@ -135,6 +132,7 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
             <DialogActions sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                 <Button
                     onClick={handleConfirm}
+                    autoFocus
                     color="primary"
                     variant="contained"
                     fullWidth

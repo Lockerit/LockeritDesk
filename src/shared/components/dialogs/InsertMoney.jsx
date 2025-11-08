@@ -104,9 +104,6 @@ export const InsertMoney = ({
             keepMounted={false}
             hideBackdrop
             disableEscapeKeyDown
-            disableEnforceFocus
-            disableAutoFocus
-            disableRestoreFocus
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
                 sx: {
@@ -181,6 +178,7 @@ export const InsertMoney = ({
             >
                 <Button
                     onClick={handleCancel}
+                    autoFocus
                     color="secondary"
                     variant="contained"
                     fullWidth

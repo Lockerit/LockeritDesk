@@ -31,9 +31,6 @@ export const ConfirmDialog = ({
             keepMounted={false}
             hideBackdrop
             disableEscapeKeyDown
-            disableEnforceFocus
-            disableAutoFocus
-            disableRestoreFocus
             sx={{
                 pointerEvents: "auto",
                 zIndex: 1500,
@@ -122,6 +119,7 @@ export const ConfirmDialog = ({
                 </Button>
                 <Button
                     onClick={onConfirm}
+                    autoFocus
                     color="primary"
                     variant="contained"
                     fullWidth

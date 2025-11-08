@@ -11,7 +11,6 @@ import { useState, useRef, forwardRef, useEffect } from 'react';
 import { Reserve } from '@services/apis/reserve.js';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
-import { useModal } from "@shared/context/ModalContext.jsx";
 import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
@@ -51,18 +50,16 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
   const [startDate, setStartDate] = useState(dayjs());
   const [amount, setAmount] = useState(0);
   const [porcentage, setPorcentage] = useState(0);
+  const [nameUser, setNameUser] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [phone, setPhone] = useState('');
+  const [period, setPeriod] = useState('Mensual');
+  const [email, setEmail] = useState('');
+  const [locker, setLocker] = useState();
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState();
+  const [showErrorAPIOpen, setShowErrorAPIOpen] = useState();
+  const [showLockerOpen, setShowLockerOpen] = useState();
 
-  const {
-    nameUser, setNameUser,
-    idNumber, setIdNumber,
-    phone, setPhone,
-    period, setPeriod,
-    email, setEmail,
-    locker, setLocker,
-    confirmDialogOpen, setConfirmDialogOpen,
-    showErrorAPIOpen, setShowErrorAPIOpen,
-    showLockerOpen, setShowLockerOpen,
-  } = useModal();
 
   const size = useWindowSizeContext();
   const scale = size.factor || 1;
@@ -332,9 +329,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         onSubmit={handleSubmit}
         hideBackdrop
         disableEscapeKeyDown
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
         PaperProps={{
           sx: {
             width: scaledDimension(
@@ -512,9 +506,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         ]}
         isPhone={false}
         hideBackdrop
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
       />
 
       <ShowErrorAPI
@@ -523,9 +514,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
         hideBackdrop
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
       />
 
       <ShowLocker
@@ -537,9 +525,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         timeout={timeoutShowMessage}
         backColor="info.main"
         hideBackdrop
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
       />
 
       {loading && <Loading message={messageLoading} />}

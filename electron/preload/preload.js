@@ -1,10 +1,9 @@
-// electron/preload/preload.js  (ESM)
-import { contextBridge, ipcRenderer } from 'electron';
-import 'source-map-support/register.js';
+// electron/preload/preload.js  (CJS)
+const { contextBridge, ipcRenderer } = require('electron');
 
 // Helpers seguros para suscripción/desuscripción
 function on(channel, handler) {
-  if (typeof handler !== 'function') return () => {};
+  if (typeof handler !== 'function') return () => { };
   const listener = (_evt, payload) => handler(payload);
   ipcRenderer.on(channel, listener);
   return () => ipcRenderer.removeListener(channel, listener);
@@ -12,7 +11,7 @@ function on(channel, handler) {
 
 function onRaw(channel, handler) {
   // para callbacks que esperan (event, ...args), ej: compatibilidad directa
-  if (typeof handler !== 'function') return () => {};
+  if (typeof handler !== 'function') return () => { };
   ipcRenderer.on(channel, handler);
   return () => ipcRenderer.removeListener(channel, handler);
 }
@@ -28,12 +27,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   log: (level, message, meta = {}, scope = 'renderer') =>
     ipcRenderer.invoke('log:write', { level, scope, message, meta }),
 
-  // Version
+  // Versión
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 
   // CSP
   onUpdateCSP: (cb) => on('update-csp', cb),
-  reloadApp: () => ipcRenderer.send('reload-app'),
 
   // Config y estado (observados por main)
   getEnv: () => ipcRenderer.invoke('get-env'),
@@ -61,6 +59,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getVoices: () => ipcRenderer.invoke('tts-get-voices'),
 
   // Ventana
-  setFullScreen: (v) => ipcRenderer.send('set-fullscreen', v),
-  setFrame: (v) => ipcRenderer.send('set-frame', v),
+  getState: () => ipcRenderer.invoke('window:get-state'),
+  setFullScreen: (enabled) => ipcRenderer.invoke('window:set-fullscreen', enabled),
 });
