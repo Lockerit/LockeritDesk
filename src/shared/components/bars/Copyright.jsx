@@ -36,7 +36,8 @@ export const Copyright = () => {
       mounted = false;
       log.debug('Desmontaje componente');
     };
-  }, [scale]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box

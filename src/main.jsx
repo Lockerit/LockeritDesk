@@ -1,7 +1,7 @@
 // src/main-renderer.jsx (Root y bootstrap con logging)
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { StrictMode, useMemo } from 'react';
+import { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './fonts.css';
@@ -28,7 +28,7 @@ export const RootApp = () => {
   // Tema escalado
   const theme = useMemo(() => {
     const t = createScaledTheme(factor);
-    log.debug?.('theme.scaled', { factor });
+    log.debug?.(`theme.scaled, { factor: ${factor} }`);
     return t;
   }, [factor]);
 
@@ -42,7 +42,7 @@ export const RootApp = () => {
       <UserProvider>
         <ModalProvider>
           <KeyboardProvider>
-            <ThemeProvider key={`theme-${factor}`} theme={theme}>
+            <ThemeProvider theme={theme}>
               <CssBaseline />
               <App />
             </ThemeProvider>
@@ -66,11 +66,9 @@ const bootstrap = async () => {
     }
 
     createRoot(rootEl).render(
-      <StrictMode>
-        <WindowSizeProvider initialSize={initialSize}>
-          <RootApp />
-        </WindowSizeProvider>
-      </StrictMode>
+      <WindowSizeProvider initialSize={initialSize}>
+        <RootApp />
+      </WindowSizeProvider>
     );
 
     log.info('bootstrap.rendered');

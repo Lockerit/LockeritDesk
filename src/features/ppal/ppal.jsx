@@ -42,9 +42,18 @@ export const Ppal = () => {
 
     const intervalRef = useRef(null);
 
+    // Solo en montaje
     useEffect(() => {
         log.info(`Montando Ppal | scale=${scale}, size=${JSON.stringify({ w: size.width, h: size.height })}`);
-    }, [scale, size]); // solo montaje
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // (Opcional) log explícito de desmontaje real
+    useEffect(() => {
+        return () => {
+            log.info('Desmontando Ppal');
+        };
+    }, []);
 
     const speakWelcome = useCallback(() => {
         try {
@@ -70,9 +79,14 @@ export const Ppal = () => {
             stopSpeaking();
             log.info('TTS detenido por evento de cierre de app');
         };
-        window.electronAPI?.onAppClose(stopSpeech);
-        return () => stopSpeech();
-    }, [config?.voice?.enabled]);
+
+        const unsubscribe = window.electronAPI?.onAppClose?.(stopSpeech);
+
+        return () => {
+            // solo nos desuscribimos, no llamamos stopSpeech aquí
+            if (typeof unsubscribe === 'function') unsubscribe();
+        };
+    }, []); // sin dependencias
 
     // Ciclo de TTS de bienvenida/recordatorio
     useEffect(() => {
