@@ -75,9 +75,6 @@ export const ShowLocker = ({
             keepMounted={false}
             hideBackdrop
             disableEscapeKeyDown
-            disableEnforceFocus
-            disableAutoFocus
-            disableRestoreFocus
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
                 sx: {
@@ -156,7 +153,13 @@ export const ShowLocker = ({
 
             {/* Acciones */}
             <DialogActions sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                <Button onClick={handleConfirm} color="primary" variant="contained" fullWidth sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
+                <Button
+                    onClick={handleConfirm}
+                    autoFocus
+                    color="primary"
+                    variant="contained"
+                    fullWidth
+                    sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
                     Aceptar
                 </Button>
             </DialogActions>

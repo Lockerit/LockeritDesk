@@ -329,9 +329,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         onSubmit={handleSubmit}
         hideBackdrop
         disableEscapeKeyDown
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
         PaperProps={{
           sx: {
             width: scaledDimension(
@@ -509,9 +506,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         ]}
         isPhone={false}
         hideBackdrop
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
       />
 
       <ShowErrorAPI
@@ -520,9 +514,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         msg={messageErrorAPI}
         timeout={timeoutShowMessage}
         hideBackdrop
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
       />
 
       <ShowLocker
@@ -534,9 +525,6 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         timeout={timeoutShowMessage}
         backColor="info.main"
         hideBackdrop
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
       />
 
       {loading && <Loading message={messageLoading} />}

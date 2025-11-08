@@ -413,9 +413,6 @@ export const Ppal = () => {
                 onConfirm={confirmShowErrorAPI}
                 msg={messageErrorAPI}
                 timeout={timeoutShowMessage}
-                disableEnforceFocus
-                disableAutoFocus
-                disableRestoreFocus
             />
 
             {loading && (<Loading />)}

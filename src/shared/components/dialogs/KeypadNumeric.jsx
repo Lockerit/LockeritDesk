@@ -108,6 +108,14 @@ export const KeypadNumeric = ({
 
   const cancel = useCallback(() => {
     log.info('Cancelación solicitada');
+
+    try {
+      const active = document.activeElement;
+      if (active && active instanceof HTMLElement) {
+        active.blur();
+      }
+    } catch { /* noop */ }
+
     clearInputs();
     onClose?.();
   }, [clearInputs, onClose]);
@@ -120,6 +128,19 @@ export const KeypadNumeric = ({
     setInsertMoneyOpen(false);
     log.info('InsertMoney cancelado');
   }, [setAmountPay, setInsertMoneyOpen]);
+
+  useEffect(() => {
+    if (!open) {
+      try {
+        const active = document.activeElement;
+        if (active && active instanceof HTMLElement) {
+          active.blur();
+        }
+      } catch {
+        // noop
+      }
+    }
+  }, [open]);
 
   // Montaje / desmontaje
   useEffect(() => {
@@ -597,9 +618,6 @@ export const KeypadNumeric = ({
         keepMounted={false}
         hideBackdrop
         disableEscapeKeyDown
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
         PaperProps={{
           sx: {
             width: scaledDimension(

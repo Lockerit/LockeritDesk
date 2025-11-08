@@ -31,7 +31,7 @@ export const AdminLockers = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
     const [registerUserPeriodOpen, setRegisterUserPeriodOpen] = useState();
-    
+
     const size = useWindowSizeContext();
     const scale = size.factor || 1;
 
@@ -95,6 +95,13 @@ export const AdminLockers = () => {
         }
     };
 
+    const blurActive = () => {
+        try {
+            const el = document.activeElement;
+            if (el && el instanceof HTMLElement) el.blur();
+        } catch { }
+    };
+
     const handleModuleChange = (event) => {
         setSelectedModule(event.target.value);
         setSelectedLockers([]); // Reinicia selección
@@ -120,7 +127,7 @@ export const AdminLockers = () => {
 
 
     const handleAction = async (action) => {
-
+        blurActive();
         log.info(`Acción solicitada: ${action} → seleccionados=[${selectedLockers.map(l => l.lockerCode).join(',')}]`);
 
         if (action.toLowerCase() === 'reservar') {
@@ -230,7 +237,7 @@ export const AdminLockers = () => {
     }
 
     const handleStatusChange = async (status) => {
-
+        blurActive();
         log.info(`Cambiar estado → nuevo=${status} seleccionados=[${selectedLockers.map(l => l.lockerCode).join(',')}]`);
 
         setMessageLoading('Cambiando estado...');
