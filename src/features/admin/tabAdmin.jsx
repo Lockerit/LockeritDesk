@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 
 import { logger } from '@shared/utils/logger.js';
+
 import { AdminLockers } from './AdminLockers.jsx';
 import { ReportLockers } from './ReportLockers.jsx';
 
