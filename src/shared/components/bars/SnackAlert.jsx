@@ -1,11 +1,9 @@
-// snackAlert.jsx
+// SnackAlert.jsx
 import { Snackbar, Alert } from '@mui/material';
-
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext';
+import { useTheme } from '@mui/material/styles';
 
 export const SnackAlert = ({ open, message, severity, onClose }) => {
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const theme = useTheme();
 
     return (
         <Snackbar
@@ -21,10 +19,15 @@ export const SnackAlert = ({ open, message, severity, onClose }) => {
                 onClose={onClose}
                 sx={{
                     width: '100%',
-                    fontSize: `${32 * scale}px`,
+                    fontSize: theme.typography.h6.fontSize,
                     '& .MuiAlert-icon': {
-                        fontSize: `${45 * scale}px` // ⬅️ Tamaño más grande del ícono
-                    }
+                        fontSize: theme.spacing(4.5), // tamaño icono
+                        mr: theme.spacing(1.5),
+                    },
+                    '& .MuiAlert-message': {
+                        display: 'flex',
+                        alignItems: 'center',
+                    },
                 }}
             >
                 {message}

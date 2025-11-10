@@ -1,14 +1,29 @@
 import {
-    Close, ErrorOutline, CheckCircleOutline
+    Close,
+    ErrorOutline,
+    CheckCircleOutline,
 } from '@mui/icons-material';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide, IconButton
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Typography,
+    Button,
+    Box,
+    Slide,
+    IconButton,
 } from '@mui/material';
-import { useState, forwardRef, useEffect, useMemo, useCallback } from 'react';
+import { useTheme } from '@mui/material/styles';
+import {
+    useState,
+    forwardRef,
+    useEffect,
+    useMemo,
+    useCallback,
+} from 'react';
 
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { logger } from '@shared/utils/logger.js';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
@@ -21,19 +36,25 @@ const log = logger.scope(fileName);
 // Sanear/recortar para logs
 function trimForLog(value, max = 240) {
     try {
-        const s = typeof value === 'string'
-            ? value
-            : (value?.message ?? JSON.stringify(value));
+        const s =
+            typeof value === 'string'
+                ? value
+                : value?.message ?? JSON.stringify(value);
         return String(s).replace(/\s+/g, ' ').trim().slice(0, max);
     } catch {
         return '(msg no serializable)';
     }
 }
 
-export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = true }) => {
+export const ShowErrorAPI = ({
+    open,
+    onConfirm,
+    msg,
+    timeout = 15,
+    isError = true,
+}) => {
     const [secondsLeft, setSecondsLeft] = useState(timeout);
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
+    const theme = useTheme();
 
     const msgPreview = useMemo(() => trimForLog(msg), [msg]);
 
@@ -41,26 +62,38 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
     useEffect(() => {
         if (!open) return;
         setSecondsLeft(timeout);
-        log.info('modal abierto', { isError, timeout, msg: msgPreview });
+        log.info('Modal ShowErrorAPI abierto', {
+            isError,
+            timeout,
+            msg: msgPreview,
+        });
     }, [open, timeout, isError, msgPreview]);
 
     // Tiqueo 1s
     useEffect(() => {
         if (!open || secondsLeft <= 0) return;
-        const id = setInterval(() => setSecondsLeft((prev) => prev - 1), 1000);
+        const id = setInterval(
+            () => setSecondsLeft((prev) => prev - 1),
+            1000
+        );
         return () => clearInterval(id);
     }, [open, secondsLeft]);
 
     // Autocierre por timeout
     useEffect(() => {
         if (!open || secondsLeft !== 0) return;
-        log.warn('modal autocerrado por timeout', { timeout, msg: msgPreview });
+        log.warn('Modal ShowErrorAPI autocerrado por timeout', {
+            timeout,
+            msg: msgPreview,
+        });
         setSecondsLeft(timeout);
         onConfirm?.();
     }, [open, secondsLeft, onConfirm, timeout, msgPreview]);
 
     const handleConfirm = useCallback(() => {
-        log.info('modal cerrado por usuario', { msg: msgPreview });
+        log.info('Modal ShowErrorAPI cerrado por usuario', {
+            msg: msgPreview,
+        });
         onConfirm?.();
     }, [onConfirm, msgPreview]);
 
@@ -74,35 +107,42 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
                 sx: {
-                    width: scaledDimension(
-                        {
-                            xs: { base: 70, min: 65, max: 75 },
-                            sm: { base: 70, min: 65, max: 75 },
-                            md: { base: 50, min: 45, max: 55 },
-                            lg: { base: 40, min: 35, max: 45 },
-                        },
-                        scale
-                    ),
+                    width: {
+                        xs: '50%',
+                        sm: '50%',
+                        md: '30%',
+                        lg: '30%',
+                    },
+                    maxWidth: 'none',
                     height: 'auto',
-                    borderRadius: `${Math.max(8, 16 * scale)}px`,
-                    p: 2 * scale,
+                    borderRadius: theme.spacing(3),
+                    p: theme.spacing(3),
                 },
             }}
             slots={{ transition: Transition }}
         >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: theme.spacing(2),
+                    position: 'relative',
+                }}
+            >
                 <Box
                     sx={{
                         display: 'flex',
                         justifyContent: 'flex-end',
                         alignItems: 'center',
-                        gap: 1 * scale,
+                        gap: theme.spacing(1),
                         position: 'absolute',
-                        right: 8 * scale,
-                        top: 8 * scale,
+                        right: theme.spacing(1),
+                        top: theme.spacing(1),
                     }}
                 >
-                    <Typography variant="body2">{formatTime(secondsLeft)}</Typography>
+                    <Typography variant="body2">
+                        {formatTime(secondsLeft)}
+                    </Typography>
                     <IconButton onClick={handleConfirm}>
                         <Close />
                     </IconButton>
@@ -116,27 +156,49 @@ export const ShowErrorAPI = ({ open, onConfirm, msg, timeout = 15, isError = tru
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    gap: 2 * scale,
+                    gap: theme.spacing(2),
                 }}
             >
                 {isError ? (
-                    <ErrorOutline color="error" sx={{ fontSize: 75 * scale }} />
+                    <ErrorOutline
+                        color="error"
+                        sx={{ fontSize: theme.spacing(9) }}
+                    />
                 ) : (
-                    <CheckCircleOutline color="success" sx={{ fontSize: 75 * scale }} />
+                    <CheckCircleOutline
+                        color="success"
+                        sx={{ fontSize: theme.spacing(9) }}
+                    />
                 )}
-                <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
-                    {typeof msg === 'string' ? msg : msg?.message || JSON.stringify(msg)}
+                <Typography
+                    variant="h3"
+                    component="span"
+                    color="text.primary"
+                    sx={{ fontWeight: 'bold', whiteSpace: 'pre-line' }}
+                >
+                    {typeof msg === 'string'
+                        ? msg
+                        : msg?.message || JSON.stringify(msg)}
                 </Typography>
             </DialogContent>
 
-            <DialogActions sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <DialogActions
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    width: '100%',
+                }}
+            >
                 <Button
                     onClick={handleConfirm}
                     autoFocus
                     color="primary"
                     variant="contained"
                     fullWidth
-                    sx={{ mx: 3 * scale, p: 3 * scale }}
+                    sx={{
+                        mx: theme.spacing(3),
+                        py: theme.spacing(2),
+                    }}
                 >
                     Aceptar
                 </Button>

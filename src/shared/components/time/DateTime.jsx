@@ -1,14 +1,14 @@
-import { Box, List, ListItem, ListItemButton, Typography } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import dayjs from "dayjs";
-import "dayjs/locale/es";
-import utc from "dayjs/plugin/utc";
+import { Box, List, ListItem, ListItemButton, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+import utc from 'dayjs/plugin/utc';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { logger } from '@shared/utils/logger.js';
 
 dayjs.extend(utc);
@@ -20,41 +20,52 @@ const log = logger.scope(fileName);
 const fmt = (d) => (d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '');
 
 const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
+    const theme = useTheme();
 
     return (
         <Box
             sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                padding: `${8 * scale}px ${16 * scale}px`,
-                borderTop: `${1 * scale}px solid #ddd`,
-                mt: 1 * scale,
+                py: theme.spacing(1),
+                px: theme.spacing(2),
+                borderTop: '1px solid #ddd',
+                mt: theme.spacing(1),
                 width: '100%',
-                alignContent: 'center',
                 alignItems: 'center',
-                px: 5 * scale,
             }}
         >
             <Typography
                 onClick={onCancel}
-                color='secondary'
-                sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
+                color="secondary"
+                sx={{
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': { color: 'primary.main' },
+                }}
             >
                 Cancelar
             </Typography>
             <Typography
                 onClick={setToday}
-                color='secondary'
-                sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
+                color="secondary"
+                sx={{
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': { color: 'primary.main' },
+                }}
             >
                 Ahora
             </Typography>
             <Typography
                 onClick={onAccept}
-                color='secondary'
-                sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
+                autoFocus
+                color="secondary"
+                sx={{
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': { color: 'primary.main' },
+                }}
             >
                 Aceptar
             </Typography>
@@ -63,16 +74,15 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
 };
 
 const NumberColumn = ({ label, values, selected, onSelect }) => {
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
+    const theme = useTheme();
 
     return (
         <Box
             sx={{
                 flex: 1,
-                maxHeight: 300 * scale,
-                border: `${1 * scale}px solid #ddd`,
-                borderRadius: 2 * scale,
+                maxHeight: 300,
+                border: '1px solid #ddd',
+                borderRadius: theme.spacing(1),
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 display: 'flex',
@@ -81,11 +91,11 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
             }}
         >
             <Typography
-                variant='subtitle2'
+                variant="subtitle2"
                 sx={{
-                    p: 1,
+                    p: theme.spacing(1),
                     fontWeight: 'bold',
-                    borderBottom: `${1 * scale}px solid #eee`,
+                    borderBottom: '1px solid #eee',
                     color: 'primary.main',
                 }}
             >
@@ -119,12 +129,11 @@ export const DateTime = ({
 }) => {
     const [open, setOpen] = useState(false);
     const [tempValue, setTempValue] = useState(value);
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
+    const theme = useTheme();
 
     // Para evitar spam, memo de previews
     const prevValue = useMemo(() => fmt(value), [value]);
-    const _prevTemp = useMemo(() => fmt(tempValue), [tempValue]);
+    const _prevTemp = useMemo(() => fmt(tempValue), [tempValue]); // se mantiene por si se quiere usar en logs futuros
 
     useEffect(() => {
         if (open) {
@@ -172,7 +181,10 @@ export const DateTime = ({
                 .second(tempValue?.second() ?? 0)
             : newDate.startOf('day');
         setTempValue(next);
-        log.debug('cambio calendario', { day: newDate.format('YYYY-MM-DD'), temp: fmt(next) });
+        log.debug('cambio calendario', {
+            day: newDate.format('YYYY-MM-DD'),
+            temp: fmt(next),
+        });
     };
 
     const onHourChange = (h) => {
@@ -196,15 +208,21 @@ export const DateTime = ({
                 open={open}
                 onOpen={() => setOpen(true)}
                 onClose={handleClose}
-                format={showTime ? "YYYY-MM-DD HH:mm" : "YYYY-MM-DD"}
+                format={showTime ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD'}
                 slots={{
                     layout: (props) => (
                         <Box>
                             {props.tabs}
 
-                            <Box sx={{ display: "flex", gap: 2 * scale, p: 2 * scale }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    gap: theme.spacing(2),
+                                    p: theme.spacing(2),
+                                }}
+                            >
                                 <DateCalendar
-                                    views={["year", "month", "day"]}
+                                    views={['year', 'month', 'day']}
                                     openTo="day"
                                     value={tempValue}
                                     onChange={onCalendarChange}
@@ -212,7 +230,13 @@ export const DateTime = ({
                                 />
 
                                 {showTime && (
-                                    <Box sx={{ display: "flex", gap: 2 * scale, alignItems: "center" }}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            gap: theme.spacing(2),
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <NumberColumn
                                             label="Horas"
                                             values={Array.from({ length: 24 }, (_, i) => i)}

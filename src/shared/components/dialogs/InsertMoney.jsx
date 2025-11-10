@@ -1,15 +1,29 @@
-import { CurrencyExchange, Close } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions,
-    Typography, Button, Box, Slide, IconButton
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Typography,
+    Button,
+    Box,
+    Slide,
+    IconButton,
 } from '@mui/material';
-import { useState, forwardRef, useEffect, useMemo, useRef } from 'react';
+import { useTheme } from '@mui/material/styles';
+import {
+    useState,
+    forwardRef,
+    useEffect,
+    useMemo,
+    useRef,
+} from 'react';
 
 import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { logger } from '@shared/utils/logger.js';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
+
+import { MoneyLoading } from './MoneyLoading';
 
 const fileName = 'InsertMoney';
 const log = logger.scope(fileName);
@@ -27,13 +41,15 @@ export const InsertMoney = ({
     timeout = 600,
 }) => {
     const [secondsLeft, setSecondsLeft] = useState(timeout);
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
+    const theme = useTheme();
 
-    // snapshot para evitar logs repetidos
-    const lastLogged = useRef({ open: undefined, amountPay: undefined, timeout: undefined });
+    const lastLogged = useRef({
+        open: undefined,
+        amountPay: undefined,
+        timeout: undefined,
+    });
 
-    // Normaliza monto pagado a número
+    // Normaliza monto pagado a número (solo para logs)
     const numericAmountPay = useMemo(() => {
         const n = Number(String(amountPay ?? '').replace(/[^0-9.-]+/g, ''));
         return Number.isFinite(n) ? n : 0;
@@ -47,7 +63,7 @@ export const InsertMoney = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Log de cambios relevantes de props
+    // Log de cambios relevantes
     useEffect(() => {
         if (lastLogged.current.open !== open) {
             log.debug(`Prop changed: open=${open}`);
@@ -58,26 +74,30 @@ export const InsertMoney = ({
             lastLogged.current.timeout = timeout;
         }
         if (lastLogged.current.amountPay !== amountPay) {
-            log.debug(`Prop changed: amountPay=${amountPay} | numeric=${numericAmountPay}`);
+            log.debug(
+                `Prop changed: amountPay=${amountPay} | numeric=${numericAmountPay}`
+            );
             lastLogged.current.amountPay = amountPay;
         }
     }, [open, timeout, amountPay, numericAmountPay]);
 
-    // Reiniciar contador cuando abre o cambia timeout/amountPay
+    // Reiniciar contador cuando abre o cambia timeout
     useEffect(() => {
         if (open) {
             setSecondsLeft(timeout);
             log.debug(`Reinicio contador | secondsLeft=${timeout}`);
         }
-    }, [open, timeout, amountPay]);
+    }, [open, timeout]);
 
     // Intervalo de cuenta regresiva
     useEffect(() => {
         if (!open) return;
+
         log.debug('Inicio intervalo de cuenta regresiva');
         const id = setInterval(() => {
-            setSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
+            setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0));
         }, 1000);
+
         return () => {
             clearInterval(id);
             log.debug('Limpieza intervalo de cuenta regresiva');
@@ -107,35 +127,43 @@ export const InsertMoney = ({
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
                 sx: {
-                    width: scaledDimension(
-                        {
-                            xs: { base: 70, min: 65, max: 75 },
-                            sm: { base: 70, min: 65, max: 75 },
-                            md: { base: 50, min: 45, max: 55 },
-                            lg: { base: 40, min: 35, max: 45 },
-                        },
-                        scale
-                    ),
+                    width: {
+                        xs: '50%',
+                        sm: '50%',
+                        md: '30%',
+                        lg: '30%',
+                    },
+                    maxWidth: 'none',
                     height: 'auto',
-                    borderRadius: `${Math.max(8, 16 * scale)}px`,
-                    p: 2 * scale,
+                    borderRadius: theme.spacing(3),
+                    p: theme.spacing(3),
                 },
             }}
             slots={{ transition: Transition }}
         >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 * scale, position: 'relative' }}>
+            {/* Header con timer y close */}
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: theme.spacing(2),
+                    position: 'relative',
+                }}
+            >
                 <Box
                     sx={{
                         display: 'flex',
                         justifyContent: 'flex-end',
                         alignItems: 'center',
-                        gap: 1 * scale,
+                        gap: theme.spacing(1),
                         position: 'absolute',
-                        right: 8 * scale,
-                        top: 8 * scale,
+                        right: theme.spacing(1),
+                        top: theme.spacing(1),
                     }}
                 >
-                    <Typography variant="body2">{formatTime(secondsLeft)}</Typography>
+                    <Typography variant="body2">
+                        {formatTime(secondsLeft)}
+                    </Typography>
                     <IconButton onClick={handleCancel}>
                         <Close />
                     </IconButton>
@@ -146,35 +174,82 @@ export const InsertMoney = ({
 
             <DialogContent
                 sx={{
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
                 }}
             >
-                <Typography variant="h4" sx={{ textAlign: 'center', mt: 2 * scale, mb: 3 * scale }}>
+                <Typography
+                    variant="h4"
+                    sx={{
+                        textAlign: 'center',
+                        mt: theme.spacing(2),
+                        mb: theme.spacing(3),
+                    }}
+                >
                     Por favor deposite el dinero:
                 </Typography>
 
-                <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mt: 2 * scale, mb: 3 * scale }}>
+                <Typography
+                    variant="h1"
+                    sx={{
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        mt: theme.spacing(2),
+                        mb: theme.spacing(3),
+                    }}
+                >
                     {phone}
                 </Typography>
 
                 <Box textAlign="center">
-                    <Typography variant="h4" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                    <Typography
+                        variant="h4"
+                        component="span"
+                        color="text.primary"
+                        sx={{ fontWeight: 'bold' }}
+                    >
                         Valor del servicio:{' '}
                     </Typography>
-                    <Typography variant="h4" component="span" color="error" sx={{ fontWeight: 'bold' }}>
+                    <Typography
+                        variant="h2"
+                        component="span"
+                        color="error"
+                        sx={{ fontWeight: 'bold' }}
+                    >
                         {amountService}
                     </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 * scale, m: 5 * scale }}>
-                    <CurrencyExchange sx={{ fontSize: 150 * scale }} color="primary" />
-                    <Progressbar msg="Valor ingresado:" amountPay={amountPay} />
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        gap: theme.spacing(3),
+                        m: theme.spacing(5),
+                    }}
+                >
+                    <MoneyLoading />
+                    <Progressbar 
+                    msg="Valor ingresado:" 
+                    amountPay={amountPay} 
+                    amountService={amountService}
+                    />
                 </Box>
             </DialogContent>
 
             <DialogActions
-                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', height: '100%', width: '100%' }}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    width: '100%',
+                }}
             >
                 <Button
                     onClick={handleCancel}
@@ -182,7 +257,10 @@ export const InsertMoney = ({
                     color="secondary"
                     variant="contained"
                     fullWidth
-                    sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}
+                    sx={{
+                        mx: theme.spacing(3),
+                        py: theme.spacing(2),
+                    }}
                 >
                     Cancelar
                 </Button>
