@@ -81,16 +81,28 @@ export const AdminLockers = () => {
         try {
             log.info('GET /getAllStatusLockers → inicio');
             const result = await GetAllStatusLockers();
+
             if (result?.success) {
-                setData(result?.default || result?.data);
-                setSelectedModule(result?.data?.modules?.[0]?.module || '');
-                const total = (result?.data?.general || []).reduce(
+                const newData = result?.default || result?.data;
+                const modules = newData?.modules || [];
+
+                setData(newData);
+
+                // Mantener último módulo si existe; si no, usar el primero
+                setSelectedModule((prev) => {
+                    if (prev && modules.some((m) => m.module === prev)) {
+                        return prev;
+                    }
+                    return modules[0]?.module || '';
+                });
+
+                const total = (newData?.general || []).reduce(
                     (s, i) => s + (i.total || 0),
                     0
                 );
+
                 log.info(
-                    `GET /getAllStatusLockers → ok, total=${total}, modules=${(result?.data?.modules || []).length
-                    }`
+                    `GET /getAllStatusLockers → ok, total=${total}, modules=${modules.length}`
                 );
             } else {
                 const msg =
@@ -116,6 +128,7 @@ export const AdminLockers = () => {
             log.info('GET /getAllStatusLockers → fin');
         }
     };
+
 
     const blurActive = () => {
         try {
