@@ -242,9 +242,6 @@ export const ReportLockers = () => {
                     msg={messageErrorAPI}
                     timeout={timeoutShowMessage}
                     isError={isErrorMsj}
-                    disableEnforceFocus
-                    disableAutoFocus
-                    disableRestoreFocus
                 />
             )}
         </Box>
