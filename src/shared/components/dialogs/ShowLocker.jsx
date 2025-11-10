@@ -1,13 +1,26 @@
 import { Close } from '@mui/icons-material';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions,
-    Typography, Button, Box, Slide, Paper, IconButton
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Typography,
+    Button,
+    Box,
+    Slide,
+    Paper,
+    IconButton,
 } from '@mui/material';
-import { useState, forwardRef, useEffect, useMemo, useCallback } from 'react';
+import { useTheme } from '@mui/material/styles';
+import {
+    useState,
+    forwardRef,
+    useEffect,
+    useMemo,
+    useCallback,
+} from 'react';
 
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { logger } from '@shared/utils/logger.js';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { formatTime } from '@shared/utils/utils.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
@@ -20,9 +33,14 @@ const log = logger.scope(fileName);
 // Recorta mensajes para el log
 const trimMsg = (v, max = 180) => {
     try {
-        const s = typeof v === 'string' ? v : (v?.message ?? JSON.stringify(v));
+        const s =
+            typeof v === 'string'
+                ? v
+                : v?.message ?? JSON.stringify(v);
         return String(s).replace(/\s+/g, ' ').trim().slice(0, max);
-    } catch { return '(msg no serializable)'; }
+    } catch {
+        return '(msg no serializable)';
+    }
 };
 
 export const ShowLocker = ({
@@ -33,38 +51,51 @@ export const ShowLocker = ({
     msg,
     timeout = 15,
     backColor = 'gray',
-    operation
+    operation,
 }) => {
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
-
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const msgPreview = useMemo(() => trimMsg(msg), [msg]);
+    const theme = useTheme();
 
     // Abre / cambia timeout
     useEffect(() => {
         if (!open) return;
         setSecondsLeft(timeout);
-        log.info('modal abierto', { operation, locker, timeout, msg: msgPreview });
+        log.info('modal abierto', {
+            operation,
+            locker,
+            timeout,
+            msg: msgPreview,
+        });
     }, [open, timeout, operation, locker, msgPreview]);
 
     // Tiqueo 1s
     useEffect(() => {
         if (!open || secondsLeft <= 0) return;
-        const id = setInterval(() => setSecondsLeft(p => p - 1), 1000);
+        const id = setInterval(
+            () => setSecondsLeft((p) => p - 1),
+            1000
+        );
         return () => clearInterval(id);
     }, [open, secondsLeft]);
 
     // Autocierre por timeout
     useEffect(() => {
         if (!open || secondsLeft !== 0) return;
-        log.warn('modal autocerrado por timeout', { operation, locker, timeout });
+        log.warn('modal autocerrado por timeout', {
+            operation,
+            locker,
+            timeout,
+        });
         setSecondsLeft(timeout);
         onConfirm?.();
     }, [open, secondsLeft, onConfirm, timeout, operation, locker]);
 
     const handleConfirm = useCallback(() => {
-        log.info('modal cerrado por usuario', { operation, locker });
+        log.info('modal cerrado por usuario', {
+            operation,
+            locker,
+        });
         onConfirm?.();
     }, [onConfirm, operation, locker]);
 
@@ -78,88 +109,152 @@ export const ShowLocker = ({
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
                 sx: {
-                    width: scaledDimension(
-                        {
-                            xs: { base: 60, min: 55, max: 65 }, sm: { base: 60, min: 55, max: 65 },
-                            md: { base: 50, min: 45, max: 55 }, lg: { base: 40, min: 35, max: 45 }
-                        }, scale),
-                    height: scaledDimension(
-                        {
-                            xs: { base: 60, min: 55, max: 65 }, sm: { base: 60, min: 55, max: 65 },
-                            md: { base: 80, min: 75, max: 85 }, lg: { base: 80, min: 75, max: 85 }
-                        }, scale),
-                    overflow: 'hidden',
-                    borderRadius: `${Math.max(8, 16 * scale)}px`,
+                    width: {
+                        xs: '50%',
+                        sm: '50%',
+                        md: '30%',
+                        lg: '30%',
+                    },
+                    maxWidth: 'none',
+                    height: 'auto',
+                    borderRadius: theme.spacing(3),
+                    p: theme.spacing(3),
                     display: 'flex',
                     flexDirection: 'column',
-                    p: 3 * scale,
+                    overflow: 'hidden',
                 },
             }}
             slots={{ transition: Transition }}
         >
-            {/* Encabezado */}
+            {/* Encabezado con timer y botón cerrar */}
             <Box
                 sx={{
-                    display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
-                    gap: 1 * scale, position: 'absolute', right: 3 * scale, top: 3 * scale,
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    gap: theme.spacing(1),
+                    position: 'absolute',
+                    right: theme.spacing(2),
+                    top: theme.spacing(2),
                 }}
             >
-                <Typography variant="body2">{formatTime(secondsLeft)}</Typography>
-                <IconButton onClick={handleConfirm}><Close /></IconButton>
+                <Typography variant="body2">
+                    {formatTime(secondsLeft)}
+                </Typography>
+                <IconButton onClick={handleConfirm}>
+                    <Close />
+                </IconButton>
             </Box>
 
-            <DialogTitle sx={{ textAlign: 'center' }}>Apertura de casillero</DialogTitle>
+            <DialogTitle sx={{ textAlign: 'center' }}>
+                Apertura de casillero
+            </DialogTitle>
 
             {/* Contenido */}
             <DialogContent
                 sx={{
-                    flex: 1, display: 'flex', flexDirection: 'column',
-                    justifyContent: 'space-between', alignItems: 'center', overflow: 'hidden', p: 0,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    p: 0,
+                    mt: theme.spacing(1),
                 }}
             >
-                <Typography variant="h3" sx={{ textAlign: 'center', mt: 2 * scale, fontWeight: 'bold' }}>
+                <Typography
+                    variant="h3"
+                    sx={{
+                        mt: theme.spacing(2),
+                        fontWeight: 'bold',
+                    }}
+                >
                     {title}
                 </Typography>
 
                 <Paper
                     elevation={24}
                     sx={{
-                        width: '40%', height: '40%', display: 'flex',
-                        justifyContent: 'center', alignItems: 'center',
+                        width: {
+                            xs: '50%',
+                            sm: '50%',
+                            md: '50%',
+                        },
+                        minHeight: {
+                            xs: theme.spacing(18),
+                            sm: theme.spacing(20),
+                            md: theme.spacing(22),
+                        },
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                         backgroundColor: backColor || 'primary.main',
                         color: 'error.contrastText',
+                        mt: theme.spacing(3),
+                        mb: theme.spacing(3),
                     }}
                 >
-                    <Typography variant="h1" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+                    <Typography
+                        variant="h1"
+                        sx={{ fontWeight: 'bold' }}
+                    >
                         {locker}
                     </Typography>
                 </Paper>
 
-                <Typography variant="h4" sx={{ textAlign: 'center', py: 2 * scale }}>
+                <Typography
+                    variant="h4"
+                    sx={{
+                        px: theme.spacing(2),
+                        py: theme.spacing(1),
+                        whiteSpace: 'pre-line',
+                    }}
+                >
                     {msg}
                 </Typography>
 
-                {(operation === 'Retirar' || operation === 'Guardar' || operation === 'Reservado') && (
-                    <Typography variant="h4" sx={{ textAlign: 'center', fontWeight: 'bold', py: 2 * scale }}>
-                        ¡No olvides cerrar el casillero!
-                    </Typography>
-                )}
+                {(operation === 'Retirar' ||
+                    operation === 'Guardar' ||
+                    operation === 'Reservado') && (
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontWeight: 'bold',
+                                py: theme.spacing(2),
+                            }}
+                        >
+                            ¡No olvides cerrar el casillero!
+                        </Typography>
+                    )}
+
                 {operation === 'Retirar' && (
-                    <Typography variant="h5" sx={{ textAlign: 'center' }}>
+                    <Typography variant="h5" sx={{ pb: theme.spacing(2) }}>
                         Disponible para una nueva asignación.
                     </Typography>
                 )}
             </DialogContent>
 
             {/* Acciones */}
-            <DialogActions sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <DialogActions
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                }}
+            >
                 <Button
                     onClick={handleConfirm}
                     autoFocus
                     color="primary"
                     variant="contained"
                     fullWidth
-                    sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}>
+                    sx={{
+                        mx: theme.spacing(3),
+                        py: theme.spacing(2),
+                    }}
+                >
                     Aceptar
                 </Button>
             </DialogActions>

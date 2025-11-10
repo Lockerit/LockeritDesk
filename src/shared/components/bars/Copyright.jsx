@@ -1,7 +1,7 @@
 import { Typography, Container, Box } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'Copyright';
@@ -9,12 +9,11 @@ const log = logger.scope(fileName);
 
 export const Copyright = () => {
   const [version, setVersion] = useState('');
-  const size = useWindowSizeContext();
-  const scale = size.factor || 1;
+  const theme = useTheme();
 
   useEffect(() => {
     let mounted = true;
-    log.info(`Montaje componente | scale=${scale}`);
+    log.info('Montaje componente');
 
     (async () => {
       try {
@@ -36,7 +35,6 @@ export const Copyright = () => {
       mounted = false;
       log.debug('Desmontaje componente');
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -47,12 +45,14 @@ export const Copyright = () => {
         mt: 'auto',
         textAlign: 'center',
         bgcolor: 'transparent',
-        height: `${Math.max(50, Math.min(80, 60 * scale))}px`,
+        height: theme.spacing(8), // altura consistente según theme
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
       }}
     >
       <Container maxWidth="100%">
-        <Typography variant="body1" color="text.primary">
+        <Typography variant="body2" color="text.primary">
           © {new Date().getFullYear()} Lockerit. Todos los derechos reservados - V{version}
         </Typography>
       </Container>

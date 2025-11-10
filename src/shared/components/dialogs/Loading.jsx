@@ -1,14 +1,12 @@
-// src/components/LoadingScreen.jsx
-import { Box, CircularProgress, Typography, Backdrop } from '@mui/material';
-
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
+import { Backdrop, Box, CircularProgress, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 export const Loading = ({ open = true, message = 'Cargando...' }) => {
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1; // de tu hook useElectronScreenData()
+    const theme = useTheme();
 
     return (
         <Backdrop
+            open={open}
             sx={{
                 position: 'fixed',
                 top: 0,
@@ -16,13 +14,20 @@ export const Loading = ({ open = true, message = 'Cargando...' }) => {
                 width: '100vw',
                 height: '100vh',
                 color: '#fff',
-                zIndex: (theme) => theme.zIndex.modal + 1000,
+                bgcolor: 'rgba(0,0,0,0.4)',
+                zIndex: (t) => t.zIndex.modal + 1000,
             }}
-            open={open}
         >
             <Box display="flex" flexDirection="column" alignItems="center">
-                <CircularProgress color="inherit" size={100 * scale} />
-                <Typography variant="h3" mt={2 * scale}>
+                <CircularProgress
+                    color="inherit"
+                    size={theme.spacing(12)}
+                    thickness={4}
+                />
+                <Typography
+                    variant="h4"
+                    sx={{ mt: theme.spacing(2), textAlign: 'center' }}
+                >
                     {message}
                 </Typography>
             </Box>

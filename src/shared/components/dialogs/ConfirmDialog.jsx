@@ -1,11 +1,16 @@
 import { MobileFriendly } from '@mui/icons-material';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, Slide
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Typography,
+    Button,
+    Box,
+    Slide,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { forwardRef } from 'react';
-
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -16,13 +21,14 @@ export const ConfirmDialog = ({
     onConfirm,
     onCancel,
     title,
+    tittle,          // compatibilidad con el typo usado en otros sitios
     mesg,
     items,
     phone,
-    isPhone
+    isPhone,
 }) => {
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
+    const theme = useTheme();
+    const dialogTitle = title || tittle || 'Confirmar';
 
     return (
         <Dialog
@@ -32,61 +38,77 @@ export const ConfirmDialog = ({
             hideBackdrop
             disableEscapeKeyDown
             sx={{
-                pointerEvents: "auto",
+                pointerEvents: 'auto',
                 zIndex: 1500,
             }}
             PaperProps={{
                 sx: {
-                    width: scaledDimension(
-                        {
-                            xs: { base: 60, min: 55, max: 60 },
-                            sm: { base: 60, min: 55, max: 60 },
-                            md: { base: 40, min: 35, max: 40 },
-                            lg: { base: 30, min: 25, max: 35 },
-                        },
-                        scale
-                    ),
+                    width: {
+                        xs: '60%',
+                        sm: '60%',
+                        md: '40%',
+                        lg: '30%',
+                    },
+                    maxWidth: 'none',
                     height: 'auto',
-                    borderRadius: `${Math.max(8, 16 * scale)}px`,
-                    p: 2 * scale,
-                }
+                    borderRadius: theme.spacing(3),
+                    p: theme.spacing(3),
+                },
             }}
             slots={{ transition: Transition }}
         >
-            <DialogTitle>{title}</DialogTitle>
+            <DialogTitle>{dialogTitle}</DialogTitle>
 
             <DialogContent
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 2 * scale,
-                    textAlign: "left",
-                    width: "100%",
+                    gap: theme.spacing(2),
+                    textAlign: 'left',
+                    width: '100%',
                 }}
             >
-                {/* ✅ Nuevo modo con items */}
+                {/* Modo con items */}
                 {Array.isArray(items) && items.length > 0 ? (
                     items.map((item, idx) => (
                         <Box
                             key={idx}
                             sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                borderBottom: "1px solid #eee",
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                borderBottom: '1px solid #eee',
                                 pb: 1,
                             }}
                         >
-                            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                                 {item.label}:
                             </Typography>
                             <Typography variant="h6">{item.value}</Typography>
                         </Box>
                     ))
                 ) : (
-                    /* ✅ Modo legacy con mesg como string */
-                    <Box sx={{ display: "flex", alignItems: "center", textAlign: "center", gap: 2 * scale, mt: 1 * scale }}>
-                        {isPhone && (<MobileFriendly color="primary" sx={{ fontSize: 40 * scale }} />)}
-                        <Typography variant="h4" sx={{ whiteSpace: 'pre-line' }}>
+                    // Modo legacy con mesg como string
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            textAlign: 'center',
+                            gap: theme.spacing(1.5),
+                            mt: theme.spacing(1),
+                        }}
+                    >
+                        {isPhone && (
+                            <MobileFriendly
+                                color="primary"
+                                sx={{ fontSize: theme.spacing(5) }}
+                            />
+                        )}
+                        <Typography
+                            variant="h4"
+                            align="center"
+                            sx={{ whiteSpace: 'pre-line' }}
+                        >
                             {mesg}
                         </Typography>
                     </Box>
@@ -94,8 +116,12 @@ export const ConfirmDialog = ({
 
                 {isPhone && (
                     <Typography
-                        variant="h2"
-                        sx={{ textAlign: "center", mt: 2 * scale, fontWeight: "bold" }}
+                        variant="h1"
+                        sx={{
+                            textAlign: 'center',
+                            mt: theme.spacing(2),
+                            fontWeight: 'bold',
+                        }}
                     >
                         {phone}
                     </Typography>
@@ -104,8 +130,11 @@ export const ConfirmDialog = ({
 
             <DialogActions
                 sx={{
-                    display: "flex",
-                    width: "100%",
+                    display: 'flex',
+                    width: '100%',
+                    gap: theme.spacing(2),
+                    px: theme.spacing(3),
+                    pb: theme.spacing(2),
                 }}
             >
                 <Button
@@ -113,7 +142,6 @@ export const ConfirmDialog = ({
                     color="secondary"
                     variant="contained"
                     fullWidth
-                    sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}
                 >
                     No
                 </Button>
@@ -123,11 +151,10 @@ export const ConfirmDialog = ({
                     color="primary"
                     variant="contained"
                     fullWidth
-                    sx={{ mr: 3 * scale, ml: 3 * scale, p: 3 * scale }}
                 >
-                    Si
+                    Sí
                 </Button>
             </DialogActions>
         </Dialog>
     );
-}
+};

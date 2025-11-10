@@ -1,9 +1,6 @@
-import {
-    AddCircle, Key, RemoveCircle
-} from '@mui/icons-material';
-import {
-    Typography, Box, Grid, Button
-} from '@mui/material';
+import { AddCircle, Key, RemoveCircle } from '@mui/icons-material';
+import { Typography, Box, Button } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -12,10 +9,8 @@ import { KeypadNumeric } from '@shared/components/dialogs/KeypadNumeric.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
-import { useWindowSizeContext } from '@shared/context/WindowSizeContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
-import { scaledDimension } from '@shared/utils/scaledDimension.js';
 import { speak, stopSpeaking } from '@shared/utils/speak.js';
 
 const fileName = 'Ppal';
@@ -23,32 +18,26 @@ const log = logger.scope(fileName);
 
 export const Ppal = () => {
     const [showErrorAPIOpenPpal, setShowErrorAPIOpenPpal] = useState(false);
-    const { userInit, setUserInit: _setUserInit } = useUser();
+    const { userInit } = useUser();
     const [available, setAvailable] = useState(null);
     const [messageErrorAPI, setMessageErrorAPI] = useState('');
     const [loading, setLoading] = useState(true);
     const [timeoutKeypad, setTimeoutKeypad] = useState();
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const [disabledButton, setDisabledButton] = useState(false);
-    const [keypadOpen, setKeypadOpen] = useState();
+    const [keypadOpen, setKeypadOpen] = useState(false);
     const [operation, setOperation] = useState();
-
-    const size = useWindowSizeContext();
-    const scale = size.factor || 1;
 
     const navigate = useNavigate();
     const config = useElectronConfig();
     const location = useLocation();
-
     const intervalRef = useRef(null);
+    const theme = useTheme();
 
-    // Solo en montaje
     useEffect(() => {
-        log.info(`Montando Ppal | scale=${scale}, size=${JSON.stringify({ w: size.width, h: size.height })}`);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        log.info('Montando Ppal');
     }, []);
 
-    // (Opcional) log explícito de desmontaje real
     useEffect(() => {
         return () => {
             log.info('Desmontando Ppal');
@@ -59,42 +48,39 @@ export const Ppal = () => {
         try {
             stopSpeaking();
             let msg = config?.voice?.message?.welcome || '';
-            msg = msg.replace('{{amount}}', config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0);
-            msg = msg.replace('{{pesos}}', config?.paramsHtml?.currency?.currencyDescription || 'pesos');
+            msg = msg.replace(
+                '{{amount}}',
+                config?.paramsHtml?.currency?.coinBoxRequiredAmount || 0
+            );
+            msg = msg.replace(
+                '{{pesos}}',
+                config?.paramsHtml?.currency?.currencyDescription || 'pesos'
+            );
             if (msg) {
-                log.debug('TTS: reproducir mensaje de bienvenida');
                 speak(msg);
-            } else {
-                log.debug('TTS: mensaje de bienvenida vacío, no se reproduce');
             }
         } catch (e) {
-            log.warn(`TTS: error al reproducir bienvenida: ${e?.message || e}`);
+            log.warn(`TTS error bienvenida: ${e?.message || e}`);
         }
     }, [config]);
 
-    // Forzar detener TTS al cerrar app (evento enviado desde main)
     useEffect(() => {
         const stopSpeech = () => {
             window.speechSynthesis?.cancel?.();
             stopSpeaking();
-            log.info('TTS detenido por evento de cierre de app');
+            log.info('TTS detenido por cierre de app');
         };
 
         const unsubscribe = window.electronAPI?.onAppClose?.(stopSpeech);
-
         return () => {
-            // solo nos desuscribimos, no llamamos stopSpeech aquí
             if (typeof unsubscribe === 'function') unsubscribe();
         };
-    }, []); // sin dependencias
+    }, []);
 
-    // Ciclo de TTS de bienvenida/recordatorio
     useEffect(() => {
         if (!config || !config?.voice?.enabled) return;
 
-        // si el modal está abierto, detener audio e intervalos
         if (keypadOpen) {
-            log.debug('Keypad abierto → detener TTS/intervalo');
             stopSpeaking();
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
@@ -105,94 +91,87 @@ export const Ppal = () => {
 
         const hasWelcomed = localStorage.getItem('hasWelcomed') === 'true';
         if (!hasWelcomed) {
-            log.info('TTS bienvenida inicial');
             speakWelcome();
             localStorage.setItem('hasWelcomed', 'true');
         }
 
         if (!intervalRef.current) {
-            const seconds = (config?.voice?.timeInterval || 30);
+            const seconds = config?.voice?.timeInterval || 30;
             intervalRef.current = setInterval(() => {
                 speakWelcome();
             }, seconds * 1000);
-            log.info(`TTS intervalo configurado cada ${seconds}s`);
         }
 
         return () => {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
-                log.debug('TTS: intervalo limpiado');
             }
             stopSpeaking();
         };
-    }, [keypadOpen, config, config?.voice?.enabled, speakWelcome]);
+    }, [keypadOpen, config, speakWelcome]);
 
-    // Cargar estado de casilleros al montar
     useEffect(() => {
         fetchDataStatusLocker();
     }, []);
 
-    // Habilitar/Deshabilitar botón por disponibilidad
     useEffect(() => {
         setDisabledButton(available === 0);
-        log.debug(`Disponibilidad actualizada → available=${available}, disabled=${available === 0}`);
     }, [available]);
 
-    // Validar sesión para posible redirección
     useEffect(() => {
         if (!userInit || !config) return;
 
-        const isAuthenticated = Boolean(userInit?.authenticatedOpera || userInit?.authenticatedAdmin);
-        const isSessionClosed = Boolean(userInit?.closeSession || userInit?.closeWindow);
+        const isAuthenticated = Boolean(
+            userInit?.authenticatedOpera || userInit?.authenticatedAdmin
+        );
+        const isSessionClosed = Boolean(
+            userInit?.closeSession || userInit?.closeWindow
+        );
 
-        if ((!isAuthenticated || isSessionClosed) && location.pathname !== '/') {
-            log.info(`Redirigir a / por sesión inválida o cerrada | auth=${isAuthenticated}, closeSession=${!!userInit?.closeSession}, closeWindow=${!!userInit?.closeWindow}`);
-            navigate('/', { replace: true });
+        if (!isAuthenticated || isSessionClosed) {
+            if (location.pathname !== '/') {
+                navigate('/', { replace: true });
+            }
             return;
         }
 
         if (config?.paramsHtml?.modalTimeouts?.timeoutKeypad) {
-            setTimeoutKeypad(config?.paramsHtml?.modalTimeouts?.timeoutKeypad);
-            log.debug(`timeoutKeypad configurado a ${config.paramsHtml.modalTimeouts.timeoutKeypad}ms`);
+            setTimeoutKeypad(config.paramsHtml.modalTimeouts.timeoutKeypad);
         }
     }, [config, userInit, navigate, location]);
 
-    // Timeout de mensajes
     useEffect(() => {
         if (!config) return;
         if (config?.paramsHtml?.modalTimeouts?.timeoutShowMessage) {
             setTimeoutShowMessage(config.paramsHtml.modalTimeouts.timeoutShowMessage);
-            log.debug(`timeoutShowMessage configurado a ${config.paramsHtml.modalTimeouts.timeoutShowMessage}ms`);
         }
     }, [config]);
 
     const fetchDataStatusLocker = async () => {
         setLoading(true);
-        log.info('Cargar estado de casilleros');
         try {
             const result = await GetAllStatusLockers();
             if (result.success) {
                 if (Array.isArray(result?.data?.general)) {
-                    const libre = result.data.general.find(item => item.status?.toLowerCase() === 'libre');
+                    const libre = result.data.general.find(
+                        (item) => item.status?.toLowerCase() === 'libre'
+                    );
                     setAvailable(libre?.total || 0);
-                    log.info(`Estados cargados OK | libres=${libre?.total || 0}`);
-                } else {
-                    log.warn('Respuesta sin sección general válida');
                 }
                 setShowErrorAPIOpenPpal(false);
             } else {
-                const msg = typeof result?.data === 'string'
-                    ? result.data
-                    : 'No se puedo obtener estado de casilleros';
+                const msg =
+                    typeof result?.data === 'string'
+                        ? result.data
+                        : 'No se puedo obtener estado de casilleros';
                 setMessageErrorAPI(msg);
                 setShowErrorAPIOpenPpal(true);
-                log.warn(`Fallo carga de estados: ${msg}`);
             }
         } catch (e) {
             setMessageErrorAPI('No se puedo obtener estado de casilleros');
             setShowErrorAPIOpenPpal(true);
-            log.error(`Error en GetAllStatusLockers: ${e?.message || e}`);
+            log.error(`Error estados: ${e?.message || e}`);
         } finally {
             setLoading(false);
         }
@@ -203,7 +182,6 @@ export const Ppal = () => {
             variant="contained"
             color={color}
             onClick={onClick}
-            fullWidth
             disabled={disabled}
             sx={{
                 display: 'flex',
@@ -211,13 +189,14 @@ export const Ppal = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 textTransform: 'none',
-                fontSize: 52 * scale,
-                padding: 2 * scale,
+                fontSize: theme.typography.h1.fontSize,
+                p: theme.spacing(2),
                 width: '100%',
                 height: '100%',
-                borderRadius: `${24 * scale}px`,
-                boxShadow: `0 ${18 * scale}px ${12 * scale}px rgba(0,0,0,1)`,
+                borderRadius: theme.spacing(3),
+                boxShadow: theme.shadows[8],
             }}
+            fullWidth
         >
             {text}
             {icon}
@@ -226,30 +205,25 @@ export const Ppal = () => {
 
     const confirmShowErrorAPI = () => {
         setShowErrorAPIOpenPpal(false);
-        log.debug('Cierre modal ErrorAPI');
     };
 
     const saveLocker = () => {
         setOperation('Guardar');
         setKeypadOpen(true);
-        log.info('Operación seleccionada: Guardar → abrir keypad');
     };
 
     const removeLocker = () => {
         setOperation('Retirar');
         setKeypadOpen(true);
-        log.info('Operación seleccionada: Retirar → abrir keypad');
     };
 
     const reserveLocker = () => {
         setOperation('Reservado');
         setKeypadOpen(true);
-        log.info('Operación seleccionada: Reservado → abrir keypad');
     };
 
     const closeKeypad = () => {
         setKeypadOpen(false);
-        log.info('Cerrar keypad → refrescar estados');
         fetchDataStatusLocker();
     };
 
@@ -260,112 +234,193 @@ export const Ppal = () => {
                     flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
-                    alignContent: 'center',
                     alignItems: 'center',
-                    px: 4 * scale,
+                    px: { xs: 2, sm: 4 },
+                    py: { xs: 2, sm: 3 },
                     width: '100%',
-                    height: '100%',
+                    height: '98%',
+                    boxSizing: 'border-box',
                     overflow: 'hidden',
                 }}
             >
-                <Box>
+                {/* Logo */}
+                <Box
+                    sx={{
+                        mb: { xs: 2, md: 3 },
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                    }}
+                >
                     {config?.login?.logoPath && (
                         <img
-                            src={config?.login?.logoPath}
+                            src={config.login.logoPath}
                             alt="Título"
-                            style={{ height: 180 * scale }}
+                            style={{
+                                maxHeight: theme.spacing(18),
+                                objectFit: 'contain',
+                            }}
                         />
                     )}
                 </Box>
 
-                {/* Botones */}
-                <Grid
-                    container
-                    spacing={5 * scale}
+                {/* Layout de botones como en la imagen */}
+                <Box
                     sx={{
-                        height: scaledDimension(
-                            {
-                                xs: { base: 70, min: 65, max: 75 },
-                                sm: { base: 70, min: 65, max: 75 },
-                                md: { base: 60, min: 55, max: 70 },
-                                lg: { base: 60, min: 55, max: 70 },
-                            },
-                            scale
-                        ),
-                        width: scaledDimension(
-                            {
-                                xs: { base: 80, min: 75, max: 85 },
-                                sm: { base: 80, min: 75, max: 85 },
-                                md: { base: 60, min: 55, max: 70 },
-                                lg: { base: 45, min: 40, max: 50 },
-                            },
-                            scale
-                        ),
+                        flexGrow: 1,
+                        width: { xs: '80%', sm: '80%', md: '60%', lg: '50%' },
+                        display: {
+                            xs: 'flex',
+                            sm: 'grid',       // grid desde sm (>=600)
+                        },
+                        flexDirection: {
+                            xs: 'column',     // solo en xs se apilan
+                        },
+                        gridTemplateColumns: {
+                            sm: '1fr 1fr',  // 2 columnas desde sm
+                        },
+                        gridTemplateRows: {
+                            sm: '1fr 1fr',    // 2 filas desde sm
+                        },
+                        gap: { xs: 3, sm: 4 },
+                        alignItems: 'stretch',
                     }}
                 >
-                    <Grid size={6}>
+                    {/* Guardar: columna izquierda, ocupa las dos filas */}
+                    <Box
+                        sx={{
+                            gridColumn: { sm: '1' },
+                            gridRow: { sm: '1 / span 2' },
+                            mb: { xs: 2, sm: 0 },
+                        }}
+                    >
                         <ActionButton
                             text="Guardar"
-                            icon={<AddCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                            icon={
+                                <AddCircle
+                                    sx={{
+                                        fontSize: theme.spacing(15),
+                                        mt: 1,
+                                    }}
+                                />
+                            }
                             color="primary"
                             onClick={saveLocker}
                             disabled={disabledButton}
                         />
-                    </Grid>
+                    </Box>
 
                     {config?.reserve?.enabled ? (
-                        <Grid size={6} container direction="column">
-                            <Grid sx={{ flex: 1 }}>
+                        <>
+                            {/* Retirar: arriba derecha */}
+                            <Box
+                                sx={{
+                                    gridColumn: { sm: '2' },
+                                    gridRow: { sm: '1' },
+                                    mb: { xs: 2, sm: 0 },
+                                }}
+                            >
                                 <ActionButton
                                     text="Retirar"
-                                    icon={<RemoveCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                                    icon={
+                                        <RemoveCircle
+                                            sx={{
+                                                fontSize: theme.spacing(15),
+                                                mt: 1,
+                                            }}
+                                        />
+                                    }
                                     color="secondary"
                                     onClick={removeLocker}
                                 />
-                            </Grid>
-                            <Grid sx={{ flex: 1 }}>
+                            </Box>
+
+                            {/* Reservado: abajo derecha */}
+                            <Box
+                                sx={{
+                                    gridColumn: { sm: '2' },
+                                    gridRow: { sm: '2' },
+                                }}
+                            >
                                 <ActionButton
                                     text="Reservado"
-                                    icon={<Key sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                                    icon={
+                                        <Key
+                                            sx={{
+                                                fontSize: theme.spacing(15),
+                                                mt: 1,
+                                            }}
+                                        />
+                                    }
                                     color="info"
                                     onClick={reserveLocker}
                                 />
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        </>
                     ) : (
-                        <Grid size={6}>
+                        // Si no hay reserva, Retirar ocupa la columna derecha completa
+                        <Box
+                            sx={{
+                                gridColumn: { sm: '2' },
+                                gridRow: { sm: '1 / span 2' },
+                            }}
+                        >
                             <ActionButton
                                 text="Retirar"
-                                icon={<RemoveCircle sx={{ fontSize: 100 * scale, mb: 0.5 * scale }} />}
+                                icon={
+                                    <RemoveCircle
+                                        sx={{
+                                            fontSize: theme.spacing(15),
+                                            mt: 1,
+                                        }}
+                                    />
+                                }
                                 color="secondary"
                                 onClick={removeLocker}
                             />
-                        </Grid>
+                        </Box>
                     )}
-                </Grid>
+                </Box>
 
-                {/* Indicadores */}
+                {/* Indicadores y QR */}
                 <Box
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
                         width: '100%',
-                        maxHeight: '100%',
-                        mt: 'auto',
+                        mt: { xs: 3, md: 4 },
+                        justifyContent: 'space-between',
+                        gap: 2,
                     }}
                 >
                     <Box>
                         {!disabledButton ? (
                             <>
-                                <Typography variant="h3" component="span" color="text.primary" sx={{ fontWeight: 'bold' }}>
+                                <Typography
+                                    variant="h1"
+                                    component="span"
+                                    sx={{ fontWeight: 'bold' }}
+                                    color="text.primary"
+                                >
                                     Casilleros disponibles:{' '}
                                 </Typography>
-                                <Typography variant="h3" component="span" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                                <Typography
+                                    variant="h1"
+                                    component="span"
+                                    sx={{ fontWeight: 'bold' }}
+                                    color="text.secondary"
+                                >
                                     {available || 0}
                                 </Typography>
                             </>
                         ) : (
-                            <Typography variant="h3" component="span" color="error" sx={{ fontWeight: 'bold' }}>
+                            <Typography
+                                variant="h1"
+                                component="span"
+                                sx={{ fontWeight: 'bold' }}
+                                color="error"
+                            >
                                 No hay casilleros disponibles
                             </Typography>
                         )}
@@ -375,18 +430,14 @@ export const Ppal = () => {
                         <Box
                             sx={{
                                 position: 'fixed',
-                                bottom: 16 * scale,
-                                right: 16 * scale,
-                                height: scaledDimension(
-                                    {
-                                        xs: { base: 140, min: 135, max: 145 },
-                                        sm: { base: 140, min: 135, max: 145 },
-                                        md: { base: 160, min: 155, max: 165 },
-                                        lg: { base: 170, min: 165, max: 175 },
-                                    },
-                                    scale,
-                                    'px'
-                                ),
+                                bottom: theme.spacing(2),
+                                right: theme.spacing(2),
+                                height: {
+                                    xs: theme.spacing(16),
+                                    sm: theme.spacing(18),
+                                    md: theme.spacing(20),
+                                    lg: theme.spacing(22),
+                                },
                                 zIndex: 1000,
                                 pointerEvents: 'none',
                             }}
@@ -394,7 +445,11 @@ export const Ppal = () => {
                             <img
                                 src={config.login.QRPath}
                                 alt="QR"
-                                style={{ width: 'auto', height: '100%', objectFit: 'contain' }}
+                                style={{
+                                    width: 'auto',
+                                    height: '100%',
+                                    objectFit: 'contain',
+                                }}
                             />
                         </Box>
                     )}
@@ -415,7 +470,7 @@ export const Ppal = () => {
                 timeout={timeoutShowMessage}
             />
 
-            {loading && (<Loading />)}
+            {loading && <Loading />}
         </>
     );
 };
