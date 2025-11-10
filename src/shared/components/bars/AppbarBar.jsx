@@ -108,23 +108,29 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     };
 
     const handleMenuClose = () => {
-        const updatedUser = { ...userInit, closeSession: false, closeWindow: false };
-        persistUser(updatedUser);
         setAnchorEl(null);
         setTimeout(() => avatarBoxRef.current?.focus?.(), 100);
         log.debug('Menú de usuario cerrado');
     };
 
     const handleLogout = () => {
-        handleMenuClose();
-        const updatedUser = { ...userInit, closeSession: true, closeWindow: false };
+        const updatedUser = {
+            ...userInit,
+            closeSession: true,
+            closeWindow: false
+        };
         persistUser(updatedUser);
+        setAnchorEl(null);
         navigate('/', { replace: true });
         log.info('Cerrar sesión solicitado');
     };
 
     const openConfirmClose = () => {
-        const updatedUser = { ...userInit, closeSession: false, closeWindow: true };
+        const updatedUser = {
+            ...userInit,
+            closeSession: false,
+            closeWindow: true
+        };
         persistUser(updatedUser);
         setAnchorEl(null);
         navigate('/', { replace: true });

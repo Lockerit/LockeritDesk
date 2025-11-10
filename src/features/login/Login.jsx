@@ -17,7 +17,7 @@ import {
     Checkbox,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import logo from '@assets/Logo.png';
@@ -50,7 +50,6 @@ export const Login = () => {
     const navigate = useNavigate();
     const config = useElectronConfig();
     const location = useLocation();
-    const redirected = useRef(false);
     const theme = useTheme();
 
     const buttonName = useMemo(() => {
@@ -95,26 +94,54 @@ export const Login = () => {
 
     // Redirección según sesión
     useEffect(() => {
-        if (!userInit || redirected.current) return;
-
-        const isOp = !!userInit?.authenticatedOpera;
-        const isAdm = !!userInit?.authenticatedAdmin;
-        setScreenLogin(!(isOp || isAdm));
-
-        if (isOp && !userInit?.closeSession && !userInit?.closeWindow) {
-            if (location.pathname !== '/ppal') {
-                redirected.current = true;
-                log.info('Redirección → /ppal (operador autenticado)');
-                navigate('/ppal', { replace: true });
+        if (!userInit) {
+            // No hay sesión cargada
+            setScreenLogin(true);
+            if (location.pathname !== '/') {
+                log.info('Redirección → / (no autenticado)');
+                navigate('/', { replace: true });
             }
-        } else if (isAdm && !userInit?.closeSession && !userInit?.closeWindow) {
-            if (location.pathname !== '/adminlockers') {
-                redirected.current = true;
-                log.info('Redirección → /adminlockers (admin autenticado)');
-                navigate('/adminlockers', { replace: true });
-            }
+            return;
         }
-    }, [userInit, location, navigate]);
+
+        const isOp = !!userInit.authenticatedOpera;
+        const isAdm = !!userInit.authenticatedAdmin;
+        const isAuth = isOp || isAdm;
+
+        // Ocultar/mostrar parte visual de login
+        setScreenLogin(!isAuth);
+
+        // Flujo logout / cerrar aplicación: siempre debe quedarse en "/"
+        if (userInit.closeSession || userInit.closeWindow) {
+            if (location.pathname !== '/') {
+                log.info('Redirección → / (flujo logout/exit)');
+                navigate('/', { replace: true });
+            }
+            return;
+        }
+
+        // Sesión activa normal → ir a la pantalla correspondiente si estamos en "/"
+        if (isAuth) {
+            const target = getHomeRoute(userInit);
+            if (location.pathname === '/' || location.pathname === '/login') {
+                log.info(`Redirección → ${target} (sesión activa)`);
+                navigate(target, { replace: true });
+            }
+            return;
+        }
+
+        // Sin sesión y sin flags → garantizar que estamos en "/"
+        if (location.pathname !== '/') {
+            log.info('Redirección → / (no autenticado, sin flags)');
+            navigate('/', { replace: true });
+        }
+    }, [userInit, location.pathname, navigate]);
+
+    const getHomeRoute = (session) => {
+        if (session?.authenticatedAdmin) return '/adminlockers';
+        if (session?.authenticatedOpera) return '/ppal';
+        return '/login';
+    };
 
     const handleTogglePassword = () => {
         setShowPassword((prev) => !prev);
@@ -197,11 +224,11 @@ export const Login = () => {
         }
 
         let newSession = null;
+        const isAuth = !!userInit?.authenticatedOpera || !!userInit?.authenticatedAdmin;
 
         // LOGIN
         if (
-            !userInit?.authenticatedOpera &&
-            !userInit?.authenticatedAdmin &&
+            !isAuth &&
             !userInit?.closeSession &&
             !userInit?.closeWindow
         ) {
@@ -217,22 +244,20 @@ export const Login = () => {
                 closeSession: false,
                 closeWindow: false,
             };
+
             setUserInit(newSession);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newSession));
             log.info(
                 `Login exitoso como ${successSession === 1 ? 'OPERADOR' : 'ADMIN'}`
             );
 
-            if (successSession === 1) navigate('/ppal', { replace: true });
-            if (successSession === 2) navigate('/adminlockers', { replace: true });
+            const route = getHomeRoute(newSession);
+            navigate(route, { replace: true });
             return;
         }
 
-        // LOGOUT
-        if (
-            (userInit?.authenticatedOpera || userInit?.authenticatedAdmin) &&
-            userInit?.closeSession
-        ) {
+        // LOGOUT (Cerrar sesión)
+        if (isAuth && userInit?.closeSession) {
             const isCloseAllowed =
                 (successSession === 1 && userInit?.authenticatedOpera) ||
                 (successSession === 2 && userInit?.authenticatedAdmin);
@@ -258,26 +283,50 @@ export const Login = () => {
                 closeSession: false,
                 closeWindow: false,
             };
+
             setUserInit(newSession);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newSession));
             setUserName(userAux);
             setPass('');
             showAlert('Sesión cerrada exitosamente.', 'success');
             log.info('Logout exitoso');
+
+            if (location.pathname !== '/') {
+                navigate('/', { replace: true });
+            }
             return;
         }
 
-        // EXIT
+        // EXIT (Cerrar aplicación)
         if (userInit?.closeWindow) {
+            let canClose = false;
+
+            if (!isAuth) {
+                // Sin sesión: cualquier usuario válido puede cerrar (operador o admin)
+                canClose = successSession === 1 || successSession === 2;
+            } else {
+                // Con sesión: solo el usuario actualmente autenticado puede cerrar
+                canClose =
+                    (successSession === 1 && userInit?.authenticatedOpera) ||
+                    (successSession === 2 && userInit?.authenticatedAdmin);
+            }
+
+            if (!canClose) {
+                log.warn('Intento de cierre de aplicación no autorizado');
+                showAlert(
+                    'No se pudo cerrar la aplicación con estas credenciales.',
+                    'error'
+                );
+                return;
+            }
+
             const updatedUser = { ...userInit, closeWindow: false };
             setUserInit(updatedUser);
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-            if (userInit?.authenticatedOpera) navigate('/ppal', { replace: true });
-            else if (userInit?.authenticatedAdmin)
-                navigate('/adminlockers', { replace: true });
 
             log.info('Cierre de aplicación solicitado (flujo Exit)');
             setTimeout(() => closeWindows(), 500);
+            return;
         }
     };
 
