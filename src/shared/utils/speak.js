@@ -10,16 +10,6 @@ let defaultOptions = {
 
 let voicesReady = null;
 const isWindows = navigator.userAgent.includes("Windows");
-const hasElectron = !!(window.electronAPI?.speak);
-
-const fileName = "speak";
-
-// Función auxiliar para loguear si está disponible
-const log = (level, message) => {
-    if (typeof window !== 'undefined' && window.electronAPI?.log) {
-        window.electronAPI.log(level, `[${fileName}] ${message}`);
-    }
-};
 
 /**
  * Cargar voces disponibles
@@ -71,9 +61,32 @@ export const preloadVoice = () => {
  */
 export const speak = async (text, options = {}) => {
     const finalOptions = { ...defaultOptions, ...options };
-    const { voiceName, rate, pitch, volume } = finalOptions;
+    const {
+        voiceName,
+        rate,
+        pitch,
+        volume,
+        useDesktopVoice,   // viene desde la config
+    } = finalOptions;
 
-    if (window.speechSynthesis && (!isWindows || !hasElectron)) {
+    const canUseDesktop =
+        isWindows &&
+        !!useDesktopVoice &&
+        !!window.electronAPI?.speak;
+
+    // 1) Voces de escritorio (Windows/SAPI) si así lo pide la config
+    if (canUseDesktop) {
+        window.electronAPI.speak(text, {
+            voiceName,
+            rate,
+            pitch,
+            volume,
+        });
+        return;
+    }
+
+    // 2) Voces del navegador si hay speechSynthesis
+    if (window.speechSynthesis) {
         await waitForVoices();
 
         const utterance = new SpeechSynthesisUtterance(text);
@@ -87,14 +100,18 @@ export const speak = async (text, options = {}) => {
         utterance.pitch = pitch;
         utterance.volume = volume;
 
+        // no ponemos onerror con fallback para que cancel() no dispare doble audio
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
-    } else if (hasElectron) {
+        return;
+    }
+
+    // 3) Fallback: si no hay speechSynthesis, usar backend si está disponible
+    if (window.electronAPI?.speak) {
         window.electronAPI.speak(text, { voiceName, rate, pitch, volume });
-    } else {
-        log("warn", "No hay TTS disponible (ni speechSynthesis ni electronAPI)");
     }
 };
+
 
 /**
  * Detener cualquier lectura en curso
@@ -112,7 +129,8 @@ export const stopSpeaking = () => {
  * Obtener lista de voces disponibles
  */
 export const getVoices = async () => {
-    if (window.speechSynthesis && !navigator.userAgent.includes("Windows")) {
+    // Ahora también usa voces del navegador en Windows
+    if (window.speechSynthesis) {
         await waitForVoices();
         return voices.map(v => ({
             name: v.name,

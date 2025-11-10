@@ -78,6 +78,7 @@ export const App = () => {
             rate: config?.voice?.rate || 1,
             volume: config?.voice?.volume || 1,
             pitch: config?.voice?.pitch || 1,
+            useDesktopVoice: !!config?.voice?.isVoiceDesktop,
         };
         setVoiceOptions(opts);
         log.debug(`TTS configurado: { opts: ${JSON.stringify(opts)}, voice: ${voiceGet?.name || 'default'} }`
@@ -162,12 +163,34 @@ export const App = () => {
     });
 
     const loadVoices = async (voiceName) => {
-        const voices = await getVoices() || [];
+        const useDesktopVoice = !!config?.voice?.isVoiceDesktop;
+
+        const voices = useDesktopVoice
+            ? await window.electronAPI.getVoices() // voces de Windows (tts.win.js)
+            : await getVoices();                   // voces del navegador (speechSynthesis)
+
+        log.info(`Voz cargada: { requested: ${voiceName} }`);
+        log.info(`Voces disponibles: { count: ${voices.length}, voices: ${voices.map(v => v.name || v.Name || v.DisplayName).join(', ')} }`);
+
         const found = voices.find(v => {
-            const n = v.Name || v.name;
+            const n = v.Name || v.name || v.DisplayName;
             return n && n.toLowerCase().includes(voiceName.toLowerCase());
         });
-        if (found) setVoiceGet(found);
+
+        if (found) {
+            const resolvedName = found.Name || found.name || found.DisplayName;
+            log.info(`Voz encontrada: { name: ${resolvedName} }`);
+
+            // normalizamos y marcamos si viene de escritorio
+            setVoiceGet({
+                ...found,
+                name: resolvedName,
+                isDesktop: useDesktopVoice,
+            });
+        } else {
+            log.warn(`Voz no encontrada {${voiceName}}, se usará la predeterminada`);
+            setVoiceGet(null);
+        }
     };
 
     return (

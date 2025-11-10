@@ -162,12 +162,14 @@ function createWindow({ fullscreen = true, frame = true } = {}) {
       execFile('pkill', ['aplay'], (error) => {
         if (error) log.warn(`[${fileName}] No había procesos de aplay para detener: ${error}`);
       });
+    } else if (process.platform === 'win32') {
+      try { ttsWin.stop({ flush: true }); } catch (e) { log.warn(`[${fileName}] ttsWin.stop error: ${e?.message}`); }
     } else {
       try { say.stop(); } catch (e) { log.warn(`[${fileName}] say.stop error: ${e?.message}`); }
     }
     if (!win.isDestroyed()) win.webContents.send('app-close');
   });
-
+  
   // Bloquear Google Fonts (ya contemplado)
   win.webContents.session.webRequest.onBeforeRequest(
     { urls: ['https://fonts.googleapis.com/*'] },
@@ -310,7 +312,15 @@ ipcMain.handle('tts-speak', async (_event, text, options = {}) => {
 
   // macOS u otros: say directo
   const { voiceName, rate = 1 } = options;
-  say.speak(text, voiceName || undefined, rate);
+  try {
+    say.speak(text, voiceName || undefined, rate, (err) => {
+      if (err) {
+        log.warn(`[${fileName}] say.speak error: ${err?.message || err}`);
+      }
+    });
+  } catch (err) {
+    log.error(`[${fileName}] say.speak throw: ${err?.message || err}`);
+  }
   return true;
 });
 

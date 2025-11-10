@@ -130,6 +130,7 @@ export const KeypadNumeric = ({
 
   const cancel = useCallback(() => {
     log.info('Cancelación solicitada');
+    stopSpeaking();
 
     try {
       const active = document.activeElement;
@@ -496,7 +497,6 @@ export const KeypadNumeric = ({
 
       try {
         setLoading(true);
-        speak(' ');
         log.info(
           `Apertura ${operation} solicitada | phone=${maskPhone(phone)}`
         );
@@ -582,7 +582,6 @@ export const KeypadNumeric = ({
 
     try {
       setLoading(true);
-      speak(' ');
       const result = await paymentService(
         payload,
         timeoutInsert * 1000 * 3,
@@ -999,8 +998,8 @@ export const KeypadNumeric = ({
         onCancel={cancelConfirmation}
         tittle="Confirmar"
         mesg={`¡Vas a ${operation}! ${config?.sendSMS
-            ? '\nRecibirás un mensaje de texto con los datos ingresados.'
-            : ''
+          ? '\nRecibirás un mensaje de texto con los datos ingresados.'
+          : ''
           } \n¿El número celular es correcto?`}
         phone={formatNumberPhone(phone)}
         isPhone={true}
