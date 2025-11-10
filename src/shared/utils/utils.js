@@ -24,9 +24,13 @@ export const anotherUtil = (value) => {
     return value.toUpperCase();
 };
 
-export const phoneRegex = /^3\d{9}$/;
+export const PHONE_REGEX = /^3\d{9}$/;
 
-export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]*$/;
+
+export const ID_REGEX = /^[0-9]*$/;
 
 export const keys = () => {
     return [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Borrar', 0, 'Cancelar', 'Aceptar'];

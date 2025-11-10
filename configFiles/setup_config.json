@@ -63,7 +63,7 @@
         }
     },
     "reserve": {
-        "enabled": false,
+        "enabled": true,
         "porcentWeekly": 10,
         "porcentFortnightly": 20,
         "porcentMonthly": 30

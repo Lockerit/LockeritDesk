@@ -35,9 +35,11 @@ import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyP
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 import {
-  phoneRegex,
+  PHONE_REGEX,
   formatCurrency,
-  emailRegex,
+  EMAIL_REGEX,
+  NAME_REGEX,
+  ID_REGEX,
   formatNumberPhone,
 } from '@shared/utils/utils.js';
 
@@ -236,6 +238,10 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
       errores.push('Los nombres no deben superar los 50 caracteres');
       setErrorsEmpty((prev) => ({ ...prev, nameUser: true }));
       hasError = true;
+    } else if (!NAME_REGEX.test(trimmedName)) {
+      errores.push('Los nombres no deben contener carácteres especiales.');
+      setErrorsEmpty((prev) => ({ ...prev, nameUser: true }));
+      hasError = true;
     } else {
       setErrorsEmpty((prev) => ({ ...prev, nameUser: false }));
     }
@@ -252,10 +258,12 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
       setErrorsEmpty((prev) => ({ ...prev, idNumber: true }));
       hasError = true;
     } else if (trimmedId.length < 6) {
-      errores.push(
-        'El número de identificación no debe ser inferior a los 6 caracteres'
-      );
+      errores.push('El número de identificación no debe ser inferior a los 6 caracteres');
       setErrorsEmpty((prev) => ({ ...prev, idNumber: true }));
+      hasError = true;
+    } else if (!ID_REGEX.test(trimmedId)) {
+      errores.push("El número de identificación solo debe contener números");
+      setErrorsEmpty(prev => ({ ...prev, idNumber: true }));
       hasError = true;
     } else {
       setErrorsEmpty((prev) => ({ ...prev, idNumber: false }));
@@ -272,7 +280,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
       );
       setErrorsEmpty((prev) => ({ ...prev, email: true }));
       hasError = true;
-    } else if (!emailRegex.test(trimmedEmail)) {
+    } else if (!EMAIL_REGEX.test(trimmedEmail)) {
       errores.push('Correo electrónico inválido');
       setErrorsEmpty((prev) => ({ ...prev, email: true }));
       hasError = true;
@@ -291,7 +299,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
       );
       setErrorsEmpty((prev) => ({ ...prev, phone: true }));
       hasError = true;
-    } else if (!phoneRegex.test(trimmedPhone)) {
+    } else if (!PHONE_REGEX.test(trimmedPhone)) {
       errores.push('Número celular inválido');
       setErrorsEmpty((prev) => ({ ...prev, phone: true }));
       hasError = true;
@@ -306,6 +314,30 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
       log.info(`Validación exitosa`);
     }
     return !hasError;
+  };
+
+  const handleNameChange = (val) => {
+    // 1) Opcional: bloquear directamente caracteres no válidos
+    if (!NAME_REGEX.test(val)) {
+      // si quieres simplemente ignorar el último carácter inválido:
+      const limpio = val.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g, '');
+      setNameUser(limpio);
+      return;
+    }
+
+    // 2) Si todo es válido, guardas normal
+    setNameUser(val);
+  };
+
+  const handleIdChange = (val) => {
+    // Si trae caracteres no permitidos, los limpiamos
+    if (!ID_REGEX.test(val)) {
+      const limpio = val.replace(/[^0-9]/g, '');
+      setIdNumber(limpio);
+      return;
+    }
+
+    setIdNumber(val);
   };
 
   const handleSubmit = (e) => {
@@ -339,15 +371,15 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
     setLoading(true);
 
     const payload = {
-      nameUser,
-      idNumber,
-      email,
-      phone,
-      period,
+      nameUser: nameUser.trim(),
+      idNumber: idNumber.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      period: period,
       startDate: dayjs(startDate).format('YYYY-MM-DD'),
       endDate: dayjs(endDate).format('YYYY-MM-DD'),
-      amount,
-      porcentage,
+      amount: amount,
+      porcentage: porcentage,
     };
 
     log.info(
@@ -501,7 +533,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
             <TextFieldVirtKeyPad
               label="Nombres y apellidos"
               value={nameUser}
-              setValue={setNameUser}
+              setValue={handleNameChange}
               error={errorsEmpty.nameUser}
               helperText={
                 errorsEmpty.nameUser ? 'Ingresa los nombres completos' : ''
@@ -528,12 +560,10 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
             <TextFieldVirtKeyPad
               label="Número de identificación"
               value={idNumber}
-              setValue={setIdNumber}
+              setValue={handleIdChange}
               error={errorsEmpty.idNumber}
               helperText={
-                errorsEmpty.idNumber
-                  ? 'Ingresa el número de identificación'
-                  : ''
+                errorsEmpty.idNumber ? 'Ingresa el número de identificación' : ''
               }
               inputProps={{ maxLength: 20 }}
             />

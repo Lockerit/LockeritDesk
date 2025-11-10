@@ -41,7 +41,7 @@ import {
 } from '@shared/utils/speak.js';
 import {
   formatTime,
-  phoneRegex,
+  PHONE_REGEX,
   keys,
   formatNumberPhone,
   formatCurrency,
@@ -316,7 +316,7 @@ export const KeypadNumeric = ({
     if (activeInput === 'phone') {
       const trimmedPhone = phone.trim();
       const invalid =
-        trimmedPhone === '' || !phoneRegex.test(trimmedPhone);
+        trimmedPhone === '' || !PHONE_REGEX.test(trimmedPhone);
       setErrorsEmpty((prev) => ({ ...prev, phone: invalid }));
       if (invalid) {
         const msg =
@@ -381,7 +381,7 @@ export const KeypadNumeric = ({
 
     const trimmedPhone = phone.trim();
     const phoneInvalid =
-      trimmedPhone === '' || !phoneRegex.test(trimmedPhone);
+      trimmedPhone === '' || !PHONE_REGEX.test(trimmedPhone);
     if (phoneInvalid) {
       const msg =
         trimmedPhone === ''
