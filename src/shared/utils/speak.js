@@ -9,6 +9,8 @@ let defaultOptions = {
 };
 
 let voicesReady = null;
+const isWindows = navigator.userAgent.includes("Windows");
+const hasElectron = !!(window.electronAPI?.speak);
 
 const fileName = "speak";
 
@@ -71,9 +73,7 @@ export const speak = async (text, options = {}) => {
     const finalOptions = { ...defaultOptions, ...options };
     const { voiceName, rate, pitch, volume } = finalOptions;
 
-    const isWindows = navigator.userAgent.includes("Windows");
-
-    if (window.speechSynthesis && !isWindows) {
+    if (window.speechSynthesis && (!isWindows || !hasElectron)) {
         await waitForVoices();
 
         const utterance = new SpeechSynthesisUtterance(text);
@@ -87,11 +87,9 @@ export const speak = async (text, options = {}) => {
         utterance.pitch = pitch;
         utterance.volume = volume;
 
-        // Siempre cancelar antes de hablar
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
-    } else if (window.electronAPI?.speak) {
-        // 🪟 Windows o backend IPC
+    } else if (hasElectron) {
         window.electronAPI.speak(text, { voiceName, rate, pitch, volume });
     } else {
         log("warn", "No hay TTS disponible (ni speechSynthesis ni electronAPI)");

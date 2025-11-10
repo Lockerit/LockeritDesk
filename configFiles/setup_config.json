@@ -49,8 +49,8 @@
         "timeInterval": 60
     },
     "voice": {
-        "enabled": false,
-        "timeInterval": 60,
+        "enabled": true,
+        "timeInterval": 30,
         "name": "Sabina",
         "rate": 1.5,
         "pitch": 2,
@@ -63,7 +63,7 @@
         }
     },
     "reserve": {
-        "enabled": true,
+        "enabled": false,
         "porcentWeekly": 10,
         "porcentFortnightly": 20,
         "porcentMonthly": 30

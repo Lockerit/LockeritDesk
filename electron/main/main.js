@@ -10,6 +10,7 @@ import say from 'say';
 import 'source-map-support/register.js';
 
 import { initLogger, getLogger } from '../logger/logger.js';
+import { ttsWin } from '../utils/tts.win.js';
 import { watchAuthKey } from '../watchers/authWatcher.js';
 import { watchEnvFile } from '../watchers/envWatcher.js';
 import { watchLoggerConfig } from '../watchers/loggerWatcher.js';
@@ -295,77 +296,53 @@ ipcMain.handle('get-app-version', () => app.getVersion());
 
 // -------------------- TTS --------------------
 ipcMain.handle('tts-speak', async (_event, text, options = {}) => {
-  const { voiceName, rate = 1 } = options;
   const platform = process.platform;
-  if (platform === 'linux') {
-    (async () => {
-      try {
-        const res = await fetch('http://localhost:5002/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, voice: 'tts_models/es/css10/vits' })
-        });
-        const arrayBuffer = await res.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const outputPath = path.join(app.getPath('temp'), 'tts-output.wav');
-        fs.writeFileSync(outputPath, buffer);
-        exec(`aplay "${outputPath}"`);
-      } catch (err) {
-        log.error(`[${fileName}] Error con Coqui TTS: ${err}`);
-      }
-    })();
-  } else {
-    try {
-      if (voiceName) global.cachedVoice = voiceName;
-      const finalVoice = global.cachedVoice || null;
-      say.speak(text, finalVoice, rate, (err) => {
-        if (err) {
-          log.warn(`[${fileName}] say.speak fallback por error: ${err?.message || err}`);
-          say.speak(text, undefined, rate);
-        }
-      });
-    } catch (err) {
-      log.error(`[${fileName}] Error en tts-speak: ${err}`);
-    }
+
+  if (platform === 'win32') {
+    ttsWin.speak(text, options);
+    return true;
   }
+
+  if (platform === 'linux') {
+    // aquí dejas tu lógica Coqui + aplay
+    return true;
+  }
+
+  // macOS u otros: say directo
+  const { voiceName, rate = 1 } = options;
+  say.speak(text, voiceName || undefined, rate);
+  return true;
 });
 
 ipcMain.handle('tts-stop', () => {
   const platform = process.platform;
-  if (platform === 'linux') {
-    execFile('pkill', ['aplay'], (error) => {
-      if (error) log.warn(`[${fileName}] No había procesos de aplay para detener: ${error}`);
-    });
+
+  if (platform === 'win32') {
+    ttsWin.stop({ flush: true });
+  } else if (platform === 'linux') {
+    // stop Coqui (pkill aplay, etc.)
   } else {
-    try { say.stop(); } catch (e) { log.warn(`[${fileName}] say.stop error: ${e?.message}`); }
+    try { say.stop(); } catch (error) { log.warn(`[${fileName}] say.stop error: ${error?.message}`) };
   }
 });
 
 ipcMain.handle('tts-get-voices', async () => {
   const platform = process.platform;
+
   if (platform === 'win32') {
-    return new Promise((resolve) => {
-      say.getInstalledVoices((err, voices) => {
-        if (err) resolve([]); else resolve(voices.map(v => ({ name: v, lang: v.includes('Spanish') ? 'es' : 'en' })));
-      });
-    });
+    return await ttsWin.getVoices();
   }
-  if (platform === 'darwin') {
-    return new Promise((resolve) => {
-      exec('say -v ?', (err, stdout) => {
-        if (err) resolve([]); else {
-          const voices = stdout
-            .split('\n')
-            .map((l) => l.trim().split(/\s+/)[0])
-            .filter(Boolean)
-            .map((name) => ({ name, lang: '' }));
-          resolve(voices);
-        }
-      });
-    });
+
+  if (platform === 'linux') {
+    return [{ name: 'Coqui-es-female', lang: 'es-ES' }];
   }
-  if (platform === 'linux') return [{ name: 'Coqui-es-female', lang: 'es-ES (female)' }];
-  return [];
+
+  return new Promise(resolve => {
+    say.getInstalledVoices((err, voices) => {
+      if (err || !voices) return resolve([]);
+      resolve(voices.map(v => ({ name: v, lang: '' })));
+    });
+  });
 });
 
 // -------------------- Ventana --------------------
@@ -392,6 +369,9 @@ app.whenReady().then(() => {
   // 1) inicializa logger y crea scoped logger
   initLogger();
   log = getLogger('main');
+  if (process.platform === 'win32') {
+    ttsWin.initWindowsTTS(log);
+  }
 
   // 2) diagnóstico de rutas
   const exeDir = path.dirname(app.getPath('exe'));
