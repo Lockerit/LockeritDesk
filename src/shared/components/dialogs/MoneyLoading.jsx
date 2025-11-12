@@ -3,176 +3,97 @@ import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
 
-const rotate = keyframes`
+const rotateDollar = keyframes`
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 `;
 
-export const MoneyLoading = () => {
-    const theme = useTheme();
-    const color = theme.palette.primary.main || '#009640';
+const dash = keyframes`
+  0%   { stroke-dasharray: 1px, 200px;  stroke-dashoffset: 0; }
+  50%  { stroke-dasharray: 120px, 200px; stroke-dashoffset: -60px; }
+  100% { stroke-dasharray: 120px, 200px; stroke-dashoffset: -180px; }
+`;
 
-    // tamaños responsivos sin usar scale
+export const MoneyLoading = ({
+    color,
+    speedMs = 1400,   // velocidad de animación
+    sizeBase = 150,    // tamaño base (px)
+}) => {
+    const theme = useTheme();
+    const ringColor = color || theme.palette.primary.main;
+
+    // Tamaños responsivos basados en sizeBase
     const iconSize = {
-        xs: 60,
-        sm: 80,
-        md: 120,
+        xs: sizeBase * 0.8,
+        sm: sizeBase,
+        md: sizeBase * 1.1,
     };
-    const arrowSize = {
-        xs: 8,
-        sm: 12,
-        md: 16,
+    const dollarFont = {
+        xs: Math.round(sizeBase * 0.43),
+        sm: Math.round(sizeBase * 0.45),
+        md: Math.round(sizeBase * 0.5),
     };
-    const strokeWidth = 4; // px
-    const offset = 4;      // px
+    const strokeWidth = {
+        xs: Math.max(4, Math.round(sizeBase * 0.035)),
+        sm: Math.max(5, Math.round(sizeBase * 0.04)),
+        md: Math.max(6, Math.round(sizeBase * 0.045)),
+    };
 
     return (
         <Box
             sx={{
+                position: 'relative',
+                width: { xs: iconSize.xs, sm: iconSize.sm, md: iconSize.md },
+                height: { xs: iconSize.xs, sm: iconSize.sm, md: iconSize.md },
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
             }}
         >
-            <Box
+            {/* Símbolo $ girando */}
+            <Typography
+                component="span"
                 sx={{
-                    position: 'relative',
-                    width: {
-                        xs: iconSize.xs,
-                        sm: iconSize.sm,
-                        md: iconSize.md,
+                    fontSize: {
+                        xs: dollarFont.xs,
+                        sm: dollarFont.sm,
+                        md: dollarFont.md,
                     },
-                    height: {
-                        xs: iconSize.xs,
-                        sm: iconSize.sm,
-                        md: iconSize.md,
-                    },
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    fontWeight: 800,
+                    color: ringColor,
+                    animation: `${rotateDollar} ${speedMs}ms linear infinite`,
+                    transformOrigin: '50% 50%',
                 }}
             >
-                {/* Símbolo dólar */}
-                <Typography
-                    component="span"
-                    sx={{
-                        fontSize: {
-                            xs: theme.spacing(7),
-                            sm: theme.spacing(8),
-                            md: theme.spacing(9),
-                        },
-                        fontWeight: 800,
-                        color,
-                    }}
-                >
-                    $
-                </Typography>
+                $
+            </Typography>
 
-                {/* Contenedor que rota */}
+            {/* Anillo tipo progress infinito */}
+            <Box
+                component="svg"
+                viewBox="0 0 100 100"
+                sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            >
                 <Box
+                    component="circle"
+                    cx={50}
+                    cy={50}
+                    r={35}
                     sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        animation: `${rotate} 2s linear infinite`,
+                        fill: 'none',
+                        stroke: ringColor,
+                        opacity: 0.95,
+                        strokeWidth: {
+                            xs: strokeWidth.xs,
+                            sm: strokeWidth.sm,
+                            md: strokeWidth.md,
+                        },
+                        strokeLinecap: 'round',
+                        strokeDasharray: '1px, 200px',
+                        strokeDashoffset: 0,
+                        animation: `${dash} ${speedMs}ms ease-in-out infinite`,
                     }}
-                >
-                    {/* Flecha superior derecha */}
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: offset,
-                            right: offset,
-                            width: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            height: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            borderTop: `${strokeWidth}px solid ${color}`,
-                            borderRight: `${strokeWidth}px solid ${color}`,
-                            borderRadius: 1,
-                            transform: 'translate(50%, -50%) rotate(90deg)',
-                            boxSizing: 'border-box',
-                        }}
-                    />
-
-                    {/* Flecha superior izquierda */}
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: offset,
-                            left: offset,
-                            width: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            height: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            borderTop: `${strokeWidth}px solid ${color}`,
-                            borderLeft: `${strokeWidth}px solid ${color}`,
-                            borderRadius: 1,
-                            transform: 'translate(-50%, -50%) rotate(90deg)',
-                            boxSizing: 'border-box',
-                        }}
-                    />
-
-                    {/* Flecha inferior izquierda */}
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            bottom: offset,
-                            left: offset,
-                            width: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            height: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            borderBottom: `${strokeWidth}px solid ${color}`,
-                            borderLeft: `${strokeWidth}px solid ${color}`,
-                            borderRadius: 1,
-                            transform: 'translate(-50%, 50%) rotate(90deg)',
-                            boxSizing: 'border-box',
-                        }}
-                    />
-
-                    {/* Flecha inferior derecha */}
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            bottom: offset,
-                            right: offset,
-                            width: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            height: {
-                                xs: arrowSize.xs,
-                                sm: arrowSize.sm,
-                                md: arrowSize.md,
-                            },
-                            borderBottom: `${strokeWidth}px solid ${color}`,
-                            borderRight: `${strokeWidth}px solid ${color}`,
-                            borderRadius: 1,
-                            transform: 'translate(50%, 50%) rotate(90deg)',
-                            boxSizing: 'border-box',
-                        }}
-                    />
-                </Box>
+                />
             </Box>
         </Box>
     );

@@ -2,7 +2,7 @@
 import { Box, Container } from '@mui/material';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { HashRouter } from 'react-router-dom';
 
 import { AppRoutes } from '@features/router/AppRouter.jsx';
@@ -14,7 +14,7 @@ import { useUser } from '@shared/context/UserContext.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useSchedulerReport } from '@shared/hooks/useScheduleReport.js';
 import { logger } from '@shared/utils/logger.js';
-import { setVoiceOptions, getVoices, preloadVoice } from '@shared/utils/speak.js';
+import { setVoiceOptions } from '@shared/utils/speak.js';
 
 dayjs.extend(utc);
 
@@ -62,13 +62,78 @@ export const App = () => {
     const isEnabledDaily = !!config?.report?.daily?.enabled && cfgUser === curUser;
     const isEnabledWeekly = !!config?.report?.weekly?.enabled && cfgUser === curUser;
     const isEnabledMonthly = !!config?.report?.monthly?.enabled && cfgUser === curUser;
+    // util opcional para timeout en promesas
+    const withTimeout = (p, ms = 3000) =>
+        Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
+
+    // normaliza nombre de voz (Windows / navegador)
+    const voiceNameOf = (v) => v?.Name || v?.name || v?.DisplayName || '';
+
+    const getBrowserVoices = () =>
+        new Promise((resolve) => {
+            const direct = window.speechSynthesis?.getVoices?.() || [];
+            if (direct.length) return resolve(direct);
+            // algunos navegadores cargan asíncrono
+            const on = () => {
+                const voices = window.speechSynthesis.getVoices() || [];
+                window.speechSynthesis.removeEventListener('voiceschanged', on);
+                resolve(voices);
+            };
+            window.speechSynthesis?.addEventListener?.('voiceschanged', on);
+            // fallback por si nunca dispara
+            setTimeout(() => resolve(window.speechSynthesis?.getVoices?.() || []), 1500);
+        });
+
+    /** loadVoices con useCallback */
+    const loadVoices = useCallback(
+        async (voiceName) => {
+            const useDesktopVoice = !!config?.voice?.isVoiceDesktop;
+            try {
+                const voices = useDesktopVoice
+                    ? await withTimeout(window.electronAPI?.getVoices?.() ?? Promise.resolve([]), 4000)
+                    : await withTimeout(getBrowserVoices(), 4000);
+
+                log.info(`Voz solicitada: ${voiceName || '(predeterminada)'}`);
+                log.info(
+                    `Voces disponibles: { count: ${voices.length}, voices: ${voices
+                        .map(voiceNameOf)
+                        .join(', ')} }`
+                );
+
+                const query = (voiceName || '').toLowerCase();
+                const found = voices.find((v) => voiceNameOf(v).toLowerCase().includes(query));
+
+                if (found) {
+                    const resolvedName = voiceNameOf(found);
+                    log.info(`Voz encontrada: { name: ${resolvedName} }`);
+                    setVoiceGet({
+                        ...found,
+                        name: resolvedName,
+                        isDesktop: useDesktopVoice,
+                    });
+                } else {
+                    log.warn(`Voz no encontrada "${voiceName}", usando predeterminada`);
+                    setVoiceGet(null);
+                }
+            } catch (e) {
+                log.error(`Error cargando voces: ${e?.message || e}`);
+                setVoiceGet(null);
+            }
+        },
+        [config] // deps reales; no pongas log ni setVoiceGet para no re-crear innecesariamente
+    );
 
     // 1) Cargar lista de voces según config
     useEffect(() => {
-        if (!config) return;
-        preloadVoice();
-        loadVoices(config?.voice?.name || 'Sabina');
-    }, [config]);
+        const requested = config?.voice?.name || '';
+        loadVoices(requested);
+
+        if (!config?.voice?.isVoiceDesktop && 'speechSynthesis' in window) {
+            const handler = () => loadVoices(requested);
+            window.speechSynthesis.addEventListener('voiceschanged', handler);
+            return () => window.speechSynthesis.removeEventListener('voiceschanged', handler);
+        }
+    }, [config, loadVoices]);
 
     // 2) Aplicar opciones cuando haya voz y config (log estructurado)
     useEffect(() => {
@@ -161,37 +226,6 @@ export const App = () => {
         timeInterval: config?.report?.timeInterval || 60,
         task: (start, end) => executeReportTask(start, end, 'monthly'),
     });
-
-    const loadVoices = async (voiceName) => {
-        const useDesktopVoice = !!config?.voice?.isVoiceDesktop;
-
-        const voices = useDesktopVoice
-            ? await window.electronAPI.getVoices() // voces de Windows (tts.win.js)
-            : await getVoices();                   // voces del navegador (speechSynthesis)
-
-        log.info(`Voz cargada: { requested: ${voiceName} }`);
-        log.info(`Voces disponibles: { count: ${voices.length}, voices: ${voices.map(v => v.name || v.Name || v.DisplayName).join(', ')} }`);
-
-        const found = voices.find(v => {
-            const n = v.Name || v.name || v.DisplayName;
-            return n && n.toLowerCase().includes(voiceName.toLowerCase());
-        });
-
-        if (found) {
-            const resolvedName = found.Name || found.name || found.DisplayName;
-            log.info(`Voz encontrada: { name: ${resolvedName} }`);
-
-            // normalizamos y marcamos si viene de escritorio
-            setVoiceGet({
-                ...found,
-                name: resolvedName,
-                isDesktop: useDesktopVoice,
-            });
-        } else {
-            log.warn(`Voz no encontrada {${voiceName}}, se usará la predeterminada`);
-            setVoiceGet(null);
-        }
-    };
 
     return (
         <HashRouter>
