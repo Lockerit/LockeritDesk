@@ -25,6 +25,7 @@ import {
   forwardRef,
   useEffect,
   useCallback,
+  useMemo
 } from 'react';
 
 import { paymentService } from '@services/apis/assignLocker.js';
@@ -90,8 +91,8 @@ export const KeypadNumeric = ({
   const [secondsLeft, setSecondsLeft] = useState(timeout);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState();
-  const [timeoutInsert, setTimeoutInsert] = useState(); 
-  const [timeoutInsertHttp, setTimeoutInsertHttp] = useState(); 
+  const [timeoutInsert, setTimeoutInsert] = useState();
+  const [timeoutInsertHttp, setTimeoutInsertHttp] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -102,6 +103,7 @@ export const KeypadNumeric = ({
   const [insertMoneyOpen, setInsertMoneyOpen] = useState();
   const [showLockerOpen, setShowLockerOpen] = useState();
   const [showErrorAPIOpen, setShowErrorAPIOpen] = useState();
+  const [insertMoneyKey, setInsertMoneyKey] = useState(0);
 
   const phoneRef = useRef(null);
   const passRef = useRef(null);
@@ -113,6 +115,7 @@ export const KeypadNumeric = ({
   const operationRet = operation === 'Retirar' || operation === 'Reservado';
   const isConfigReady = !!config && Object.keys(config).length > 0;
   const intervalRef = useRef(null);
+  const cancellingRef = useRef(false);
 
   const clearInputs = useCallback(() => {
     setPhone('');
@@ -147,6 +150,7 @@ export const KeypadNumeric = ({
   }, [clearInputs, onClose]);
 
   const cancelInsertMoney = useCallback(() => {
+
     try {
       cleanupRef.current && cleanupRef.current();
     } catch {
@@ -154,10 +158,23 @@ export const KeypadNumeric = ({
     }
     cancelObservable.setCancel(true);
     setAmountPay(0);
-    closeWebSocket();
-    setInsertMoneyOpen(false);
-    log.info('InsertMoney cancelado');
+    if (cancellingRef.current) return;
+    cancellingRef.current = true;
+    try {
+      log.info('InsertMoney cancelado');
+      setInsertMoneyOpen(false);
+      closeWebSocket();
+    } finally {
+      // pequeña espera para “des-enchocar” efectos que vengan en cola
+      setTimeout(() => { cancellingRef.current = false; }, 50);
+    }
+
   }, []);
+
+  const safeTimeoutInsert = useMemo(() => {
+    const n = Number(timeoutInsert);
+    return Number.isFinite(n) && n > 0 ? n : 600; // fallback sólido
+  }, [timeoutInsert]);
 
   useEffect(() => {
     if (!open) {
@@ -256,9 +273,11 @@ export const KeypadNumeric = ({
     }
 
     const tmo = config?.paramsHtml?.modalTimeouts;
-    setTimeoutInsert(tmo?.timeoutInsertMoney);
-    setTimeoutInsertHttp(tmo?.timeoutInsertMoney * 1000 * 3);
-    setTimeoutShowMessage(tmo?.timeoutShowMessage);
+    const ti = Number(tmo?.timeoutInsertMoney);
+    const ts = Number(tmo?.timeoutShowMessage);
+    setTimeoutInsert(Number.isFinite(ti) && ti > 0 ? ti : 600);
+    setTimeoutInsertHttp((Number.isFinite(ti) && ti > 0 ? ti : 600) * 1000 * 3);
+    setTimeoutShowMessage(Number.isFinite(ts) && ts > 0 ? ts : 10);
 
     log.info(
       `Config cargada | amountService=${rawAmount} | timeoutInsert=${tmo?.timeoutInsertMoney} | timeoutShowMessage=${tmo?.timeoutShowMessage}`
@@ -577,6 +596,8 @@ export const KeypadNumeric = ({
     setConfirmDialogOpen(false);
 
     const payload = { phone, pin: password, openBy: 'user' };
+
+    setInsertMoneyKey(k => k + 1);
     setInsertMoneyOpen(true);
     log.info(
       `Asignación solicitada | phone=${maskPhone(phone)}`
@@ -651,8 +672,9 @@ export const KeypadNumeric = ({
 
   const confirmShowErrorAPI = () => {
     setShowErrorAPIOpen(false);
-    cancelInsertMoney();
+    // cancelInsertMoney();
     setAmountPay(0);
+    setMessageErrorAPI('');
     closeWebSocket();
     log.info('ShowErrorAPI confirmado');
   };
@@ -1012,12 +1034,13 @@ export const KeypadNumeric = ({
       />
 
       <InsertMoney
+        key={insertMoneyKey}
         open={insertMoneyOpen}
         onCancel={cancelInsertMoney}
         amountService={amountService}
         amountPay={formatCurrency(amountPay)}
         phone={formatNumberPhone(phone)}
-        timeout={timeoutInsert}
+        timeout={safeTimeoutInsert}
         hideBackdrop
       />
 

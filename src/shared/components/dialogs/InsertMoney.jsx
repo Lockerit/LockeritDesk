@@ -56,6 +56,14 @@ export const InsertMoney = ({
     }, [amountPay]);
 
     useEffect(() => {
+        if (open) {
+            const t = Number(timeout);
+            const safe = Number.isFinite(t) && t > 0 ? t : 120;
+            setSecondsLeft(safe);
+        }
+    }, [open, timeout]);
+
+    useEffect(() => {
         log.info(`Montaje | timeout=${timeout} | phone=${phone ?? ''}`);
         return () => {
             log.debug('Desmontaje');
@@ -84,23 +92,24 @@ export const InsertMoney = ({
     // Reiniciar contador cuando abre o cambia timeout
     useEffect(() => {
         if (open) {
-            setSecondsLeft(timeout);
-            log.debug(`Reinicio contador | secondsLeft=${timeout}`);
+            const t = Number(timeout);
+            const safe = Number.isFinite(t) && t > 0 ? t : 600;
+            setSecondsLeft(safe);
+            log.debug(`Reinicio contador | secondsLeft=${safe}`);
         }
     }, [open, timeout]);
 
     // Intervalo de cuenta regresiva
     useEffect(() => {
         if (!open) return;
-
-        log.debug('Inicio intervalo de cuenta regresiva');
         const id = setInterval(() => {
-            setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0));
+            setSecondsLeft(prev => {
+                const next = prev - 1;
+                return next;
+            });
         }, 1000);
-
         return () => {
             clearInterval(id);
-            log.debug('Limpieza intervalo de cuenta regresiva');
         };
     }, [open]);
 
@@ -234,10 +243,10 @@ export const InsertMoney = ({
                     }}
                 >
                     <MoneyLoading />
-                    <Progressbar 
-                    msg="Valor ingresado:" 
-                    amountPay={amountPay} 
-                    amountService={amountService}
+                    <Progressbar
+                        msg="Valor ingresado:"
+                        amountPay={amountPay}
+                        amountService={amountService}
                     />
                 </Box>
             </DialogContent>

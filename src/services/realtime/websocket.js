@@ -25,8 +25,8 @@ const BASE_RECONNECT_MS = 1000;
 const MAX_RECONNECT_MS = 8000;
 
 // Heartbeat activado
-const HEARTBEAT_INTERVAL_MS = 15000;
-const HEARTBEAT_TIMEOUT_MS = 5000;
+const HEARTBEAT_INTERVAL_MS = 30000;
+// const HEARTBEAT_TIMEOUT_MS = 0;
 let heartbeatTimer = null;
 let heartbeatTimeout = null;
 
@@ -58,10 +58,8 @@ function startHeartbeat() {
             if (!socket || socket.readyState !== WebSocket.OPEN) return;
             log.debug('heartbeat.ping');
             socket.send(JSON.stringify({ type: 'ping', ts: Date.now() }));
-            heartbeatTimeout = setTimeout(() => {
-                log.warn('heartbeat.timeout');
-                try { socket.close(4000, 'heartbeat timeout'); } catch(e) { log.warn('heartbeat.close.error', { msg: e?.message }); }
-            }, HEARTBEAT_TIMEOUT_MS);
+            // Sin timeout que cierre el socket: dejamos la conexión viva.
+            // Si quieres un aviso, solo log.warn cuando falte respuesta varias veces.
         } catch (e) {
             log.warn('heartbeat.send.error', { msg: e?.message });
         }
@@ -89,7 +87,7 @@ export const connectWebSocket = () => {
     connectingPromise = new Promise((resolve, reject) => {
         try {
             if (socket && socket.readyState !== WebSocket.CLOSED) {
-                try { socket.close(4001, 'reconnect:start'); } catch(e) { log.warn('connect.close.error', { msg: e?.message }); }
+                try { socket.close(4001, 'reconnect:start'); } catch (e) { log.warn('connect.close.error', { msg: e?.message }); }
             }
 
             socket = new WebSocket(url);
@@ -148,7 +146,7 @@ export const connectWebSocket = () => {
                     });
                     log.debug('message', { data });
                 } catch (e) {
-                    log.info('message.raw', { raw: e.message});
+                    log.info('message.raw', { raw: e.message });
                     log.warn('message.parse.error', { raw: event.data });
                 }
             });
