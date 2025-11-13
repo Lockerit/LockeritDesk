@@ -1,7 +1,7 @@
 // services/realtime/websocket.js
 import { getAuth } from '@shared/hooks/authStore.js';
 import { getEnv } from '@shared/hooks/envStore.js';
-import { logger } from '@shared/utils/logger.js'; // opcional si ya lo tienes
+import { logger } from '@shared/utils/logger.js';
 
 const log = logger?.scope?.('websocket') ?? {
     info: (...args) => console.info('[ws]', ...args),
@@ -9,6 +9,7 @@ const log = logger?.scope?.('websocket') ?? {
     error: (...args) => console.error('[ws]', ...args),
     debug: () => { },
 };
+
 let socket = null;
 let connectingPromise = null;
 
@@ -20,16 +21,15 @@ const messageListeners = new Set();
 
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
-const BASE_RECONNECT_MS = 1000;   // base para backoff
-const MAX_RECONNECT_MS = 8000;    // límite superior
+const BASE_RECONNECT_MS = 1000;
+const MAX_RECONNECT_MS = 8000;
 
-// Heartbeat (ping) — opcional
+// Heartbeat activado
 const HEARTBEAT_INTERVAL_MS = 15000;
 const HEARTBEAT_TIMEOUT_MS = 5000;
 let heartbeatTimer = null;
 let heartbeatTimeout = null;
 
-// ===== Helpers =====
 function buildWsURL() {
     const env = getEnv() || {};
     const baseUrl = env.wsBaseUrl || 'ws://localhost';
@@ -41,7 +41,6 @@ function buildWsURL() {
 }
 
 function backoffDelayMs(attempt) {
-    // exponencial con tope + jitter
     const expo = Math.min(MAX_RECONNECT_MS, BASE_RECONNECT_MS * (2 ** (attempt - 1)));
     const jitter = Math.floor(Math.random() * 250);
     return expo + jitter;
@@ -54,16 +53,14 @@ function clearHeartbeat() {
 
 function startHeartbeat() {
     clearHeartbeat();
-    // envia "ping" y espera "pong" (o cualquier mensaje) para confirmar vida
     heartbeatTimer = setInterval(() => {
         try {
             if (!socket || socket.readyState !== WebSocket.OPEN) return;
             log.debug('heartbeat.ping');
             socket.send(JSON.stringify({ type: 'ping', ts: Date.now() }));
-            // si no llega nada en X ms, cerramos para forzar reconexión
             heartbeatTimeout = setTimeout(() => {
                 log.warn('heartbeat.timeout');
-                socket.close(4000, 'heartbeat timeout');
+                try { socket.close(4000, 'heartbeat timeout'); } catch(e) { log.warn('heartbeat.close.error', { msg: e?.message }); }
             }, HEARTBEAT_TIMEOUT_MS);
         } catch (e) {
             log.warn('heartbeat.send.error', { msg: e?.message });
@@ -71,9 +68,7 @@ function startHeartbeat() {
     }, HEARTBEAT_INTERVAL_MS);
 }
 
-// ===== Core =====
 export const connectWebSocket = () => {
-    // idempotencia: si ya está OPEN devolvemos resuelta; si CONNECTING devuelve la misma promesa
     if (socket && socket.readyState === WebSocket.OPEN) {
         isConnected = true;
         return Promise.resolve();
@@ -83,62 +78,21 @@ export const connectWebSocket = () => {
     const url = buildWsURL();
     const token = getAuth()?.key;
     if (!token) {
-        const msg = 'Token no disponible';
         log.error('auth.missing');
-        return Promise.reject(new Error(`[WebSocket] ${msg}`));
+        return Promise.reject(new Error('[WebSocket] Token no disponible'));
     }
 
-    shouldReconnect = true; // conectar implica permitir reconexión
+    shouldReconnect = true;
     reconnectAttempts = 0;
 
     log.info('connect.start', { url });
     connectingPromise = new Promise((resolve, reject) => {
         try {
-            // cierra socket previo si quedó en estado colgado
             if (socket && socket.readyState !== WebSocket.CLOSED) {
-                socket.close(4001, 'reconnect:start');
+                try { socket.close(4001, 'reconnect:start'); } catch(e) { log.warn('connect.close.error', { msg: e?.message }); }
             }
 
             socket = new WebSocket(url);
-
-            const handleOpen = () => {
-                isConnected = true;
-                wasEverOpen = true;
-                reconnectAttempts = 0;
-                log.info('connect.open');
-                startHeartbeat();
-                cleanupConnHandlers(); // quita handlers de conexión
-                resolve();
-            };
-
-            const handleError = (err) => {
-                log.error('connect.error', { msg: err?.message });
-                // dejamos que close maneje reconexión, pero rechazamos la 1ª conexión
-            };
-
-            const handleClose = (evt) => {
-                isConnected = false;
-                clearHeartbeat();
-                log.warn('connect.close', { code: evt?.code, reason: evt?.reason });
-
-                cleanupConnHandlers();
-
-                // si estamos en 1ª conexión, rechazamos
-                if (connectingPromise) {
-                    const p = connectingPromise; // snapshot
-                    connectingPromise = null;
-                    if (!wasEverOpen) {
-                        // 1ª vez y cerró sin abrir: rechazamos
-                        reject(new Error('[WebSocket] no se pudo abrir conexión'));
-                        if (shouldReconnect) scheduleReconnect();
-                        return;
-                    }
-                    // si ya abrió alguna vez, resolvemos (para no colgar await) y dejamos reconexión
-                    p.then(() => { }).catch(() => { });
-                }
-
-                if (shouldReconnect && wasEverOpen) scheduleReconnect();
-            };
 
             const cleanupConnHandlers = () => {
                 socket?.removeEventListener('open', handleOpen);
@@ -147,22 +101,54 @@ export const connectWebSocket = () => {
                 connectingPromise = null;
             };
 
+            const handleOpen = () => {
+                isConnected = true;
+                wasEverOpen = true;
+                reconnectAttempts = 0;
+                log.info('connect.open');
+                startHeartbeat();
+                cleanupConnHandlers();
+                resolve();
+            };
+
+            const handleError = (err) => {
+                log.error('connect.error', { msg: err?.message });
+            };
+
+            const handleClose = (evt) => {
+                isConnected = false;
+                clearHeartbeat();
+                log.warn('connect.close', { code: evt?.code, reason: evt?.reason });
+                cleanupConnHandlers();
+
+                if (connectingPromise) {
+                    const p = connectingPromise;
+                    connectingPromise = null;
+                    if (!wasEverOpen) {
+                        reject(new Error('[WebSocket] no se pudo abrir conexión'));
+                        if (shouldReconnect) scheduleReconnect();
+                        return;
+                    }
+                    p.then(() => { }).catch(() => { });
+                }
+
+                if (shouldReconnect && wasEverOpen) scheduleReconnect();
+            };
+
             socket.addEventListener('open', handleOpen);
             socket.addEventListener('error', handleError);
             socket.addEventListener('close', handleClose);
 
-            // canal principal de mensajes
             socket.addEventListener('message', (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    // Cualquier mensaje “desarma” el heartbeat timeout
                     if (heartbeatTimeout) { clearTimeout(heartbeatTimeout); heartbeatTimeout = null; }
                     messageListeners.forEach((cb) => {
                         try { cb(data); } catch (e) { log.warn('listener.error', { msg: e?.message }); }
                     });
                     log.debug('message', { data });
                 } catch (e) {
-                    log.debug('error', { eventData: event.data, msg: e?.message });
+                    log.info('message.raw', { raw: e.message});
                     log.warn('message.parse.error', { raw: event.data });
                 }
             });
@@ -198,7 +184,6 @@ export const closeWebSocket = () => {
     clearHeartbeat();
     reconnectAttempts = 0;
 
-    // no borres listeners del cliente aquí; solo el socket y sus handlers
     if (socket) {
         try {
             const state = socket.readyState;
@@ -234,7 +219,7 @@ export const onMessage = (callback) => {
     if (typeof callback === 'function') {
         messageListeners.add(callback);
         log.debug('listener.add', { total: messageListeners.size });
-        return () => removeOnMessage(callback); // devuelve unsubscribe
+        return () => removeOnMessage(callback);
     }
     return () => { };
 };
@@ -246,7 +231,6 @@ export const removeOnMessage = (callback) => {
 };
 
 export const waitWebSocketReady = (timeout = 5000) => {
-    // resuelve si ya está OPEN
     if (socket && socket.readyState === WebSocket.OPEN) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
@@ -275,7 +259,6 @@ export const waitWebSocketReady = (timeout = 5000) => {
     });
 };
 
-// Utilidad: vaciar todos los listeners registrados por el cliente (no cierra el socket)
 export const clearMessageListeners = () => {
     messageListeners.clear();
     log.debug('listener.clear');

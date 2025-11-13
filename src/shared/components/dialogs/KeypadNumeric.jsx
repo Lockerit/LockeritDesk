@@ -90,7 +90,8 @@ export const KeypadNumeric = ({
   const [secondsLeft, setSecondsLeft] = useState(timeout);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState();
-  const [timeoutInsert, setTimeoutInsert] = useState();
+  const [timeoutInsert, setTimeoutInsert] = useState(); 
+  const [timeoutInsertHttp, setTimeoutInsertHttp] = useState(); 
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -256,6 +257,7 @@ export const KeypadNumeric = ({
 
     const tmo = config?.paramsHtml?.modalTimeouts;
     setTimeoutInsert(tmo?.timeoutInsertMoney);
+    setTimeoutInsertHttp(tmo?.timeoutInsertMoney * 1000 * 3);
     setTimeoutShowMessage(tmo?.timeoutShowMessage);
 
     log.info(
@@ -584,7 +586,7 @@ export const KeypadNumeric = ({
       setLoading(true);
       const result = await paymentService(
         payload,
-        timeoutInsert * 1000 * 3,
+        timeoutInsertHttp,
         handleTotalUpdate,
         handleLoadingChange
       );
