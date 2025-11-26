@@ -269,7 +269,12 @@ export const Ppal = () => {
                 <Box
                     sx={{
                         flexGrow: 1,
-                        width: { xs: '80%', sm: '80%', md: '60%', lg: '50%' },
+                        width: { 
+                            xs: config?.paramsHtml?.isVertical ? '80%' : '80%', 
+                            sm: config?.paramsHtml?.isVertical ? '80%' : '80%',
+                            md: config?.paramsHtml?.isVertical ? '70%' : '60%', 
+                            lg: config?.paramsHtml?.isVertical ? '60%' : '50%',
+                        },
                         display: {
                             xs: 'flex',
                             sm: 'grid',       // grid desde sm (>=600)

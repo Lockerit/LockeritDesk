@@ -23,6 +23,7 @@ import {
     useCallback,
 } from 'react';
 
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatTime } from '@shared/utils/utils.js';
 
@@ -57,6 +58,11 @@ export const ShowErrorAPI = ({
     const theme = useTheme();
 
     const msgPreview = useMemo(() => trimForLog(msg), [msg]);
+    const config = useElectronConfig();
+
+    useEffect(() => {
+        if (!config) return;
+    }, [config]);
 
     // Apertura/cambio de timeout
     useEffect(() => {
@@ -108,10 +114,10 @@ export const ShowErrorAPI = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: '50%',
-                        sm: '50%',
-                        md: '30%',
-                        lg: '30%',
+                        xs: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        sm: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        md: config?.paramsHtml.isVertical ? '50%' : '30%',
+                        lg: config?.paramsHtml.isVertical ? '50%' : '30%',
                     },
                     maxWidth: 'none',
                     height: 'auto',

@@ -20,6 +20,7 @@ import {
     useCallback,
 } from 'react';
 
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatTime } from '@shared/utils/utils.js';
 
@@ -56,6 +57,11 @@ export const ShowLocker = ({
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const msgPreview = useMemo(() => trimMsg(msg), [msg]);
     const theme = useTheme();
+    const config = useElectronConfig();
+
+    useEffect(() => {
+        if (!config) return;
+    }, [config]);
 
     // Abre / cambia timeout
     useEffect(() => {
@@ -110,12 +116,13 @@ export const ShowLocker = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: '50%',
-                        sm: '50%',
-                        md: '30%',
-                        lg: '30%',
+                        xs: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        sm: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        md: config?.paramsHtml.isVertical ? '40%' : '30%',
+                        lg: config?.paramsHtml.isVertical ? '40%' : '30%',
                     },
                     maxWidth: 'none',
+                    minHeight: '50%',
                     height: 'auto',
                     borderRadius: theme.spacing(3),
                     p: theme.spacing(3),
@@ -177,9 +184,9 @@ export const ShowLocker = ({
                     elevation={24}
                     sx={{
                         width: {
-                            xs: '50%',
-                            sm: '50%',
-                            md: '50%',
+                            xs: '70%',
+                            sm: '70%',
+                            md: '70%',
                         },
                         minHeight: {
                             xs: theme.spacing(18),

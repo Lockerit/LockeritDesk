@@ -791,10 +791,10 @@ export const KeypadNumeric = ({
         PaperProps={{
           sx: {
             width: {
-              xs: '90%',
-              sm: '90%',
-              md: '60%',
-              lg: '60%',
+              xs: config?.paramsHtml.isVertical ? '80%' : '50%',
+              sm: config?.paramsHtml.isVertical ? '80%' : '50%',
+              md: config?.paramsHtml.isVertical ? '60%' : '40%',
+              lg: config?.paramsHtml.isVertical ? '60%' : '40%',
             },
             maxWidth: 'none',
             height: '90%',

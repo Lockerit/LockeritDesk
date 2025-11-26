@@ -15,6 +15,7 @@
     "paramsHtml": {
         "lenMaxInputPass": 4,
         "lenMinInputPass": 4,
+        "isVertical": true,
         "currency": {
             "coinBoxRequiredAmount": 1500,
             "currency": "COP",
@@ -24,7 +25,7 @@
         "modalTimeouts": {
             "timeoutKeypad": 300,
             "timeoutInsertMoney": 120,
-            "timeoutShowMessage": 15
+            "timeoutShowMessage": 120
         }
     },
     "report": {
@@ -64,7 +65,7 @@
         }
     },
     "reserve": {
-        "enabled": false,
+        "enabled": true,
         "porcentWeekly": 10,
         "porcentFortnightly": 20,
         "porcentMonthly": 30

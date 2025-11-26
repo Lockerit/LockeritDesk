@@ -20,6 +20,7 @@ import {
 } from 'react';
 
 import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
+import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatTime } from '@shared/utils/utils.js';
 
@@ -42,6 +43,7 @@ export const InsertMoney = ({
 }) => {
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const theme = useTheme();
+    const config = useElectronConfig();
 
     const lastLogged = useRef({
         open: undefined,
@@ -54,6 +56,10 @@ export const InsertMoney = ({
         const n = Number(String(amountPay ?? '').replace(/[^0-9.-]+/g, ''));
         return Number.isFinite(n) ? n : 0;
     }, [amountPay]);
+
+    useEffect(() => {
+        if (!config) return;
+    }, [config]);
 
     useEffect(() => {
         if (open) {
@@ -137,10 +143,10 @@ export const InsertMoney = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: '50%',
-                        sm: '50%',
-                        md: '30%',
-                        lg: '30%',
+                        xs: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        sm: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        md: config?.paramsHtml.isVertical ? '50%' : '30%',
+                        lg: config?.paramsHtml.isVertical ? '50%' : '30%',
                     },
                     maxWidth: 'none',
                     height: 'auto',

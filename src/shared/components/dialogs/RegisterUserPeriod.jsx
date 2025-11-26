@@ -447,10 +447,10 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         PaperProps={{
           sx: {
             width: {
-              xs: '90%',
-              sm: '90%',
-              md: '70%',
-              lg: '60%',
+              xs: config?.paramsHtml.isVertical ? '80%' : '70%',
+              sm: config?.paramsHtml.isVertical ? '80%' : '70%',
+              md: config?.paramsHtml.isVertical ? '70%' : '60%',
+              lg: config?.paramsHtml.isVertical ? '60%' : '50%',
             },
             maxWidth: 'none',
             height: '100%',
