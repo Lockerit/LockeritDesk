@@ -142,6 +142,7 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         const st = await window?.electronAPI?.setFullScreen(!!next);
         log.info(`Pantalla completa → ${!!st.fullscreen}`);
         setFullScreen(!!st.fullscreen); // confirma estado real
+        setAnchorEl(null);
     };
 
     return (
