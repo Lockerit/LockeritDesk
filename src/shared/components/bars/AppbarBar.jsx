@@ -33,6 +33,7 @@ const log = logger.scope(fileName);
 export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) => {
     const { userInit, setUserInit } = useUser();
     const [showData, setShowData] = useState(false);
+    const [showOptFullScreen, setShowOptFullScreen] = useState(false);
     const [avatarSelect, setAvatarSelect] = useState(avatarImg);
     const [anchorEl, setAnchorEl] = useState(null);
     const [fullScreen, setFullScreen] = useState(false);
@@ -69,7 +70,14 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         const isAuth = Boolean(
             userInit?.authenticatedOpera || userInit?.authenticatedAdmin
         );
+
         setShowData(isAuth);
+
+        const isAuthOpera = Boolean(
+            userInit?.authenticatedOpera
+        );
+
+        setShowOptFullScreen(isAuthOpera);
 
         if (isAuth) {
             const avatarPath = config?.login?.avatarPath ?? '';
@@ -244,12 +252,13 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
                     </ListItemIcon>
                     Cerrar aplicación
                 </MenuItem>
-                <MenuItem onClick={applyFullScreen.bind(null, !fullScreen)}>
+                {!showOptFullScreen && (<MenuItem onClick={applyFullScreen.bind(null, !fullScreen)}>
                     <ListItemIcon>
                         {fullScreen ? <HighlightOff /> : <CheckCircleOutline />}
                     </ListItemIcon>
                     {fullScreen ? 'Pantalla completa (No)' : 'Pantalla completa (Sí)'}
                 </MenuItem>
+                )}
             </Menu>
         </AppBar>
     );

@@ -261,6 +261,7 @@ export const Ppal = () => {
                                 maxHeight: theme.spacing(18),
                                 objectFit: 'contain',
                             }}
+                            onClick={fetchDataStatusLocker}
                         />
                     )}
                 </Box>
@@ -269,10 +270,10 @@ export const Ppal = () => {
                 <Box
                     sx={{
                         flexGrow: 1,
-                        width: { 
-                            xs: config?.paramsHtml?.isVertical ? '80%' : '80%', 
+                        width: {
+                            xs: config?.paramsHtml?.isVertical ? '80%' : '80%',
                             sm: config?.paramsHtml?.isVertical ? '80%' : '80%',
-                            md: config?.paramsHtml?.isVertical ? '70%' : '60%', 
+                            md: config?.paramsHtml?.isVertical ? '70%' : '60%',
                             lg: config?.paramsHtml?.isVertical ? '60%' : '50%',
                         },
                         display: {
