@@ -15,7 +15,7 @@
     "paramsHtml": {
         "lenMaxInputPass": 4,
         "lenMinInputPass": 4,
-        "isVertical": true,
+        "isVertical": false,
         "currency": {
             "coinBoxRequiredAmount": 1500,
             "currency": "COP",
@@ -50,8 +50,8 @@
         "timeInterval": 60
     },
     "voice": {
-        "enabled": true,
-        "isVoiceDesktop": false,
+        "enabled": false,
+        "isVoiceDesktop": true,
         "name": "Raul",
         "timeInterval": 30,
         "rate": 1.5,
