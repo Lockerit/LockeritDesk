@@ -88,12 +88,14 @@ export const KeypadNumeric = ({
   const [msgConfPass, setMsgConfPass] = useState('');
   const [amountService, setAmountService] = useState('');
   const [messageErrorAPI, setMessageErrorAPI] = useState('');
+  const [messageConfirm, setMessageConfirm] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(timeout);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState();
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutInsertHttp, setTimeoutInsertHttp] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+  const [phoneConfirm, setPhoneConfirm] = useState(true);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -505,78 +507,50 @@ export const KeypadNumeric = ({
 
   const accept = async () => {
     setLoading(false);
-    if (!operationRet) {
-      setMessageLoading('Asignando Casilllero...');
+
+    if (operation === 'Reservado') {
+      confirmRetirarReservadoLocker(false);
+    }
+    else {
+      if (operation === 'Guardar') {
+        setPhoneConfirm(true);
+        setMessageConfirm([
+          {
+            text: '¡Vas a Guardar!',
+            sx: { fontWeight: 'bold' },
+          },
+          config?.sendSMS
+            ? {
+              text: 'Recibirás un mensaje de texto con los datos ingresados.',
+            }
+            : null,
+          {
+            text: '¿El número celular es correcto?',
+          },
+        ].filter(Boolean)); // elimina los null
+      } else if (operation === 'Retirar') {
+        setPhoneConfirm(false);
+        setMessageConfirm([
+          {
+            text: '¡AVISO IMPORTANTE!',
+            sx: { fontWeight: 'bold', color: 'error.main' },
+          },
+          {
+            text: 'El casillero es de un solo uso: una vez que se retira, no podrás volver a abrirlo.',
+          },
+          {
+            text: `Asegúrate de sacar tus pertenencias.`,
+            sx: { fontWeight: 'bold' },
+          },
+          {
+            text: 'El casillero se liberará para ser asignado al próximo usuario.',
+          }
+        ]);
+      }
       setConfirmDialogOpen(true);
       log.info(
         `ConfirmDialog abierto | phone=${maskPhone(phone)}`
       );
-    } else {
-      setMessageLoading('Buscando Casilllero...');
-      setSecondsLeft(timeout);
-      const payload = { phone, pin: password, openBy: 'user' };
-
-      try {
-        setLoading(true);
-        log.info(
-          `Apertura ${operation} solicitada | phone=${maskPhone(phone)}`
-        );
-
-        let result = null;
-        let message = '';
-
-        if (operation === 'Retirar') {
-          result = await OpenSessionLocker(payload);
-          message = config?.voice?.message?.openSessionLocker || '';
-        } else if (operation === 'Reservado') {
-          result = await OpenReserveLocker(payload);
-          message = config?.voice?.message?.openReserveLocker || '';
-        }
-
-        if (result?.success) {
-          const lockerCode =
-            result?.data?.lockerCode ||
-            result?.http?.data?.lockerCode ||
-            '';
-          if (lockerCode) {
-            if (config?.voice?.enabled) {
-              speak(
-                message.replace('{{lockerCode}}', lockerCode) || ''
-              );
-            }
-            setLocker(lockerCode);
-            setShowLockerOpen(true);
-            log.info(
-              `Apertura exitosa | locker=${lockerCode}`
-            );
-          } else {
-            setMessageErrorAPI(
-              'No se recibió código de casillero'
-            );
-            setShowErrorAPIOpen(true);
-            log.warn('Apertura sin lockerCode');
-          }
-        } else {
-          const m =
-            result?.data?.message ||
-            'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!';
-          setMessageErrorAPI(
-            result?.status === 500
-              ? 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!'
-              : m
-          );
-          setShowErrorAPIOpen(true);
-          log.warn(
-            `Apertura fallida | status=${result?.status} | msg=${m}`
-          );
-        }
-      } catch (error) {
-        setMessageErrorAPI(String(error));
-        setShowErrorAPIOpen(true);
-        log.error(`Excepción en apertura: ${String(error)}`);
-      } finally {
-        setLoading(false);
-      }
     }
   };
 
@@ -592,6 +566,17 @@ export const KeypadNumeric = ({
   const handleLoadingChange = (v) => setLoading(v);
 
   const confirmSendData = async () => {
+
+    if (operation === 'Guardar') {
+      await confirmGuardarLocker();
+    } else if (operation === 'Retirar') {
+      await confirmRetirarReservadoLocker(true);
+    }
+  };
+
+  const confirmGuardarLocker = async () => {
+
+    setMessageLoading('Asignando Casilllero...');
     setSecondsLeft(timeout);
     setConfirmDialogOpen(false);
 
@@ -652,6 +637,76 @@ export const KeypadNumeric = ({
     } finally {
       setInsertMoneyOpen(false);
       setAmountPay(0);
+      cancelConfirmation(false);
+      setLoading(false);
+    }
+  };
+
+  const confirmRetirarReservadoLocker = async (isRetirar) => {
+
+    setMessageLoading('Buscando Casilllero...');
+    setSecondsLeft(timeout);
+    const payload = { phone, pin: password, openBy: 'user' };
+
+    try {
+      setLoading(true);
+      log.info(
+        `Apertura ${operation} solicitada | phone=${maskPhone(phone)}`
+      );
+
+      let result = null;
+      let message = '';
+
+      if (isRetirar) {
+        result = await OpenSessionLocker(payload);
+        message = config?.voice?.message?.openSessionLocker || '';
+      } else {
+        result = await OpenReserveLocker(payload);
+        message = config?.voice?.message?.openReserveLocker || '';
+      }
+
+      if (result?.success) {
+        const lockerCode =
+          result?.data?.lockerCode ||
+          result?.http?.data?.lockerCode ||
+          '';
+        if (lockerCode) {
+          if (config?.voice?.enabled) {
+            speak(
+              message.replace('{{lockerCode}}', lockerCode) || ''
+            );
+          }
+          setLocker(lockerCode);
+          setShowLockerOpen(true);
+          log.info(
+            `Apertura exitosa | locker=${lockerCode}`
+          );
+        } else {
+          setMessageErrorAPI(
+            'No se recibió código de casillero'
+          );
+          setShowErrorAPIOpen(true);
+          log.warn('Apertura sin lockerCode');
+        }
+      } else {
+        const m =
+          result?.data?.message ||
+          'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!';
+        setMessageErrorAPI(
+          result?.status === 500
+            ? 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!'
+            : m
+        );
+        setShowErrorAPIOpen(true);
+        log.warn(
+          `Apertura fallida | status=${result?.status} | msg=${m}`
+        );
+      }
+    } catch (error) {
+      setMessageErrorAPI(String(error));
+      setShowErrorAPIOpen(true);
+      log.error(`Excepción en apertura: ${String(error)}`);
+    } finally {
       cancelConfirmation(false);
       setLoading(false);
     }
@@ -1021,16 +1076,11 @@ export const KeypadNumeric = ({
         onConfirm={confirmSendData}
         onCancel={cancelConfirmation}
         tittle="Confirmar"
-        mesg={`¡Vas a ${operation}! ${config?.sendSMS
-          ? '\nRecibirás un mensaje de texto con los datos ingresados.'
-          : ''
-          } \n¿El número celular es correcto?`}
+        msg={messageConfirm}
         phone={formatNumberPhone(phone)}
-        isPhone={true}
+        isPhone={phoneConfirm}
+        isCloseDoor={true}
         hideBackdrop
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
       />
 
       <InsertMoney

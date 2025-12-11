@@ -22,10 +22,11 @@ export const ConfirmDialog = ({
     onCancel,
     title,
     tittle,          // compatibilidad con el typo usado en otros sitios
-    mesg,
+    msg,
     items,
     phone,
     isPhone,
+    isCloseDoor = false,
 }) => {
     const theme = useTheme();
     const dialogTitle = title || tittle || 'Confirmar';
@@ -87,7 +88,7 @@ export const ConfirmDialog = ({
                         </Box>
                     ))
                 ) : (
-                    // Modo legacy con mesg como string
+                    // Modo legacy con msg como string
                     <Box
                         sx={{
                             display: 'flex',
@@ -104,13 +105,51 @@ export const ConfirmDialog = ({
                                 sx={{ fontSize: theme.spacing(5) }}
                             />
                         )}
-                        <Typography
-                            variant="h4"
-                            align="center"
-                            sx={{ whiteSpace: 'pre-line' }}
-                        >
-                            {mesg}
-                        </Typography>
+
+                        {Array.isArray(msg) ? (
+                            msg.map((line, idx) => {
+                                // Permite usar directamente strings dentro del array si quieres
+                                if (typeof line === 'string') {
+                                    return (
+                                        <Typography
+                                            key={idx}
+                                            variant="h4"
+                                            align="center"
+                                        >
+                                            {line}
+                                        </Typography>
+                                    );
+                                }
+
+                                const {
+                                    text,
+                                    variant = 'h4',
+                                    align = 'center',
+                                    sx = {},
+                                    ...rest
+                                } = line;
+
+                                return (
+                                    <Typography
+                                        key={idx}
+                                        variant={variant}
+                                        align={align}
+                                        sx={sx}
+                                        {...rest}
+                                    >
+                                        {text}
+                                    </Typography>
+                                );
+                            })
+                        ) : (
+                            <Typography
+                                variant="h4"
+                                align="center"
+                                sx={{ whiteSpace: 'pre-line' }}
+                            >
+                                {msg}
+                            </Typography>
+                        )}
                     </Box>
                 )}
 
@@ -134,7 +173,8 @@ export const ConfirmDialog = ({
                     width: '100%',
                     gap: theme.spacing(2),
                     px: theme.spacing(3),
-                    pb: theme.spacing(2),
+                    pb: isCloseDoor ? 0 : theme.spacing(2),
+                    flexDirection: 'row',
                 }}
             >
                 <Button
@@ -155,6 +195,28 @@ export const ConfirmDialog = ({
                     Sí
                 </Button>
             </DialogActions>
+
+            {/* Mensaje debajo de los botones */}
+            {isCloseDoor && (
+                <Box
+                    sx={{
+                        width: '100%',
+                        textAlign: 'center',
+                        mt: theme.spacing(1),
+                        pb: theme.spacing(2),
+                    }}
+                >
+                    <Typography
+                        variant="h5"
+                        sx={{
+                            fontWeight: 'bold',
+                            color: 'error.main',
+                        }}
+                    >
+                        Por favor cerrar el casillero.
+                    </Typography>
+                </Box>
+            )}
         </Dialog>
     );
 };
