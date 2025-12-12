@@ -1,113 +1,209 @@
 # Lockerit Desk
 
-Sistema de Asignación de Casilleros desarrollado con **React**, **Vite** y **Electron**.
+Sistema de asignación y gestión de casilleros como aplicación de escritorio, construido con **React + Vite** y **Electron**.
 
-## Tabla de Contenidos
+---
 
-- [Descripción](#descripción)
-- [Características](#características)
-- [Instalación](#instalación)
-- [Scripts Disponibles](#scripts-disponibles)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Configuración](#configuración)
-- [Construcción y Distribución](#construcción-y-distribución)
-- [Licencia](#licencia)
+## Tabla de contenidos  
+- Descripción  
+- Tecnologías principales  
+- Arquitectura general  
+- Estructura del proyecto  
+- Instalación  
+- Configuración  
+- Scripts npm disponibles  
+- Construcción y distribución  
+- Registro y logs  
+- Colores de configuración  
+- Licencia  
 
 ---
 
 ## Descripción
 
-**Lockerit Desk** es una aplicación de escritorio multiplataforma para la gestión y asignación de casilleros, utilizando tecnologías modernas como React, Vite y Electron.
+Lockerit Desk es una aplicación de escritorio multiplataforma para la gestión y asignación de casilleros, diseñada para operar de forma local y totalmente configurable mediante archivos JSON externos.
 
-## Características
+---
 
-- Interfaz moderna y responsiva con React y Material UI.
-- Backend local con Electron.
-- Configuración flexible mediante archivos `.env` y JSON.
-- Registro de logs y auditoría.
-- Empaquetado y distribución con Electron Builder.
+## Tecnologías principales
+
+- React + Vite  
+- Electron + electron-builder  
+- Material UI  
+- Axios  
+- WebSocket  
+- Winston + DailyRotateFile  
+- Configuración externa mediante JSON + .env  
+
+---
+
+## Arquitectura general
+
+1. **Electron (main process)**  
+2. **Preload (puente seguro hacia React)**  
+3. **Renderer en React**  
+
+---
+
+## Estructura del proyecto
+
+```
+LockeritDesk/
+├─ electron/
+│  ├─ main/
+│  ├─ preload/
+│  ├─ logger/
+│  └─ watchers/
+├─ src/
+│  ├─ app/
+│  ├─ features/
+│  ├─ services/
+│  ├─ shared/
+│  ├─ assets/
+│  └─ main.jsx
+├─ public/
+├─ configFiles/
+│  ├─ .env
+│  ├─ setup_config.json
+│  ├─ lockers_colors_config.json
+│  ├─ auth_key.json
+│  └─ logger_config.json
+├─ Dockerfile
+├─ package.json
+└─ vite.config.mjs
+```
+
+---
 
 ## Instalación
 
-1. **Clona el repositorio:**
-   ```sh
-   git clone https://github.com/tu-usuario/lockerit-desk.git
-   cd lockerit-desk
-   ```
-2. **Instala las dependencias:**
-   ```sh
-   npm install
-   ```
-3. **Configura el entorno:**
-   - Copia el archivo `.env.example` a `.env` y ajusta las configuraciones según tus necesidades.
-
-4. **Inicia la aplicación:**
-   ```sh
-   npm run dev
-   ```
-
-## Scripts Disponibles
-
-- `dev`: Inicia la aplicación en modo desarrollo.
-- `build`: Construye la aplicación para producción.
-- `serve`: Sirve la aplicación construida.
-
-## Estructura del Proyecto
-
-```plaintext
-LockeritDesk/
-├─ electron/
-│  ├─ main/                 # Proceso principal (antes: main.js)
-│  │  └─ index.js
-│  ├─ preload/              # Único puente al renderer (antes: preload.js)
-│  │  └─ index.js
-│  ├─ logger/               # ya existe: logger.js
-│  └─ watchers/             # ya existe: auth/env/logger/setup watcher .js
-│
-├─ src/                     # React (renderer)
-│  ├─ app/                  # App shell, router, providers
-│  │  └─ App.jsx
-│  ├─ features/
-│  │  ├─ admin/             # adminLockers.jsx, reportLockers.jsx, tabAdmin.jsx, tableReportLockers.jsx
-│  │  ├─ operator/          # ppal.jsx
-│  │  └─ auth/              # login.jsx
-│  ├─ services/
-│  │  ├─ api/               # assignLocker.js, getAllStatusLockers.js, open*.js, report.js, reserve.js, setStatusLocker.js
-│  │  └─ realtime/          # websocket.js
-│  ├─ shared/
-│  │  ├─ components/
-│  │  │  ├─ layout/         # appbar.jsx, clock.jsx, progressbar.jsx, snackAlert.jsx
-│  │  │  └─ dialogs/        # insertMoney.jsx, keypadNumeric.jsx, loading.jsx, registerUserPeriod.jsx, showErrorAPI.jsx, showLocker.jsx
-│  │  ├─ context/           # keyboardContext.jsx, modalContext.jsx, userContext.jsx, windowSizeContext.jsx
-│  │  ├─ hooks/             # useScheduleReport.js
-│  │  ├─ utils/             # getDateRange.js, testGetDateRange.js, theme.js, utils.js
-│  │  └─ constants/         # (crear más adelante: STATUS, rutas, etc.)
-│  ├─ assets/               # ya existe si la usas desde React
-│  └─ main.jsx              # entry React (ya existe)
-│
-├─ public/                  # estáticos (ya existe)
-├─ configFiles/             # configs empaquetadas (ya existe)
-├─ index.html               # (ya existe)
-├─ vite.config.js           # (ya existe)
-├─ eslint.config.js         # (ya existe)
-└─ package.json             # (ya existe)
 ```
+git clone https://github.com/Lockerit/LockeritDesk.git
+cd LockeritDesk
+npm install
+npm run dev
+```
+
+---
 
 ## Configuración
 
-La configuración de la aplicación se maneja principalmente a través de archivos `.env` y archivos JSON en la carpeta `src/config`. Asegúrate de revisar estos archivos para personalizar la aplicación según tus necesidades.
+Toda la configuración se realiza desde `configFiles/`.
 
-## Construcción y Distribución
+### setup_config.json  
+- Datos del punto  
+- Usuarios  
+- UI  
+- Temas de color  
+- Tiempos de interfaz  
+- Voz  
+- Programación de reportes  
 
-Para construir y distribuir la aplicación, utiliza el siguiente comando:
+### lockers_colors_config.json  
+- Colores por estado  
+- Colores por grupo  
 
-```sh
+### auth_key.json  
+- Llave de autenticación  
+
+### logger_config.json  
+- Nivel de log  
+- Rotación  
+- Campos redactados  
+
+---
+
+## Scripts npm disponibles
+
+```
+npm run dev
+npm run dev:watch
+npm run clean
 npm run build
-npm run build:all / para construir Windows y Linux
+npm run build:web
+npm run build:electron
+npm run build:linux
+npm run build:win
+npm run build:all
+npm run docker:build
+npm run docker:linux
+npm run docker:win
+npm run docker:all
+npm run preview
+npm run test:range
+npm run lint
+npm run lint:fix
+npm run format
 ```
 
-Esto generará una versión optimizada de la aplicación en la carpeta `dist`, lista para ser distribuida.
+---
+
+## Construcción y distribución
+
+```
+npm run build
+npm run build:linux
+npm run build:win
+npm run build:all
+```
+
+Artefactos finales en: `release/`
+
+---
+
+## Registro y logs
+
+- Rotación diaria  
+- Máximo 15 días  
+- Máximo 20 MB  
+- Campos redactados: phone, pin, password, token  
+
+---
+
+# Colores de configuración
+
+## Tema de la interfaz
+
+| Hex     | Nombre del color                | Variable              |
+| ------- | ------------------------------- | --------------------- |
+| #009640 | Verde intenso / Verde principal | primaryMain           |
+| #ffffff | Blanco puro                     | primaryContrastText   |
+| #0c315e | Azul petróleo oscuro            | secondaryMain         |
+| #ffffff | Blanco puro                     | secondaryContrastText |
+| #212121 | Gris carbón                     | tertiaryMain          |
+| #ffffff | Blanco puro                     | tertiaryContrastText  |
+| #0c315e | Azul petróleo oscuro            | textPrimary           |
+| #009640 | Verde intenso / Verde principal | textSecondary         |
+| #f9f9f9 | Gris muy claro / Blanco humo    | backgroundDefault     |
+| #f1f1f1 | Gris claro                      | layoutBackground      |
+
+
+---
+
+## Estados de casilleros
+
+| Hex     | Nombre del color      | Variable      |
+| ------- | --------------------- | ------------- |
+| #2e7d32 | Verde bosque          | libre         |
+| #c62828 | Rojo intenso / alarma | ocupado       |
+| #0288d1 | Azul brillante        | reservado     |
+| #6d6d6d | Gris medio            | deshabilitado |
+| #6a1b9a | Morado oscuro         | asignado      |
+
+
+---
+
+## Colores por grupo
+
+| Hex     | Nombre del color         | Variable |
+| ------- | ------------------------ | -------- |
+| #7D1304 | Rojo vino / rojo quemado | Grupo 1  |
+| #17046E | Azul índigo oscuro       | Grupo 2  |
+| #106E14 | Verde esmeralda oscuro   | Grupo 3  |
+
+
+---
 
 ## Licencia
 
-Este proyecto está licenciado bajo la Licencia MIT - consulta el archivo [LICENSE](LICENSE) para más detalles.
+MIT
