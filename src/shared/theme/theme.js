@@ -2,9 +2,6 @@
 import { createTheme } from '@mui/material/styles';
 import '@fontsource/nunito';
 
-// IMPORTA LA CONFIG (ajusta la ruta)
-import setupConfig from '../../../configFiles/setup_config.json';
-
 // Colores por defecto
 const DEFAULT_COLORS = {
   primaryMain: '#009640',
@@ -17,19 +14,16 @@ const DEFAULT_COLORS = {
   tertiaryContrastText: '#ffffff',
 
   backgroundDefault: '#f5f5f5',
-
-  // Fondo general de la app (body)
   layoutBackground: '#d0d3d4',
 
   textPrimary: '#0c315e',
   textSecondary: '#009640',
-
 };
 
-// Extrae colores desde setup_config.json
-function getColorsFromConfig() {
+// Extrae colores desde setup_config.json (recibido por parámetro)
+function getColorsFromConfig(setupConfigFile) {
   try {
-    const colorsTheme = setupConfig?.paramsHtml?.colorsTheme;
+    const colorsTheme = setupConfigFile?.paramsHtml?.colorsTheme;
     if (!colorsTheme) return {};
 
     const {
@@ -57,54 +51,49 @@ function getColorsFromConfig() {
       textSecondary,
       backgroundDefault,
       layoutBackground,
-      mode: theme, // lo usamos para palette.mode
+      mode: theme,
     };
   } catch {
     return {};
   }
 }
 
-// Mezcla: config sobre defaults
-const CONFIG_COLORS = getColorsFromConfig();
-
-export const COLORS = {
-  ...DEFAULT_COLORS,
-  ...(CONFIG_COLORS.primaryMain ? { primaryMain: CONFIG_COLORS.primaryMain } : {}),
-  ...(CONFIG_COLORS.primaryContrastText
-    ? { primaryContrastText: CONFIG_COLORS.primaryContrastText }
-    : {}),
-  ...(CONFIG_COLORS.secondaryMain ? { secondaryMain: CONFIG_COLORS.secondaryMain } : {}),
-  ...(CONFIG_COLORS.secondaryContrastText
-    ? { secondaryContrastText: CONFIG_COLORS.secondaryContrastText }
-    : {}),
-    ...(CONFIG_COLORS.tertiaryMain ? { tertiaryMain: CONFIG_COLORS.tertiaryMain } : {}),
-  ...(CONFIG_COLORS.tertiaryContrastText
-    ? { tertiaryContrastText: CONFIG_COLORS.tertiaryContrastText }
-    : {}),
-  ...(CONFIG_COLORS.textPrimary ? { textPrimary: CONFIG_COLORS.textPrimary } : {}),
-  ...(CONFIG_COLORS.textPrimary
-    ? { textPrimary: CONFIG_COLORS.textPrimary }
-    : {}),
-    ...(CONFIG_COLORS.textSecondary ? { textSecondary: CONFIG_COLORS.textSecondary } : {}),
-  ...(CONFIG_COLORS.textSecondary
-    ? { textSecondary: CONFIG_COLORS.textSecondary }
-    : {}),
-  ...(CONFIG_COLORS.backgroundDefault
-    ? { backgroundDefault: CONFIG_COLORS.backgroundDefault }
-    : {}),
-  ...(CONFIG_COLORS.layoutBackground
-    ? { layoutBackground: CONFIG_COLORS.layoutBackground }
-    : {}),
-};
-
-export function createScaledTheme(rawFactor = 1) {
+export function createScaledTheme(rawFactor = 1, setupConfigFile) {
   const factor = Number.isFinite(rawFactor)
     ? Math.min(2, Math.max(0.75, rawFactor))
     : 1;
 
   const px = (n) => `${Math.round(n * factor)}px`;
 
-  // Modo de color desde config (default light)
+  // 1) Colores desde config
+  const CONFIG_COLORS = getColorsFromConfig(setupConfigFile);
+
+  // 2) Mezcla config sobre defaults
+  const COLORS = {
+    ...DEFAULT_COLORS,
+    ...(CONFIG_COLORS.primaryMain ? { primaryMain: CONFIG_COLORS.primaryMain } : {}),
+    ...(CONFIG_COLORS.primaryContrastText
+      ? { primaryContrastText: CONFIG_COLORS.primaryContrastText }
+      : {}),
+    ...(CONFIG_COLORS.secondaryMain ? { secondaryMain: CONFIG_COLORS.secondaryMain } : {}),
+    ...(CONFIG_COLORS.secondaryContrastText
+      ? { secondaryContrastText: CONFIG_COLORS.secondaryContrastText }
+      : {}),
+    ...(CONFIG_COLORS.tertiaryMain ? { tertiaryMain: CONFIG_COLORS.tertiaryMain } : {}),
+    ...(CONFIG_COLORS.tertiaryContrastText
+      ? { tertiaryContrastText: CONFIG_COLORS.tertiaryContrastText }
+      : {}),
+    ...(CONFIG_COLORS.textPrimary ? { textPrimary: CONFIG_COLORS.textPrimary } : {}),
+    ...(CONFIG_COLORS.textSecondary ? { textSecondary: CONFIG_COLORS.textSecondary } : {}),
+    ...(CONFIG_COLORS.backgroundDefault
+      ? { backgroundDefault: CONFIG_COLORS.backgroundDefault }
+      : {}),
+    ...(CONFIG_COLORS.layoutBackground
+      ? { layoutBackground: CONFIG_COLORS.layoutBackground }
+      : {}),
+  };
+
+  // 3) Modo (light/dark) desde config (default: light)
   const mode = CONFIG_COLORS.mode === 'dark' ? 'dark' : 'light';
 
   return createTheme({
@@ -122,6 +111,7 @@ export function createScaledTheme(rawFactor = 1) {
         main: COLORS.secondaryMain,
         contrastText: COLORS.secondaryContrastText,
       },
+      // campo personalizado: no lo usa MUI por defecto, pero tú sí puedes leerlo
       tertiary: {
         main: COLORS.tertiaryMain,
         contrastText: COLORS.tertiaryContrastText,
@@ -129,7 +119,7 @@ export function createScaledTheme(rawFactor = 1) {
       text: {
         primary: COLORS.textPrimary,
         secondary: COLORS.textSecondary,
-      }
+      },
     },
 
     spacing: (value) => 8 * factor * value,
@@ -137,7 +127,6 @@ export function createScaledTheme(rawFactor = 1) {
     typography: {
       fontFamily: 'Nunito, sans-serif',
       fontSize: 14 * factor,
-
       h1: { fontSize: px(40), fontWeight: 700, lineHeight: 1.2 },
       h2: { fontSize: px(32), fontWeight: 600, lineHeight: 1.25 },
       h3: { fontSize: px(28), fontWeight: 600, lineHeight: 1.3 },

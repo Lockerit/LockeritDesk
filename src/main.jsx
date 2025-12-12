@@ -1,7 +1,7 @@
 // src/main-renderer.jsx (Root y bootstrap con logging)
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './fonts.css';
@@ -20,16 +20,30 @@ const log = logger.scope(fileName);
 
 export const RootApp = () => {
 
+  const [setupConfig, setSetupConfig] = useState(null);
+
   // //Contexto de tamaño
   const size = useWindowSizeContext();
   const factor = Number(size?.factor) > 0 ? Number(size.factor) : 1;
 
+  useEffect(() => {
+    // pedir config actual
+    window.electronAPI.getConfig().then((cfg) => setSetupConfig(cfg));
+
+    // escuchar cambios en caliente
+    const removeListener = window.electronAPI.onConfigUpdate((cfg) => {
+      setSetupConfig(cfg);
+    });
+
+    return () => removeListener && removeListener();
+  }, []);
+
   // Tema escalado
   const theme = useMemo(() => {
-    const t = createScaledTheme(factor);
-    log.debug?.(`theme.scaled, { factor: ${factor} }`);
+    const t = createScaledTheme(factor, setupConfig);
+    log.debug?.(`theme.scaled, { factor: ${factor}, hasConfig: ${!!setupConfig} }`);
     return t;
-  }, [factor]);
+  }, [factor, setupConfig]);
 
 
   if (!size?.factor || size.factor <= 0) {
