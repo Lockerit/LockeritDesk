@@ -33,6 +33,7 @@ import { Reserve } from '@services/apis/reserve.js';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
 import { logger } from '@shared/utils/logger.js';
 import {
   PHONE_REGEX,
@@ -85,10 +86,16 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState();
   const [showErrorAPIOpen, setShowErrorAPIOpen] = useState();
   const [showLockerOpen, setShowLockerOpen] = useState();
+  const [colorLocker, setColorLocker] = useState('#000000');
 
   const cleanupRef = useRef(null);
   const config = useElectronConfig();
+  const lockersColors = useElectronLockersColors();
   const theme = useTheme();
+
+  useEffect(() => {
+    if (!lockersColors) return;
+  }, [lockersColors]);
 
   // Montaje/desmontaje
   useEffect(() => {
@@ -349,6 +356,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
     }
   };
 
+  const getLockerColor = (lockerCode, groups) => {
+    if (!lockerCode || !Array.isArray(groups)) return null;
+
+    const group = groups.find(g => g.lockers.includes(lockerCode));
+    return group ? group.color : null;
+  };
+
   const confirmShowErrorAPI = () => {
     setShowErrorAPIOpen(false);
     log.info('Cerrando error API dialog');
@@ -402,6 +416,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
 
         if (lockerCode) {
           setLocker(lockerCode);
+          setColorLocker(getLockerColor(lockerCode, lockersColors?.lockersColors) || '#000000');
           setShowLockerOpen(true);
           log.info(`Reserva exitosa, { lockerCode: ${lockerCode} }`);
         } else {
@@ -783,7 +798,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
 
             <Button
               variant="contained"
-              color="success"
+              color="primary"
               type="submit"
               sx={{ flex: 1 }}
             >
@@ -868,7 +883,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         title="Casillero reservado:"
         msg="Datos registrados exitosamente"
         timeout={timeoutShowMessage}
-        backColor="info.main"
+        backColor={colorLocker}
         hideBackdrop
       />
 

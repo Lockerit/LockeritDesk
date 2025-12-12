@@ -18,7 +18,7 @@ import {
   IconButton,
   Slide,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 import {
   useState,
   useRef,
@@ -182,7 +182,6 @@ export const KeypadNumeric = ({
 
   useEffect(() => {
     if (!lockersColors) return;
-    console.log('lockersColors en KeypadNumeric:', lockersColors);
   }, [lockersColors]);
 
   useEffect(() => {
@@ -775,7 +774,7 @@ export const KeypadNumeric = ({
         <Grid size={gridSize} key={value}>
           <Button
             {...commonProps}
-            color="success"
+            color="primary"
             id="confirmar-keypad"
             onClick={(e) => {
               handleNextOrAccept();
@@ -972,7 +971,7 @@ export const KeypadNumeric = ({
                   sx={{
                     backgroundColor:
                       activeInput === 'phone'
-                        ? '#dce1f5ff'
+                        ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
                         : 'transparent',
                     borderRadius: theme.spacing(1),
                     transition: 'background-color 0.3s ease',
@@ -1007,7 +1006,7 @@ export const KeypadNumeric = ({
                   sx={{
                     backgroundColor:
                       activeInput === 'password'
-                        ? '#dce1f5ff'
+                        ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
                         : 'transparent',
                     borderRadius: theme.spacing(1),
                     transition: 'background-color 0.3s ease',
@@ -1047,7 +1046,7 @@ export const KeypadNumeric = ({
                     sx={{
                       backgroundColor:
                         activeInput === 'confirmPassword'
-                          ? '#dce1f5ff'
+                          ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
                           : 'transparent',
                       borderRadius: theme.spacing(1),
                       transition: 'background-color 0.3s ease',

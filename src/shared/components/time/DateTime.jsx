@@ -29,7 +29,7 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
                 justifyContent: 'space-between',
                 py: theme.spacing(1),
                 px: theme.spacing(2),
-                borderTop: '1px solid #ddd',
+                borderTop: `1px solid ${theme.palette.divider}`,
                 mt: theme.spacing(1),
                 width: '100%',
                 alignItems: 'center',
@@ -81,13 +81,14 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
             sx={{
                 flex: 1,
                 maxHeight: 300,
-                border: '1px solid #ddd',
-                borderRadius: theme.spacing(1),
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: theme.shape.borderRadius,
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                backgroundColor: theme.palette.background.paper,
             }}
         >
             <Typography
@@ -95,8 +96,10 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
                 sx={{
                     p: theme.spacing(1),
                     fontWeight: 'bold',
-                    borderBottom: '1px solid #eee',
+                    borderBottom: `1px solid ${theme.palette.divider}`,
                     color: 'primary.main',
+                    width: '100%',
+                    textAlign: 'center',
                 }}
             >
                 {label}
@@ -133,7 +136,7 @@ export const DateTime = ({
 
     // Para evitar spam, memo de previews
     const prevValue = useMemo(() => fmt(value), [value]);
-    const _prevTemp = useMemo(() => fmt(tempValue), [tempValue]); // se mantiene por si se quiere usar en logs futuros
+    const _prevTemp = useMemo(() => fmt(tempValue), [tempValue]); // reservado para logs futuros
 
     useEffect(() => {
         if (open) {
@@ -171,7 +174,6 @@ export const DateTime = ({
         return date.isBefore(dayjs().startOf('day'));
     };
 
-    // Log de cambios de calendario
     const onCalendarChange = (newDate) => {
         if (!newDate) return;
         const next = showTime
@@ -239,13 +241,19 @@ export const DateTime = ({
                                     >
                                         <NumberColumn
                                             label="Horas"
-                                            values={Array.from({ length: 24 }, (_, i) => i)}
+                                            values={Array.from(
+                                                { length: 24 },
+                                                (_, i) => i
+                                            )}
                                             selected={tempValue.hour()}
                                             onSelect={onHourChange}
                                         />
                                         <NumberColumn
                                             label="Minutos"
-                                            values={Array.from({ length: 60 }, (_, i) => i)}
+                                            values={Array.from(
+                                                { length: 60 },
+                                                (_, i) => i
+                                            )}
                                             selected={tempValue.minute()}
                                             onSelect={onMinuteChange}
                                         />

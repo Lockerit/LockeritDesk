@@ -1,3 +1,4 @@
+import { useTheme } from '@mui/material/styles';
 import {
     useState,
     useRef,
@@ -24,6 +25,8 @@ const KB_MAX_WIDTH_RATIO = 0.9; // 90% del ancho
 export const KeyboardProvider = ({ children, usePortal = true }) => {
     const [showKeyboard, setShowKeyboard] = useState(false);
     const [activeField, setActiveField] = useState(null);
+
+    const theme = useTheme();
 
     // Posición en píxeles, persistente
     const [position, setPosition] = useState(() => {
@@ -83,7 +86,7 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
 
     const openKeyboard = useCallback(
         (anchorNode, fieldSetter, value, inputRef) => {
-            // Calcular posición inicial (debajo o encima del anchor si es posible)
+            // Calcular posición inicial
             computeMaxXY();
             let x;
             let y;
@@ -93,7 +96,6 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                 const kbW = kbWidthRef.current || KB_MIN_WIDTH;
                 const kbH = kbHeightRef.current || KB_BASE_HEIGHT;
 
-                // Preferencia: debajo; si no cabe, encima; si no, centrado
                 if (rect.bottom + kbH < window.innerHeight) {
                     y = rect.bottom + 8;
                 } else if (rect.top - kbH > 0) {
@@ -107,7 +109,6 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                     window.innerWidth - kbW
                 );
             } else {
-                // Centro de la pantalla
                 const kbW = kbWidthRef.current || KB_MIN_WIDTH;
                 const kbH = kbHeightRef.current || KB_BASE_HEIGHT;
                 x = (window.innerWidth - kbW) / 2;
@@ -170,12 +171,11 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
 
     // Pointer Events: down/move/up
     const onPointerDown = useCallback((e) => {
-        // Si el click viene de algo interactivo, no iniciar drag
         if (
             e.target.closest('[data-nodrag]') ||
             e.target.closest('button, a, input, textarea, select')
         ) {
-            return; // permite que onClick de la X funcione
+            return;
         }
 
         e.preventDefault();
@@ -195,7 +195,6 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
 
     const schedulePos = useCallback(
         (nx, ny) => {
-            // Animación con RAF para evitar reflows excesivos
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             rafRef.current = requestAnimationFrame(() => setPosClamped(nx, ny));
         },
@@ -253,8 +252,8 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
             style={{
                 position: 'fixed',
                 inset: 0,
-                zIndex: 9999,
-                pointerEvents: 'none', // contenedor no capta eventos excepto el panel
+                zIndex: theme.zIndex.modal + 2,
+                pointerEvents: 'none',
             }}
             aria-hidden={!showKeyboard}
         >
@@ -267,14 +266,14 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                     width: '90vw',
                     maxWidth: '90vw',
                     minWidth: `${KB_MIN_WIDTH}px`,
-                    pointerEvents: 'auto', // este sí capta
-                    background: '#f5f5f5',
-                    borderRadius: 8,
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
-                    border: '1px solid #0c315e',
+                    pointerEvents: 'auto',
+                    background: theme.palette.background.paper,
+                    borderRadius: theme.shape.borderRadius * 2,
+                    boxShadow: theme.shadows[6],
+                    border: `1px solid ${theme.palette.secondary.main}`,
                     userSelect: 'none',
-                    padding: 8,
-                    touchAction: 'none', // evita scroll durante drag
+                    padding: theme.spacing(1),
+                    touchAction: 'none',
                 }}
             >
                 <div
@@ -286,13 +285,13 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                     style={{
                         width: '100%',
                         cursor: 'grab',
-                        padding: 4,
-                        fontWeight: 'bold',
-                        color: '#0c315e',
-                        background: '#ffffff',
-                        border: '1px solid #0c315e',
-                        borderRadius: 6,
-                        marginBottom: 8,
+                        padding: theme.spacing(0.5),
+                        fontWeight: theme.typography.fontWeightBold,
+                        color: theme.palette.secondary.contrastText,
+                        background: theme.palette.secondary.main,
+                        border: `1px solid ${theme.palette.secondary.main}`,
+                        borderRadius: theme.shape.borderRadius * 1.5,
+                        marginBottom: theme.spacing(1),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -306,13 +305,13 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                         onClick={closeKeyboard}
                         aria-label="Cerrar teclado"
                         style={{
-                            marginLeft: 8,
+                            marginLeft: theme.spacing(1),
                             cursor: 'pointer',
-                            color: '#0c315e',
+                            color: theme.palette.secondary.contrastText,
                             background: 'transparent',
                             border: 'none',
-                            fontSize: 16,
-                            fontWeight: 'bold',
+                            fontSize: theme.typography.body1.fontSize,
+                            fontWeight: theme.typography.fontWeightBold,
                         }}
                     >
                         ✕

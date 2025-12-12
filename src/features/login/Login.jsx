@@ -539,7 +539,7 @@ export const Login = () => {
                             </Box>
                         )}
 
-                        <Button variant="contained" color="success" type="submit" fullWidth>
+                        <Button variant="contained" color="primary" type="submit" fullWidth>
                             {buttonName}
                             <Send
                                 sx={{ fontSize: theme.spacing(5), ml: 2 }}

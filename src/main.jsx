@@ -38,14 +38,14 @@ export const RootApp = () => {
 
   return (
     <>
-      <UserProvider>
-          <KeyboardProvider>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <App />
-            </ThemeProvider>
-          </KeyboardProvider>
-      </UserProvider>
+      <ThemeProvider theme={theme}>
+        <KeyboardProvider>
+          <UserProvider>
+            <CssBaseline />
+            <App />
+          </UserProvider>
+        </KeyboardProvider>
+      </ThemeProvider>
     </>
   );
 };

@@ -2,40 +2,142 @@
 import { createTheme } from '@mui/material/styles';
 import '@fontsource/nunito';
 
+// IMPORTA LA CONFIG (ajusta la ruta)
+import setupConfig from '../../../configFiles/setup_config.json';
+
+// Colores por defecto
+const DEFAULT_COLORS = {
+  primaryMain: '#009640',
+  primaryContrastText: '#ffffff',
+
+  secondaryMain: '#0c315e',
+  secondaryContrastText: '#ffffff',
+
+  tertiaryMain: '#0288d1',
+  tertiaryContrastText: '#ffffff',
+
+  backgroundDefault: '#f5f5f5',
+
+  // Fondo general de la app (body)
+  layoutBackground: '#d0d3d4',
+
+  textPrimary: '#0c315e',
+  textSecondary: '#009640',
+
+};
+
+// Extrae colores desde setup_config.json
+function getColorsFromConfig() {
+  try {
+    const colorsTheme = setupConfig?.paramsHtml?.colorsTheme;
+    if (!colorsTheme) return {};
+
+    const {
+      primaryMain,
+      primaryContrastText,
+      secondaryMain,
+      secondaryContrastText,
+      tertiaryMain,
+      tertiaryContrastText,
+      textPrimary,
+      textSecondary,
+      backgroundDefault,
+      layoutBackground,
+      theme, // "light" | "dark"
+    } = colorsTheme;
+
+    return {
+      primaryMain,
+      primaryContrastText,
+      secondaryMain,
+      secondaryContrastText,
+      tertiaryMain,
+      tertiaryContrastText,
+      textPrimary,
+      textSecondary,
+      backgroundDefault,
+      layoutBackground,
+      mode: theme, // lo usamos para palette.mode
+    };
+  } catch {
+    return {};
+  }
+}
+
+// Mezcla: config sobre defaults
+const CONFIG_COLORS = getColorsFromConfig();
+
+export const COLORS = {
+  ...DEFAULT_COLORS,
+  ...(CONFIG_COLORS.primaryMain ? { primaryMain: CONFIG_COLORS.primaryMain } : {}),
+  ...(CONFIG_COLORS.primaryContrastText
+    ? { primaryContrastText: CONFIG_COLORS.primaryContrastText }
+    : {}),
+  ...(CONFIG_COLORS.secondaryMain ? { secondaryMain: CONFIG_COLORS.secondaryMain } : {}),
+  ...(CONFIG_COLORS.secondaryContrastText
+    ? { secondaryContrastText: CONFIG_COLORS.secondaryContrastText }
+    : {}),
+    ...(CONFIG_COLORS.tertiaryMain ? { tertiaryMain: CONFIG_COLORS.tertiaryMain } : {}),
+  ...(CONFIG_COLORS.tertiaryContrastText
+    ? { tertiaryContrastText: CONFIG_COLORS.tertiaryContrastText }
+    : {}),
+  ...(CONFIG_COLORS.textPrimary ? { textPrimary: CONFIG_COLORS.textPrimary } : {}),
+  ...(CONFIG_COLORS.textPrimary
+    ? { textPrimary: CONFIG_COLORS.textPrimary }
+    : {}),
+    ...(CONFIG_COLORS.textSecondary ? { textSecondary: CONFIG_COLORS.textSecondary } : {}),
+  ...(CONFIG_COLORS.textSecondary
+    ? { textSecondary: CONFIG_COLORS.textSecondary }
+    : {}),
+  ...(CONFIG_COLORS.backgroundDefault
+    ? { backgroundDefault: CONFIG_COLORS.backgroundDefault }
+    : {}),
+  ...(CONFIG_COLORS.layoutBackground
+    ? { layoutBackground: CONFIG_COLORS.layoutBackground }
+    : {}),
+};
+
 export function createScaledTheme(rawFactor = 1) {
-  // Factor de escala normalizado (para pantallas pequeñas y grandes)
   const factor = Number.isFinite(rawFactor)
     ? Math.min(2, Math.max(0.75, rawFactor))
     : 1;
 
-  // Helper para px
   const px = (n) => `${Math.round(n * factor)}px`;
+
+  // Modo de color desde config (default light)
+  const mode = CONFIG_COLORS.mode === 'dark' ? 'dark' : 'light';
 
   return createTheme({
     palette: {
-      mode: 'light',
-      background: { default: '#f5f5f5', paper: '#f5f5f5' },
-      primary: { main: '#009640', contrastText: '#ffffff' },
-      secondary: { main: '#0c315e', contrastText: '#ffffff' },
-      text: { primary: '#0c315e', secondary: '#009640' },
-      // Colores centralizados para estados de casilleros
-      lockerStatus: {
-        FREE: '#2e7d32',
-        OCCUPIED: '#c62828',
-        RESERVED: '#0288d1',
-        BLOCKED: '#6d6d6d',
-        ASIGNE: '#6a1b9a',
+      mode,
+      background: {
+        default: COLORS.backgroundDefault,
+        paper: COLORS.backgroundDefault,
       },
+      primary: {
+        main: COLORS.primaryMain,
+        contrastText: COLORS.primaryContrastText,
+      },
+      secondary: {
+        main: COLORS.secondaryMain,
+        contrastText: COLORS.secondaryContrastText,
+      },
+      tertiary: {
+        main: COLORS.tertiaryMain,
+        contrastText: COLORS.tertiaryContrastText,
+      },
+      text: {
+        primary: COLORS.textPrimary,
+        secondary: COLORS.textSecondary,
+      }
     },
 
-    // spacing(1) -> 8 * factor px
     spacing: (value) => 8 * factor * value,
 
     typography: {
       fontFamily: 'Nunito, sans-serif',
-      fontSize: 14 * factor, // base
+      fontSize: 14 * factor,
 
-      // Tamaños más razonables para kiosko pero sin exagerar
       h1: { fontSize: px(40), fontWeight: 700, lineHeight: 1.2 },
       h2: { fontSize: px(32), fontWeight: 600, lineHeight: 1.25 },
       h3: { fontSize: px(28), fontWeight: 600, lineHeight: 1.3 },
@@ -50,7 +152,7 @@ export function createScaledTheme(rawFactor = 1) {
       caption: { fontSize: px(12), lineHeight: 1.3 },
       overline: { fontSize: px(12), textTransform: 'uppercase', letterSpacing: '0.1em' },
     },
-
+    
     components: {
       // TEXTFIELDS
       MuiTextField: {
@@ -63,11 +165,11 @@ export function createScaledTheme(rawFactor = 1) {
         styleOverrides: {
           root: {
             '& .MuiInputLabel-root': {
-              color: '#0c315e',
+              color: COLORS.textPrimary,
               fontSize: px(24),
             },
             '& .MuiInputBase-input': {
-              color: '#009640',
+              color: COLORS.primaryMain,
               fontSize: px(32),
               fontWeight: 'bold',
             },
@@ -78,7 +180,7 @@ export function createScaledTheme(rawFactor = 1) {
       MuiInputLabel: {
         styleOverrides: {
           root: {
-            color: '#0c315e',
+            color: COLORS.textPrimary,
             fontSize: px(16),
             transform: 'translate(0, 18px) scale(1)',
             transition: 'all 0.2s ease-out',
@@ -90,7 +192,6 @@ export function createScaledTheme(rawFactor = 1) {
         },
       },
 
-      // variant="standard"
       MuiInput: {
         styleOverrides: {
           root: {
@@ -99,62 +200,60 @@ export function createScaledTheme(rawFactor = 1) {
             paddingBottom: 0,
           },
           underline: {
-            '&:before': { borderBottomColor: '#0c315e' },
+            '&:before': { borderBottomColor: COLORS.textPrimary },
             '&:hover:not(.Mui-disabled):before': {
-              borderBottomColor: '#009640',
+              borderBottomColor: COLORS.primaryMain,
             },
             '&:after': {
-              borderBottomColor: '#009640',
+              borderBottomColor: COLORS.primaryMain,
               borderBottomWidth: px(2),
             },
           },
         },
       },
 
-      // variant="outlined"
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
             fontSize: px(16),
             '& .MuiInputBase-input': {
-              color: '#009640',
+              color: COLORS.primaryMain,
               fontSize: px(18),
               fontWeight: 'bold',
               '&::placeholder': {
-                color: '#0c315e',
+                color: COLORS.textPrimary,
                 opacity: 0.4,
                 fontStyle: 'italic',
               },
             },
           },
-          notchedOutline: { borderColor: '#0c315e' },
+          notchedOutline: { borderColor: COLORS.textPrimary },
           '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#009640',
+            borderColor: COLORS.primaryMain,
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#009640',
+            borderColor: COLORS.primaryMain,
             borderWidth: px(2),
           },
         },
       },
 
-      // variant="filled"
       MuiFilledInput: {
         styleOverrides: {
           root: {
             backgroundColor: '#fff',
             '& .MuiInputBase-input': {
-              color: '#009640',
+              color: COLORS.primaryMain,
               fontSize: px(18),
               fontWeight: 'bold',
             },
-            '&:before': { borderBottomColor: '#0c315e' },
+            '&:before': { borderBottomColor: COLORS.textPrimary },
             '&:after': {
-              borderBottomColor: '#009640',
+              borderBottomColor: COLORS.primaryMain,
               borderBottomWidth: px(2),
             },
             '&:hover:not(.Mui-disabled):before': {
-              borderBottomColor: '#009640',
+              borderBottomColor: COLORS.primaryMain,
             },
           },
         },
@@ -164,11 +263,11 @@ export function createScaledTheme(rawFactor = 1) {
         defaultProps: { autoComplete: 'off' },
         styleOverrides: {
           input: {
-            color: '#009640',
+            color: COLORS.primaryMain,
             fontSize: px(18),
             fontWeight: 'bold',
             '&::placeholder': {
-              color: '#0c315e',
+              color: COLORS.textPrimary,
               opacity: 0.4,
               fontStyle: 'italic',
             },
@@ -186,7 +285,7 @@ export function createScaledTheme(rawFactor = 1) {
           root: {
             fontSize: px(16),
             fontWeight: 'bold',
-            color: '#009640',
+            color: COLORS.primaryMain,
           },
         },
       },
@@ -195,12 +294,12 @@ export function createScaledTheme(rawFactor = 1) {
           sectionContent: {
             fontSize: px(16),
             fontWeight: 'bold',
-            color: '#009640',
+            color: COLORS.primaryMain,
           },
           sectionSeparator: {
             fontSize: px(18),
             fontWeight: 'bold',
-            color: '#009640',
+            color: COLORS.primaryMain,
           },
         },
       },
@@ -249,7 +348,7 @@ export function createScaledTheme(rawFactor = 1) {
             textTransform: 'none',
             fontWeight: 'bold',
             '&:hover': {
-              outline: `${Math.max(1, Math.round(2 * factor))}px solid #d0d3d4`,
+              outline: `${Math.max(1, Math.round(2 * factor))}px solid ${COLORS.layoutBackground}`,
               outlineOffset: 0,
             },
           },
@@ -260,8 +359,8 @@ export function createScaledTheme(rawFactor = 1) {
       MuiAppBar: {
         styleOverrides: {
           root: {
-            background: 'rgba(12,49,94,0.9)',
-            color: '#ffffff',
+            background: COLORS.secondaryMain,
+            color: COLORS.secondaryContrastText,
             borderRadius: 0,
             boxShadow: 'none',
           },
@@ -288,15 +387,15 @@ export function createScaledTheme(rawFactor = 1) {
             gap: px(6),
             fontSize: px(16),
             '&:hover': {
-              backgroundColor: '#0c315e',
-              color: '#fff',
-              '& .MuiSvgIcon-root': { color: '#fff' },
+              backgroundColor: COLORS.secondaryMain,
+              color: COLORS.primaryContrastText,
+              '& .MuiSvgIcon-root': { color: COLORS.primaryContrastText },
             },
             '&.Mui-selected': {
-              backgroundColor: '#0c315e',
-              color: '#fff',
-              '& .MuiSvgIcon-root': { color: '#fff' },
-              '&:hover': { backgroundColor: '#0c315e' },
+              backgroundColor: COLORS.secondaryMain,
+              color: COLORS.primaryContrastText,
+              '& .MuiSvgIcon-root': { color: COLORS.primaryContrastText },
+              '&:hover': { backgroundColor: COLORS.secondaryMain },
             },
           },
         },
@@ -304,7 +403,7 @@ export function createScaledTheme(rawFactor = 1) {
       MuiListItemIcon: {
         styleOverrides: {
           root: {
-            color: '#0c315e',
+            color: COLORS.secondaryMain,
             '& .MuiSvgIcon-root': {
               fontSize: 28 * factor,
               transition: 'color 0.2s ease',
@@ -316,8 +415,8 @@ export function createScaledTheme(rawFactor = 1) {
       // TABS
       MuiTabs: {
         styleOverrides: {
-          root: { backgroundColor: '#0c315e' },
-          indicator: { backgroundColor: '#009640' },
+          root: { backgroundColor: COLORS.secondaryMain },
+          indicator: { backgroundColor: COLORS.primaryMain },
           flexContainer: {
             borderBottom: 'none',
             '& .MuiTab-root': { borderRight: 'none' },
@@ -329,15 +428,15 @@ export function createScaledTheme(rawFactor = 1) {
           root: {
             border: 'none !important',
             fontWeight: 'bold',
-            color: '#0c315e',
-            backgroundColor: '#d0d3d4',
+            color: COLORS.secondaryMain,
+            backgroundColor: COLORS.layoutBackground,
             fontSize: px(16),
             '&.Mui-selected': {
-              color: '#009640',
-              backgroundColor: '#d0d3d4',
+              color: COLORS.primaryMain,
+              backgroundColor: COLORS.layoutBackground,
               fontWeight: 'bold',
             },
-            '&:hover': { backgroundColor: '#d0d3d4' },
+            '&:hover': { backgroundColor: COLORS.layoutBackground },
             '&::before, &::after': { display: 'none' },
           },
         },
@@ -346,20 +445,20 @@ export function createScaledTheme(rawFactor = 1) {
       // TABLAS
       MuiTablePagination: {
         styleOverrides: {
-          root: { backgroundColor: '#f5f5f5', color: '#0c315e' },
+          root: { backgroundColor: COLORS.backgroundDefault, color: COLORS.textPrimary },
           toolbar: { minHeight: px(40) },
-          selectIcon: { color: '#0c315e' },
-          actions: { color: '#0c315e' },
-          displayedRows: { fontSize: px(14), color: '#0c315e' },
-          selectLabel: { fontSize: px(14), color: '#0c315e' },
-          select: { fontSize: px(14), color: '#0c315e' },
+          selectIcon: { color: COLORS.textPrimary },
+          actions: { color: COLORS.textPrimary },
+          displayedRows: { fontSize: px(14), color: COLORS.textPrimary },
+          selectLabel: { fontSize: px(14), color: COLORS.textPrimary },
+          select: { fontSize: px(14), color: COLORS.textPrimary },
         },
       },
       MuiTableCell: {
         styleOverrides: {
           head: {
-            backgroundColor: '#0c315e',
-            color: '#fff',
+            backgroundColor: COLORS.secondaryMain,
+            color: COLORS.primaryContrastText,
             fontSize: px(14),
           },
           body: {
@@ -371,19 +470,19 @@ export function createScaledTheme(rawFactor = 1) {
       MuiTableRow: {
         styleOverrides: {
           root: {
-            '&:nth-of-type(odd)': { backgroundColor: '#f9f9f9' },
-            '&:hover': { backgroundColor: '#e6f2ff' },
+            '&:nth-of-type(odd)': { backgroundColor: COLORS.layoutBackground },
+            '&:hover': { backgroundColor: COLORS.layoutBackground },
           },
         },
       },
       MuiTableSortLabel: {
         styleOverrides: {
           root: {
-            color: '#fff',
-            '&:hover': { color: '#fff' },
-            '&.Mui-active': { color: '#fff' },
+            color: COLORS.primaryContrastText,
+            '&:hover': { color: COLORS.primaryContrastText },
+            '&.Mui-active': { color: COLORS.primaryContrastText },
             '& .MuiTableSortLabel-icon': {
-              color: '#fff !important',
+              color: `${COLORS.primaryContrastText} !important`,
             },
           },
         },
@@ -423,7 +522,7 @@ export function createScaledTheme(rawFactor = 1) {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
-            backgroundColor: '#d0d3d4',
+            backgroundColor: COLORS.layoutBackground,
             margin: 0,
             padding: 0,
             boxSizing: 'border-box',
@@ -435,7 +534,7 @@ export function createScaledTheme(rawFactor = 1) {
             fontSize: px(18),
             fontWeight: 'bold',
             minHeight: px(56),
-            border: `${Math.max(1, Math.round(1 * factor))}px solid #0c315e`,
+            border: `${Math.max(1, Math.round(1 * factor))}px solid ${COLORS.secondaryMain}`,
           },
         },
       },

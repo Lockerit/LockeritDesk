@@ -359,7 +359,7 @@ export const Ppal = () => {
                                             }}
                                         />
                                     }
-                                    color="info"
+                                    color={'tertiary'}
                                     onClick={reserveLocker}
                                 />
                             </Box>

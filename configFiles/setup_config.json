@@ -26,6 +26,19 @@
             "timeoutKeypad": 300,
             "timeoutInsertMoney": 120,
             "timeoutShowMessage": 120
+        },
+        "colorsTheme": {
+            "theme": "light",
+            "primaryMain": "#009640",
+            "primaryContrastText": "#ffffff",
+            "secondaryMain": "#0c315e",
+            "secondaryContrastText": "#ffffff",
+            "tertiaryMain": "#212121",
+            "tertiaryContrastText": "#ffffff",
+            "textPrimary": "#0c315e",
+            "textSecondary": "#009640",
+            "backgroundDefault": "#f9f9f9",
+            "layoutBackground": "#f1f1f1"
         }
     },
     "report": {

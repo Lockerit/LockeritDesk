@@ -25,6 +25,7 @@ import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
 import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'AdminLockers';
@@ -45,20 +46,24 @@ export const AdminLockers = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
     const [registerUserPeriodOpen, setRegisterUserPeriodOpen] = useState(false);
+    const [dataStatus, setDataStatus] = useState({ general: [] });
 
     const theme = useTheme();
-
-    const [dataStatus] = useState({
-        general: [
-            { status: 'Libre', color: theme.palette.lockerStatus.FREE },
-            { status: 'Ocupado', color: theme.palette.lockerStatus.OCCUPIED },
-            { status: 'Reservado', color: theme.palette.lockerStatus.RESERVED },
-            { status: 'Deshabilitado', color: theme.palette.lockerStatus.BLOCKED },
-            { status: 'Asignado', color: theme.palette.lockerStatus.ASIGNE },
-        ],
-    });
-
     const config = useElectronConfig();
+    const lockersColors = useElectronLockersColors();
+
+
+
+    useEffect(() => {
+        if (!lockersColors) return;
+
+        setDataStatus({
+            general: lockersColors?.lockersColorsStatus.map(({ status, color }) => ({
+                status, // o status: status.toUpperCase() si quieres mayúsculas
+                color,
+            })),
+        });
+    }, [lockersColors]);
 
     useEffect(() => {
         if (!config) return;
@@ -679,7 +684,7 @@ export const AdminLockers = () => {
                                 >
                                     <Button
                                         variant="outlined"
-                                        color="secondary"
+                                        color="primary"
                                         fullWidth
                                         onClick={() => handleAction('abrir')}
                                     >
@@ -695,7 +700,7 @@ export const AdminLockers = () => {
                                     </Button>
                                     <Button
                                         variant="outlined"
-                                        color="secondary"
+                                        color="primary"
                                         fullWidth
                                         onClick={handleMenuClick}
                                     >
@@ -739,7 +744,7 @@ export const AdminLockers = () => {
                     <Box sx={{ mt: 'auto', width: '100%' }}>
                         <Button
                             variant="outlined"
-                            color="secondary"
+                            color="tertiary"
                             fullWidth
                             onClick={() => handleAction('reservar')}
                         >
