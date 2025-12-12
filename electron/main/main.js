@@ -13,6 +13,7 @@ import { initLogger, getLogger } from '../logger/logger.js';
 import { ttsWin } from '../utils/tts.win.js';
 import { watchAuthKey } from '../watchers/authWatcher.js';
 import { watchEnvFile } from '../watchers/envWatcher.js';
+import { watchLockersColorsConfig } from '../watchers/lockersColorsWatcher.js';
 import { watchLoggerConfig } from '../watchers/loggerWatcher.js';
 import { watchSetupConfig } from '../watchers/setupWatcher.js';
 
@@ -231,6 +232,20 @@ ipcMain.handle('get-config', async () => {
   }
 });
 
+ipcMain.handle('get-lockers-colors', async () => {
+  try {
+    const p = resolveConfigPath('lockers_colors_config.json');
+    if (p) {
+      const data = fs.readFileSync(p, 'utf8');
+      return JSON.parse(data);
+    }
+    return {};
+  } catch (err) {
+    log.error(`[${fileName}] get-lockers-colors error: ${err}`);
+    return {};
+  }
+});
+
 ipcMain.handle('get-auth', async () => {
   try {
     const p = resolveConfigPath('auth_key.json');
@@ -395,6 +410,7 @@ app.whenReady().then(() => {
     logger: resolveConfigPath('logger_config.json'),
     env: resolveConfigPath('.env'),
     setup: resolveConfigPath('setup_config.json'),
+    lockersColors: resolveConfigPath('lockers_colors_config.json'),
     auth: resolveConfigPath('auth_key.json'),
   };
 
@@ -402,6 +418,7 @@ app.whenReady().then(() => {
   if (paths.logger) watchLoggerConfig(paths.logger, messenger);
   if (paths.env) watchEnvFile(paths.env, messenger);
   if (paths.setup) watchSetupConfig(paths.setup, messenger);
+  if (paths.lockersColors) watchLockersColorsConfig(paths.lockersColors, messenger);
   if (paths.auth) watchAuthKey(paths.auth, messenger);
 
   // .env: wrapper para actualizar CSP en caliente en producción
@@ -419,6 +436,7 @@ app.whenReady().then(() => {
 
   // Otros
   if (paths.setup) watchSetupConfig(paths.setup, messenger);
+  if (paths.lockersColors) watchLockersColorsConfig(paths.lockersColors, messenger);
   if (paths.auth) watchAuthKey(paths.auth, messenger);
 
   log.info(`[${fileName}] App Lista whenReady`);

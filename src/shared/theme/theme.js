@@ -22,9 +22,9 @@ export function createScaledTheme(rawFactor = 1) {
       lockerStatus: {
         FREE: '#2e7d32',
         OCCUPIED: '#c62828',
-        RESERVED: '#f9a825',
+        RESERVED: '#0288d1',
         BLOCKED: '#6d6d6d',
-        MAINTENANCE: '#6a1b9a',
+        ASIGNE: '#6a1b9a',
       },
     },
 

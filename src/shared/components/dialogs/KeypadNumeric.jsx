@@ -34,6 +34,7 @@ import { OpenSessionLocker } from '@services/apis/openSessionLocker.js';
 import { closeWebSocket } from '@services/realtime/websocket.js';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
 import { logger } from '@shared/utils/logger.js';
 import {
@@ -106,16 +107,17 @@ export const KeypadNumeric = ({
   const [showLockerOpen, setShowLockerOpen] = useState();
   const [showErrorAPIOpen, setShowErrorAPIOpen] = useState();
   const [insertMoneyKey, setInsertMoneyKey] = useState(0);
+  const [colorLocker, setColorLocker] = useState('#000000');
 
   const phoneRef = useRef(null);
   const passRef = useRef(null);
   const confirmRef = useRef(null);
   const cleanupRef = useRef(null);
   const config = useElectronConfig();
+  const lockersColors = useElectronLockersColors();
   const theme = useTheme();
 
   const operationRet = operation === 'Retirar' || operation === 'Reservado';
-  const isConfigReady = !!config && Object.keys(config).length > 0;
   const intervalRef = useRef(null);
   const cancellingRef = useRef(false);
 
@@ -179,6 +181,11 @@ export const KeypadNumeric = ({
   }, [timeoutInsert]);
 
   useEffect(() => {
+    if (!lockersColors) return;
+    console.log('lockersColors en KeypadNumeric:', lockersColors);
+  }, [lockersColors]);
+
+  useEffect(() => {
     if (!open) {
       try {
         const active = document.activeElement;
@@ -207,6 +214,7 @@ export const KeypadNumeric = ({
     operation: undefined,
     timeout: undefined,
   });
+
   useEffect(() => {
     if (lastProps.current.open !== open) {
       log.debug(`Prop changed: open=${open}`);
@@ -264,7 +272,7 @@ export const KeypadNumeric = ({
 
   // Carga de configuración
   useEffect(() => {
-    if (!isConfigReady) return;
+    if (!config) return;
 
     const rawAmount =
       config?.paramsHtml?.currency?.coinBoxRequiredAmount;
@@ -284,7 +292,7 @@ export const KeypadNumeric = ({
     log.info(
       `Config cargada | amountService=${rawAmount} | timeoutInsert=${tmo?.timeoutInsertMoney} | timeoutShowMessage=${tmo?.timeoutShowMessage}`
     );
-  }, [isConfigReady, config]);
+  }, [config]);
 
   // Lectura/escritura de input activo
   const getInputValue = () => {
@@ -565,6 +573,13 @@ export const KeypadNumeric = ({
   };
   const handleLoadingChange = (v) => setLoading(v);
 
+  const getLockerColor = (lockerCode, groups) => {
+    if (!lockerCode || !Array.isArray(groups)) return null;
+
+    const group = groups.find(g => g.lockers.includes(lockerCode));
+    return group ? group.color : null;
+  };
+
   const confirmSendData = async () => {
 
     if (operation === 'Guardar') {
@@ -608,7 +623,9 @@ export const KeypadNumeric = ({
               );
             speak(message || '');
           }
+
           setLocker(lockerCode);
+          setColorLocker(getLockerColor(lockerCode, lockersColors?.lockersColors) || '#000000');
           setShowLockerOpen(true);
           log.info(
             `Asignación exitosa | locker=${lockerCode}`
@@ -677,6 +694,7 @@ export const KeypadNumeric = ({
             );
           }
           setLocker(lockerCode);
+          setColorLocker(getLockerColor(lockerCode, lockersColors?.lockersColors) || '#000000');
           setShowLockerOpen(true);
           log.info(
             `Apertura exitosa | locker=${lockerCode}`
@@ -1106,13 +1124,7 @@ export const KeypadNumeric = ({
             : 'gracias por utilizar nuestro servicio'
         }
         timeout={timeoutShowMessage}
-        backColor={
-          operation === 'Retirar'
-            ? 'secondary.main'
-            : operation === 'Guardar'
-              ? 'primary.main'
-              : 'info.main'
-        }
+        backColor={colorLocker}
         operation={operation}
         hideBackdrop
       />

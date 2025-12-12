@@ -50,11 +50,11 @@ export const AdminLockers = () => {
 
     const [dataStatus] = useState({
         general: [
-            { status: 'Libre', color: 'success.main' },
-            { status: 'Ocupado', color: 'error.main' },
-            { status: 'Reservado', color: 'info.main' },
-            { status: 'Deshabilitado', color: 'gray' },
-            { status: 'Asignado', color: 'purple' },
+            { status: 'Libre', color: theme.palette.lockerStatus.FREE },
+            { status: 'Ocupado', color: theme.palette.lockerStatus.OCCUPIED },
+            { status: 'Reservado', color: theme.palette.lockerStatus.RESERVED },
+            { status: 'Deshabilitado', color: theme.palette.lockerStatus.BLOCKED },
+            { status: 'Asignado', color: theme.palette.lockerStatus.ASIGNE },
         ],
     });
 
@@ -679,7 +679,7 @@ export const AdminLockers = () => {
                                 >
                                     <Button
                                         variant="outlined"
-                                        color="primary"
+                                        color="secondary"
                                         fullWidth
                                         onClick={() => handleAction('abrir')}
                                     >
@@ -687,7 +687,7 @@ export const AdminLockers = () => {
                                     </Button>
                                     <Button
                                         variant="outlined"
-                                        color="warning"
+                                        color="primary"
                                         fullWidth
                                         onClick={() => handleAction('liberar')}
                                     >
@@ -695,7 +695,7 @@ export const AdminLockers = () => {
                                     </Button>
                                     <Button
                                         variant="outlined"
-                                        color="error"
+                                        color="secondary"
                                         fullWidth
                                         onClick={handleMenuClick}
                                     >

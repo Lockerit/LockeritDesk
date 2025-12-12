@@ -40,6 +40,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getConfig: () => ipcRenderer.invoke('get-config'),
   onConfigUpdate: (cb) => on('config-updated', cb),
 
+  getLockersColors: () => ipcRenderer.invoke('get-lockers-colors'),
+  onLockersColorsUpdate: (cb) => on('lockers-colors-updated', cb),
+
   getLogger: () => ipcRenderer.invoke('get-logger'),
   onLoggerUpdate: (cb) => on('logger-updated', cb),
 
