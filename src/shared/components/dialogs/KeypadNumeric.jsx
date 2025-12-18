@@ -53,6 +53,7 @@ import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { InsertMoney } from './InsertMoney.jsx';
 import { Loading } from './Loading.jsx';
 import { ShowErrorAPI } from './ShowErrorAPI.jsx';
+import { ShowCloseLocker } from './ShowCloseLocker.jsx';
 import { ShowLocker } from './ShowLocker.jsx';
 
 const fileName = 'KeypadNumeric';
@@ -105,6 +106,7 @@ export const KeypadNumeric = ({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState();
   const [insertMoneyOpen, setInsertMoneyOpen] = useState();
   const [showLockerOpen, setShowLockerOpen] = useState();
+  const [showCloseLockerOpen, setShowCloseLockerOpen] = useState();
   const [showErrorAPIOpen, setShowErrorAPIOpen] = useState();
   const [insertMoneyKey, setInsertMoneyKey] = useState(0);
   const [colorLocker, setColorLocker] = useState('#000000');
@@ -580,19 +582,14 @@ export const KeypadNumeric = ({
   };
 
   const confirmSendData = async () => {
-
-    if (operation === 'Guardar') {
-      await confirmGuardarLocker();
-    } else if (operation === 'Retirar') {
-      await confirmRetirarReservadoLocker(true);
-    }
+    setShowCloseLockerOpen(true);
+    setConfirmDialogOpen(false);
   };
 
   const confirmGuardarLocker = async () => {
 
     setMessageLoading('Asignando Casilllero...');
     setSecondsLeft(timeout);
-    setConfirmDialogOpen(false);
 
     const payload = { phone, pin: password, openBy: 'user' };
 
@@ -740,6 +737,16 @@ export const KeypadNumeric = ({
     closeWebSocket();
     cancel();
     log.info('ShowLocker confirmado y flujo finalizado');
+  };
+
+  const confirmCloseLocker = async () => {
+    setShowCloseLockerOpen(false);
+
+    if (operation === 'Guardar') {
+      await confirmGuardarLocker();
+    } else if (operation === 'Retirar') {
+      await confirmRetirarReservadoLocker(true);
+    }
   };
 
   const confirmShowErrorAPI = () => {
@@ -1108,6 +1115,13 @@ export const KeypadNumeric = ({
         amountPay={formatCurrency(amountPay)}
         phone={formatNumberPhone(phone)}
         timeout={safeTimeoutInsert}
+        hideBackdrop
+      />
+
+      <ShowCloseLocker
+        open={showCloseLockerOpen}
+        onConfirm={confirmCloseLocker}
+        msg={'¡Por favor dejar el casillero cerrado!'}
         hideBackdrop
       />
 
