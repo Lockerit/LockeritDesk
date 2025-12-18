@@ -12,10 +12,10 @@ import {
     Select,
     Stack,
     Typography,
-    Menu,
+    Menu
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
 import { OpenByCodeLocker } from '@services/apis/openByCodeLocker.js';
@@ -24,6 +24,7 @@ import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { RegisterUserPeriod } from '@shared/components/dialogs/RegisterUserPeriod.jsx';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
+import { StatusLockersPopper } from '@shared/components/dialogs/StatusLockersPopper.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
 import { logger } from '@shared/utils/logger.js';
@@ -48,11 +49,22 @@ export const AdminLockers = () => {
     const [registerUserPeriodOpen, setRegisterUserPeriodOpen] = useState(false);
     const [dataStatus, setDataStatus] = useState({ general: [] });
 
+    const [statusAnchorEl, setStatusAnchorEl] = useState(null);
+    const [statusPopperOpen, setStatusPopperOpen] = useState(false);
+    const [statusSelected, setStatusSelected] = useState(null);
+
     const theme = useTheme();
     const config = useElectronConfig();
     const lockersColors = useElectronLockersColors();
 
 
+    const allLockers = useMemo(() => {
+        return (data?.modules || []).flatMap((m) => (m.lockers || []).map((l) => ({
+            lockerCode: l.lockerCode,
+            status: l.status,
+            module: m.module,
+        })));
+    }, [data]);
 
     useEffect(() => {
         if (!lockersColors) return;
@@ -414,6 +426,17 @@ export const AdminLockers = () => {
         log.info('Cerrar modal de reserva → refrescar listado');
     };
 
+    const handleStatusSummaryClick = (event, status) => {
+        setStatusAnchorEl(event.currentTarget);
+        setStatusSelected(status);
+        setStatusPopperOpen(true);
+    };
+
+    const handleCloseStatusPopper = () => {
+        setStatusPopperOpen(false);
+        setStatusAnchorEl(null);
+    };
+
     return (
         <>
             <Box
@@ -481,26 +504,25 @@ export const AdminLockers = () => {
                             (s) => s.status.toLowerCase() === item.status.toLowerCase()
                         );
 
+                        const labelStatus = matchedStatus?.status || item.status;
                         const color = matchedStatus ? matchedStatus.color : 'text.primary';
 
                         return (
                             <Box
-                                key={matchedStatus?.status || item.status}
-                                sx={{ pb: { xs: 1, sm: 2 } }}
+                                key={labelStatus}
+                                onClick={(e) => handleStatusSummaryClick(e, labelStatus)}
+                                sx={{
+                                    pb: { xs: 1, sm: 2 },
+                                    cursor: 'pointer',
+                                    userSelect: 'none',
+                                    '&:hover': { opacity: 0.85 },
+                                }}
                             >
-                                <Typography
-                                    variant="h6"
-                                    component="span"
-                                    sx={{ fontWeight: 'bold', color }}
-                                >
-                                    {matchedStatus?.status || item.status}
+                                <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color }}>
+                                    {labelStatus}
                                     {': '}
                                 </Typography>
-                                <Typography
-                                    variant="h6"
-                                    component="span"
-                                    sx={{ fontWeight: 'bold', color }}
-                                >
+                                <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color }}>
                                     {item.total}
                                 </Typography>
                             </Box>
@@ -755,6 +777,15 @@ export const AdminLockers = () => {
             </Box>
 
             {loading && <Loading message={messageLoading} />}
+
+            <StatusLockersPopper
+                open={statusPopperOpen}
+                anchorEl={statusAnchorEl}
+                onClose={handleCloseStatusPopper}
+                statusSelected={statusSelected}
+                lockers={allLockers}
+                statusColors={dataStatus.general}
+            />
 
             <ShowErrorAPI
                 open={showErrorAPIOpen}
