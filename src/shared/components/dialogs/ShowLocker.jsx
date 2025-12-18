@@ -189,9 +189,9 @@ export const ShowLocker = ({
                             md: '70%',
                         },
                         minHeight: {
-                            xs: theme.spacing(18),
-                            sm: theme.spacing(20),
-                            md: theme.spacing(22),
+                            xs: theme.spacing(28),
+                            sm: theme.spacing(30),
+                            md: theme.spacing(32),
                         },
                         display: 'flex',
                         justifyContent: 'center',
@@ -225,13 +225,14 @@ export const ShowLocker = ({
                     operation === 'Guardar' ||
                     operation === 'Reservado') && (
                         <Typography
-                            variant="h4"
+                            variant="h1"
+                            color='error.main'
                             sx={{
                                 fontWeight: 'bold',
                                 py: theme.spacing(2),
                             }}
                         >
-                            ¡No olvides cerrar el casillero!
+                            ¡Por favor dejar el casillero cerrado!
                         </Typography>
                     )}
 
