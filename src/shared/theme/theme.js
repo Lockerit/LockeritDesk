@@ -127,19 +127,89 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
     typography: {
       fontFamily: 'Nunito, sans-serif',
       fontSize: 14 * factor,
-      h1: { fontSize: px(40), fontWeight: 700, lineHeight: 1.2 },
-      h2: { fontSize: px(32), fontWeight: 600, lineHeight: 1.25 },
-      h3: { fontSize: px(28), fontWeight: 600, lineHeight: 1.3 },
-      h4: { fontSize: px(24), fontWeight: 500, lineHeight: 1.3 },
-      h5: { fontSize: px(20), fontWeight: 500, lineHeight: 1.35 },
-      h6: { fontSize: px(18), fontWeight: 500, lineHeight: 1.4 },
-      subtitle1: { fontSize: px(16), fontWeight: 400, lineHeight: 1.4 },
-      subtitle2: { fontSize: px(14), fontWeight: 400, lineHeight: 1.4 },
-      body1: { fontSize: px(16), fontWeight: 400, lineHeight: 1.45 },
-      body2: { fontSize: px(14), fontWeight: 400, lineHeight: 1.4 },
-      button: { fontSize: px(16), fontWeight: 600, textTransform: 'none' },
-      caption: { fontSize: px(12), lineHeight: 1.3 },
-      overline: { fontSize: px(12), textTransform: 'uppercase', letterSpacing: '0.1em' },
+      h1: {
+        fontSize: px(40),
+        fontWeight: 700,
+        lineHeight: 1.2,
+        '@media (max-width: 600px)': { fontSize: px(28) },
+        '@media (max-width: 480px)': { fontSize: px(24) },
+      },
+      h2: {
+        fontSize: px(32),
+        fontWeight: 600,
+        lineHeight: 1.25,
+        '@media (max-width: 600px)': { fontSize: px(24) },
+        '@media (max-width: 480px)': { fontSize: px(20) },
+      },
+      h3: {
+        fontSize: px(28),
+        fontWeight: 600,
+        lineHeight: 1.3,
+        '@media (max-width: 600px)': { fontSize: px(22) },
+        '@media (max-width: 480px)': { fontSize: px(18) },
+      },
+      h4: {
+        fontSize: px(24),
+        fontWeight: 500,
+        lineHeight: 1.3,
+        '@media (max-width: 600px)': { fontSize: px(20) },
+        '@media (max-width: 480px)': { fontSize: px(16) },
+      },
+      h5: {
+        fontSize: px(20),
+        fontWeight: 500,
+        lineHeight: 1.35,
+        '@media (max-width: 600px)': { fontSize: px(18) },
+        '@media (max-width: 480px)': { fontSize: px(14) },
+      },
+      h6: {
+        fontSize: px(18),
+        fontWeight: 500,
+        lineHeight: 1.4,
+        '@media (max-width: 600px)': { fontSize: px(16) },
+        '@media (max-width: 480px)': { fontSize: px(14) },
+      },
+      subtitle1: {
+        fontSize: px(16),
+        fontWeight: 400,
+        lineHeight: 1.4,
+        '@media (max-width: 600px)': { fontSize: px(14) },
+      },
+      subtitle2: {
+        fontSize: px(14),
+        fontWeight: 400,
+        lineHeight: 1.4,
+        '@media (max-width: 600px)': { fontSize: px(12) },
+      },
+      body1: {
+        fontSize: px(16),
+        fontWeight: 400,
+        lineHeight: 1.45,
+        '@media (max-width: 600px)': { fontSize: px(14) },
+      },
+      body2: {
+        fontSize: px(14),
+        fontWeight: 400,
+        lineHeight: 1.4,
+        '@media (max-width: 600px)': { fontSize: px(12) },
+      },
+      button: {
+        fontSize: px(16),
+        fontWeight: 600,
+        textTransform: 'none',
+        '@media (max-width: 600px)': { fontSize: px(14) },
+      },
+      caption: {
+        fontSize: px(12),
+        lineHeight: 1.3,
+        '@media (max-width: 600px)': { fontSize: px(10) },
+      },
+      overline: {
+        fontSize: px(12),
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        '@media (max-width: 600px)': { fontSize: px(10) },
+      },
     },
     
     components: {
@@ -156,11 +226,15 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             '& .MuiInputLabel-root': {
               color: COLORS.textPrimary,
               fontSize: px(24),
+              '@media (max-width: 600px)': { fontSize: px(18) },
+              '@media (max-width: 480px)': { fontSize: px(14) },
             },
             '& .MuiInputBase-input': {
               color: COLORS.primaryMain,
               fontSize: px(32),
               fontWeight: 'bold',
+              '@media (max-width: 600px)': { fontSize: px(24) },
+              '@media (max-width: 480px)': { fontSize: px(18) },
             },
           },
         },
@@ -174,6 +248,8 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             transform: 'translate(0, 18px) scale(1)',
             transition: 'all 0.2s ease-out',
             margin: 0,
+            '@media (max-width: 600px)': { fontSize: px(14) },
+            '@media (max-width: 480px)': { fontSize: px(12) },
             '&.MuiInputLabel-shrink': {
               transform: 'translate(0, 0) scale(0.8)',
             },
@@ -187,6 +263,8 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             fontSize: px(16),
             paddingTop: px(3),
             paddingBottom: 0,
+            '@media (max-width: 600px)': { fontSize: px(14), paddingTop: px(2) },
+            '@media (max-width: 480px)': { fontSize: px(12), paddingTop: px(1) },
           },
           underline: {
             '&:before': { borderBottomColor: COLORS.textPrimary },
@@ -205,10 +283,14 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
         styleOverrides: {
           root: {
             fontSize: px(16),
+            '@media (max-width: 600px)': { fontSize: px(14) },
+            '@media (max-width: 480px)': { fontSize: px(12) },
             '& .MuiInputBase-input': {
               color: COLORS.primaryMain,
               fontSize: px(18),
               fontWeight: 'bold',
+              '@media (max-width: 600px)': { fontSize: px(16) },
+              '@media (max-width: 480px)': { fontSize: px(14) },
               '&::placeholder': {
                 color: COLORS.textPrimary,
                 opacity: 0.4,
@@ -235,6 +317,8 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
               color: COLORS.primaryMain,
               fontSize: px(18),
               fontWeight: 'bold',
+              '@media (max-width: 600px)': { fontSize: px(16) },
+              '@media (max-width: 480px)': { fontSize: px(14) },
             },
             '&:before': { borderBottomColor: COLORS.textPrimary },
             '&:after': {
@@ -255,6 +339,8 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             color: COLORS.primaryMain,
             fontSize: px(18),
             fontWeight: 'bold',
+            '@media (max-width: 600px)': { fontSize: px(16) },
+            '@media (max-width: 480px)': { fontSize: px(14) },
             '&::placeholder': {
               color: COLORS.textPrimary,
               opacity: 0.4,
@@ -264,6 +350,8 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
           inputSizeSmall: {
             fontSize: px(16),
             fontWeight: 'bold',
+            '@media (max-width: 600px)': { fontSize: px(14) },
+            '@media (max-width: 480px)': { fontSize: px(12) },
           },
         },
       },
@@ -272,7 +360,11 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
       MuiPickersSectionList: {
         styleOverrides: {
           root: {
-            fontSize: px(16),
+            fontSize: {
+              xs: px(12),
+              sm: px(14),
+              md: px(16),
+            },
             fontWeight: 'bold',
             color: COLORS.primaryMain,
           },
@@ -281,12 +373,20 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
       MuiPickersInputBase: {
         styleOverrides: {
           sectionContent: {
-            fontSize: px(16),
+            fontSize: {
+              xs: px(12),
+              sm: px(14),
+              md: px(16),
+            },
             fontWeight: 'bold',
             color: COLORS.primaryMain,
           },
           sectionSeparator: {
-            fontSize: px(18),
+            fontSize: {
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
+            },
             fontWeight: 'bold',
             color: COLORS.primaryMain,
           },
@@ -308,7 +408,11 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
         styleOverrides: {
           root: {
             marginTop: 0,
-            fontSize: px(12),
+            fontSize: {
+              xs: px(10),
+              sm: px(11),
+              md: px(12),
+            },
             lineHeight: 1.2,
           },
         },
@@ -319,8 +423,15 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
         defaultProps: { elevation: 3 },
         styleOverrides: {
           root: {
-            borderRadius: 16 * factor,
-            boxShadow: `0 ${px(8)} ${px(16)} rgba(0,0,0,0.25)`,
+            borderRadius: {
+              xs: 8 * factor,
+              sm: 12 * factor,
+              md: 16 * factor,
+            },
+            boxShadow: `0 ${px(6)} ${px(12)} rgba(0,0,0,0.2)`,
+            '@media (max-width: 600px)': {
+              boxShadow: `0 ${px(4)} ${px(8)} rgba(0,0,0,0.15)`,
+            },
           },
         },
       },
@@ -329,11 +440,23 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
       MuiButton: {
         styleOverrides: {
           root: {
-            fontSize: px(24),
-            borderRadius: px(16),
+            fontSize: {
+              xs: px(16),
+              sm: px(20),
+              md: px(24),
+            },
+            borderRadius: {
+              xs: px(12),
+              sm: px(14),
+              md: px(16),
+            },
             backdropFilter: 'blur(4px)',
             boxShadow: `0 ${px(4)} ${px(12)} rgba(0,0,0,0.2)`,
-            padding: `${px(8)} ${px(16)}`,
+            padding: {
+              xs: `${px(6)} ${px(12)}`,
+              sm: `${px(7)} ${px(14)}`,
+              md: `${px(8)} ${px(16)}`,
+            },
             textTransform: 'none',
             fontWeight: 'bold',
             '&:hover': {
@@ -360,21 +483,47 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
       MuiMenu: {
         styleOverrides: {
           paper: {
-            borderRadius: 6 * factor,
-            boxShadow: `0 ${px(4)} ${px(12)} rgba(0,0,0,0.15)`,
-            minWidth: 200 * factor,
-            padding: `${px(4)} 0`,
+            borderRadius: {
+              xs: 4 * factor,
+              sm: 5 * factor,
+              md: 6 * factor,
+            },
+            boxShadow: `0 ${px(3)} ${px(8)} rgba(0,0,0,0.12)`,
+            '@media (max-width: 600px)': {
+              boxShadow: `0 ${px(2)} ${px(4)} rgba(0,0,0,0.1)`,
+            },
+            minWidth: {
+              xs: 160 * factor,
+              sm: 180 * factor,
+              md: 200 * factor,
+            },
+            padding: `${px(3)} 0`,
+            '@media (max-width: 600px)': {
+              padding: `${px(2)} 0`,
+            },
           },
         },
       },
       MuiMenuItem: {
         styleOverrides: {
           root: {
-            padding: `${px(8)} ${px(12)}`,
+            padding: {
+              xs: `${px(6)} ${px(10)}`,
+              sm: `${px(7)} ${px(11)}`,
+              md: `${px(8)} ${px(12)}`,
+            },
             display: 'flex',
             alignItems: 'center',
-            gap: px(6),
-            fontSize: px(16),
+            gap: {
+              xs: px(4),
+              sm: px(5),
+              md: px(6),
+            },
+            fontSize: {
+              xs: px(14),
+              sm: px(15),
+              md: px(16),
+            },
             '&:hover': {
               backgroundColor: COLORS.secondaryMain,
               color: COLORS.primaryContrastText,
@@ -394,7 +543,11 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
           root: {
             color: COLORS.secondaryMain,
             '& .MuiSvgIcon-root': {
-              fontSize: 28 * factor,
+              fontSize: {
+                xs: 20 * factor,
+                sm: 24 * factor,
+                md: 28 * factor,
+              },
               transition: 'color 0.2s ease',
             },
           },
@@ -419,7 +572,16 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             fontWeight: 'bold',
             color: COLORS.secondaryMain,
             backgroundColor: COLORS.layoutBackground,
-            fontSize: px(16),
+            fontSize: {
+              xs: px(12),
+              sm: px(14),
+              md: px(16),
+            },
+            padding: {
+              xs: `${px(8)} ${px(10)}`,
+              sm: `${px(10)} ${px(12)}`,
+              md: `${px(12)} ${px(16)}`,
+            },
             '&.Mui-selected': {
               color: COLORS.primaryMain,
               backgroundColor: COLORS.layoutBackground,
@@ -434,13 +596,53 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
       // TABLAS
       MuiTablePagination: {
         styleOverrides: {
-          root: { backgroundColor: COLORS.backgroundDefault, color: COLORS.textPrimary },
-          toolbar: { minHeight: px(40) },
+          root: { 
+            backgroundColor: COLORS.backgroundDefault, 
+            color: COLORS.textPrimary,
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
+          },
+          toolbar: { 
+            minHeight: {
+              xs: px(32),
+              sm: px(36),
+              md: px(40),
+            },
+            padding: {
+              xs: px(4),
+              sm: px(6),
+              md: px(8),
+            },
+          },
           selectIcon: { color: COLORS.textPrimary },
           actions: { color: COLORS.textPrimary },
-          displayedRows: { fontSize: px(14), color: COLORS.textPrimary },
-          selectLabel: { fontSize: px(14), color: COLORS.textPrimary },
-          select: { fontSize: px(14), color: COLORS.textPrimary },
+          displayedRows: { 
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
+            color: COLORS.textPrimary 
+          },
+          selectLabel: { 
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
+            color: COLORS.textPrimary 
+          },
+          select: { 
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
+            color: COLORS.textPrimary 
+          },
         },
       },
       MuiTableCell: {
@@ -448,11 +650,29 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
           head: {
             backgroundColor: COLORS.secondaryMain,
             color: COLORS.primaryContrastText,
-            fontSize: px(14),
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
+            padding: {
+              xs: px(8),
+              sm: px(10),
+              md: px(12),
+            },
           },
           body: {
-            fontSize: px(14),
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
             color: '#444',
+            padding: {
+              xs: px(8),
+              sm: px(10),
+              md: px(12),
+            },
           },
         },
       },
@@ -468,10 +688,20 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
         styleOverrides: {
           root: {
             color: COLORS.primaryContrastText,
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
             '&:hover': { color: COLORS.primaryContrastText },
             '&.Mui-active': { color: COLORS.primaryContrastText },
             '& .MuiTableSortLabel-icon': {
               color: `${COLORS.primaryContrastText} !important`,
+              fontSize: {
+                xs: px(16),
+                sm: px(18),
+                md: px(20),
+              },
             },
           },
         },
@@ -479,13 +709,30 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
 
       // DATE CALENDARS
       MuiPickersDay: {
-        styleOverrides: { root: { fontSize: px(14) } },
+        styleOverrides: { 
+          root: { 
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
+          } 
+        },
       },
       MuiMonthCalendar: {
         styleOverrides: {
           root: {
             '& .MuiMonthCalendar-button': {
-              fontSize: px(14),
+              fontSize: {
+                xs: px(12),
+                sm: px(13),
+                md: px(14),
+              },
+              padding: {
+                xs: px(6),
+                sm: px(8),
+                md: px(10),
+              },
               textTransform: 'capitalize',
             },
           },
@@ -495,15 +742,30 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
         styleOverrides: {
           root: {
             '& .MuiYearCalendar-yearButton': {
-              fontSize: px(16),
+              fontSize: {
+                xs: px(12),
+                sm: px(14),
+                md: px(16),
+              },
               fontWeight: 'bold',
+              padding: {
+                xs: px(6),
+                sm: px(8),
+                md: px(10),
+              },
             },
           },
         },
       },
       MuiDayCalendar: {
         styleOverrides: {
-          weekDayLabel: { fontSize: px(14) },
+          weekDayLabel: { 
+            fontSize: {
+              xs: px(12),
+              sm: px(13),
+              md: px(14),
+            },
+          },
         },
       },
 
@@ -520,9 +782,22 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             overflow: 'hidden',
           },
           '.hg-button': {
-            fontSize: px(18),
+            fontSize: {
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
+            },
             fontWeight: 'bold',
-            minHeight: px(56),
+            minHeight: {
+              xs: px(44),
+              sm: px(50),
+              md: px(56),
+            },
+            padding: {
+              xs: px(8),
+              sm: px(10),
+              md: px(12),
+            },
             border: `${Math.max(1, Math.round(1 * factor))}px solid ${COLORS.secondaryMain}`,
           },
         },

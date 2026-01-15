@@ -25,7 +25,7 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
-import { formatCurrency } from '@shared/utils/utils.js';
+import { formatCurrency, formatNumberPhone } from '@shared/utils/utils.js';
 
 dayjs.extend(utc);
 
@@ -496,7 +496,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                         <TableCell>{row.ID}</TableCell>
                                         <TableCell>{row.LockerID}</TableCell>
                                         <TableCell>{row.LockerCode}</TableCell>
-                                        <TableCell>{row.Phone}</TableCell>
+                                        <TableCell>{formatNumberPhone(row.Phone)}</TableCell>
                                         <TableCell>{row.PIN}</TableCell>
                                         <TableCell>
                                             {row.Active ? 'Sí' : 'No'}

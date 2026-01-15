@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import dotenv from 'dotenv';
-import { app, BrowserWindow, ipcMain, shell, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, screen, protocol } from 'electron';
 import say from 'say';
 import 'source-map-support/register.js';
 
@@ -55,6 +55,9 @@ process.on('unhandledRejection', (e) => {
 
 log.info(`[${fileName}] Iniciando aplicación Electron`);
 
+// Aumentar límite de listeners para evitar warnings en desarrollo (hot reload)
+process.setMaxListeners(50);
+
 // -------------------- util: resolver rutas de configFiles --------------------
 function resolveConfigPath(file) {
   const candidates = [
@@ -98,7 +101,7 @@ function buildCSP(env) {
     "default-src 'self'",
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data:",
+    "img-src 'self' data: app:",
     "font-src 'self' data:",
     `connect-src 'self' ${apiBaseUrl} ${websocketUrl}`
   ].join('; ');
@@ -382,6 +385,29 @@ ipcMain.handle('window:set-fullscreen', (_e, enabled) => {
   return { fullscreen: !!(win && win.isFullScreen && win.isFullScreen()) };
 });
 
+// -------------------- Assets --------------------
+ipcMain.handle('get-asset-path', async (_event, folder, fileName) => {
+  if (!folder || !fileName) return null;
+  
+  const candidates = [
+    path.join(process.resourcesPath || '', folder, fileName),  // prod (extraResources)
+    path.join(app.getAppPath(), folder, fileName),             // dev (raíz del proyecto)
+    path.join(process.cwd(), folder, fileName),
+    path.join(__dirname, '..', '..', folder, fileName),
+  ];
+  
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) {
+        return p;
+      }
+    } catch {
+      // continuar con siguiente candidato
+    }
+  }
+  return null;
+});
+
 // -------------------- Otros IPC --------------------
 ipcMain.on('app:exit', async () => {
   if (win && !win.isDestroyed()) win.webContents.send('app-close');
@@ -396,6 +422,33 @@ app.whenReady().then(() => {
   log = getLogger('main');
   if (process.platform === 'win32') {
     ttsWin.initWindowsTTS(log);
+  }
+
+  // 1.5) Registrar protocolo custom para servir archivos estáticos
+  if (!app.isPackaged) {
+    // En desarrollo, usar file:// normal
+    try {
+      protocol.registerFileProtocol('app', (request, callback) => {
+        const url = request.url.replace(/^app:\/\//, '');
+        const filePath = path.join(app.getAppPath(), url);
+        callback({ path: filePath });
+      });
+      log.info('[app protocol] Protocolo app:// registrado para desarrollo');
+    } catch (error) {
+      log.warn('[app protocol] Error registrando protocolo:', error);
+    }
+  } else {
+    // En producción, servir desde resources
+    try {
+      protocol.registerFileProtocol('app', (request, callback) => {
+        const url = request.url.replace(/^app:\/\//, '');
+        const filePath = path.join(process.resourcesPath || '', url);
+        callback({ path: filePath });
+      });
+      log.info('[app protocol] Protocolo app:// registrado para producción');
+    } catch (error) {
+      log.warn('[app protocol] Error registrando protocolo:', error);
+    }
   }
 
   // 2) diagnóstico de rutas

@@ -19,8 +19,9 @@ import { useTheme } from '@mui/material/styles';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import avatarImg from '@assets/Icono.jpg';
+import avatarImg from '@assets/icono.jpg';
 import { useUser } from '@shared/context/UserContext.jsx';
+import { useAssetPath } from '@shared/hooks/useAssetPath.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 
@@ -39,12 +40,14 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     const [fullScreen, setFullScreen] = useState(false);
 
     const config = useElectronConfig();
+    const avatarPath = useAssetPath(config?.paramsHtml?.imagesPaths?.avatar?.name);
+    const iconoPath = useAssetPath(config?.paramsHtml?.imagesPaths?.iconoLogin?.name);
     const avatarBoxRef = useRef(null);
     const navigate = useNavigate();
     const theme = useTheme();
 
     // tamaño de avatar basado en theme
-    const sizeAvatar = Math.max(40, Math.min(80, parseInt(theme.spacing(6), 10) || 50));
+    const sizeAvatar = Math.max(55, Math.min(80, parseInt(theme.spacing(1), 10) || 50));
 
     useEffect(() => {
         let alive = true;
@@ -80,30 +83,19 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         setShowOptFullScreen(isAuthOpera);
 
         if (isAuth) {
-            const avatarPath = config?.login?.avatarPath ?? '';
-            const valid = getValidAvatar(avatarPath);
-            setAvatarSelect(valid);
-            log.debug(
-                `Usuario autenticado | avatar=${valid === avatarImg ? 'default' : 'custom'}`
-            );
+            // Si avatarPath se resolvió, usarlo; si no, usar default
+            if (avatarPath && avatarPath.trim() !== '') {
+                setAvatarSelect(avatarPath);
+                log.debug('Usuario autenticado | avatar=custom');
+            } else {
+                setAvatarSelect(avatarImg);
+                log.debug('Usuario autenticado | avatar=default');
+            }
         } else {
-            setAvatarSelect(avatarImg);
+            setAvatarSelect(iconoPath || avatarImg);
             log.debug('Usuario no autenticado');
         }
-    }, [config, userInit]);
-
-    const getValidAvatar = (avatar) => {
-        if (
-            typeof avatar === 'string' &&
-            avatar.trim() !== '' &&
-            (/^https?:/.test(avatar) ||
-                /^data:/.test(avatar) ||
-                /\.(jpg|jpeg|png)$/i.test(avatar))
-        ) {
-            return avatar;
-        }
-        return avatarImg;
-    };
+    }, [config, userInit, avatarPath]);
 
     const persistUser = (updatedUser) => {
         setUserInit(updatedUser);
@@ -180,11 +172,35 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
                         }}
                         onClick={handleMenuOpen}
                     >
-                        <Avatar
-                            alt="Avatar"
-                            src={avatarSelect}
-                            sx={{ width: sizeAvatar, height: sizeAvatar }}
+                        {config?.paramsHtml?.imagesPaths?.avatar?.enabled && (
+                        <Box
+                            sx={{
+                                width: {
+                                    xs: theme.spacing(6),
+                                    sm: theme.spacing(7),
+                                    md: theme.spacing(8),
+                                    lg: theme.spacing(9),
+                                },
+                                height: {
+                                    xs: theme.spacing(6),
+                                    sm: theme.spacing(7),
+                                    md: theme.spacing(8),
+                                    lg: theme.spacing(9),
+                                },
+                                borderRadius: '50%',
+                                overflow: 'hidden',
+                                flexShrink: 0,
+                                backgroundColor: '#ffffff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundImage: `url(${avatarSelect})`,
+                                backgroundSize: config?.paramsHtml?.imagesPaths?.avatar?.size || '80%',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat',
+                            }}
                         />
+                        )}
                         {showData && (
                             <>
                                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>

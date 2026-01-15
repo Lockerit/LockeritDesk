@@ -9,6 +9,7 @@ import { KeypadNumeric } from '@shared/components/dialogs/KeypadNumeric.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
+import { useAssetPath } from '@shared/hooks/useAssetPath.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 import { speak, stopSpeaking } from '@shared/utils/speak.js';
@@ -30,6 +31,8 @@ export const Ppal = () => {
 
     const navigate = useNavigate();
     const config = useElectronConfig();
+    const logoPath = useAssetPath(config?.paramsHtml?.imagesPaths?.logo?.name);
+    const qrPath = useAssetPath(config?.paramsHtml?.imagesPaths?.QR?.name);
     const location = useLocation();
     const intervalRef = useRef(null);
     const theme = useTheme();
@@ -189,11 +192,23 @@ export const Ppal = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 textTransform: 'none',
-                fontSize: theme.typography.h1.fontSize,
-                p: theme.spacing(2),
+                fontSize: {
+                    xs: theme.typography.h3.fontSize,
+                    sm: theme.typography.h2.fontSize,
+                    md: theme.typography.h1.fontSize,
+                },
+                p: {
+                    xs: theme.spacing(1),
+                    sm: theme.spacing(1.5),
+                    md: theme.spacing(2),
+                },
                 width: '100%',
                 height: '100%',
-                borderRadius: theme.spacing(3),
+                borderRadius: {
+                    xs: theme.spacing(2),
+                    sm: theme.spacing(2.5),
+                    md: theme.spacing(3),
+                },
                 boxShadow: theme.shadows[8],
             }}
             fullWidth
@@ -244,61 +259,70 @@ export const Ppal = () => {
                 }}
             >
                 {/* Logo */}
-                <Box
-                    sx={{
-                        mb: { xs: 2, md: 3 },
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                    }}
-                >
-                    {config?.login?.logoPath && (
-                        <img
-                            src={config.login.logoPath}
-                            alt="Título"
-                            style={{
-                                maxHeight: theme.spacing(18),
-                                objectFit: 'contain',
-                            }}
-                            onClick={fetchDataStatusLocker}
-                        />
-                    )}
-                </Box>
-
+                {config?.paramsHtml?.imagesPaths?.logo?.enabled && (
+                    <Box
+                        sx={{
+                            mb: { xs: 2, md: 3 },
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                        }}
+                    >
+                        {logoPath && (
+                            <Box
+                                component="img"
+                                src={logoPath}
+                                alt="Título"
+                                onClick={fetchDataStatusLocker}
+                                sx={{
+                                    maxWidth: {
+                                        xs: `min(90%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                        sm: `min(85%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                        md: `min(80%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                        lg: `min(75%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                    },
+                                    maxHeight: {
+                                        xs: theme.spacing(12),
+                                        sm: theme.spacing(16),
+                                        md: theme.spacing(20),
+                                        lg: theme.spacing(24),
+                                    },
+                                    objectFit: 'contain',
+                                    cursor: 'pointer',
+                                }}
+                            />
+                        )}
+                    </Box>
+                )}
                 {/* Layout de botones como en la imagen */}
                 <Box
                     sx={{
                         flexGrow: 1,
                         width: {
-                            xs: config?.paramsHtml?.isVertical ? '80%' : '80%',
+                            xs: '95%',
                             sm: config?.paramsHtml?.isVertical ? '80%' : '80%',
                             md: config?.paramsHtml?.isVertical ? '70%' : '60%',
                             lg: config?.paramsHtml?.isVertical ? '60%' : '50%',
                         },
-                        display: {
-                            xs: 'flex',
-                            sm: 'grid',       // grid desde sm (>=600)
-                        },
-                        flexDirection: {
-                            xs: 'column',     // solo en xs se apilan
-                        },
+                        display: 'grid',
                         gridTemplateColumns: {
-                            sm: '1fr 1fr',  // 2 columnas desde sm
+                            xs: '1fr 1fr',      // 2 columnas en xs también
+                            sm: '1fr 1fr',      // 2 columnas desde sm
                         },
                         gridTemplateRows: {
-                            sm: '1fr 1fr',    // 2 filas desde sm
+                            xs: 'auto auto',    // auto en xs
+                            sm: '1fr 1fr',      // 2 filas desde sm
                         },
-                        gap: { xs: 3, sm: 4 },
+                        gap: { xs: 2, sm: 4 },
                         alignItems: 'stretch',
                     }}
                 >
-                    {/* Guardar: columna izquierda, ocupa las dos filas */}
+                    {/* Guardar: columna izquierda, ocupa las dos filas en sm+ */}
                     <Box
                         sx={{
-                            gridColumn: { sm: '1' },
-                            gridRow: { sm: '1 / span 2' },
-                            mb: { xs: 2, sm: 0 },
+                            gridColumn: { xs: config?.reserve?.enabled ? '1 / span 2' : '1', sm: '1' },
+                            gridRow: { xs: config?.reserve?.enabled ? '1' : '1 / span 2', sm: '1 / span 2' },
                         }}
                     >
                         <ActionButton
@@ -306,7 +330,12 @@ export const Ppal = () => {
                             icon={
                                 <AddCircle
                                     sx={{
-                                        fontSize: theme.spacing(15),
+                                        fontSize: {
+                                            xs: theme.spacing(8),
+                                            sm: theme.spacing(10),
+                                            md: theme.spacing(13),
+                                            lg: theme.spacing(15),
+                                        },
                                         mt: 1,
                                     }}
                                 />
@@ -322,9 +351,8 @@ export const Ppal = () => {
                             {/* Retirar: arriba derecha */}
                             <Box
                                 sx={{
-                                    gridColumn: { sm: '2' },
-                                    gridRow: { sm: '1' },
-                                    mb: { xs: 2, sm: 0 },
+                                    gridColumn: { xs: '1', sm: '2' },
+                                    gridRow: { xs: '2', sm: '1' },
                                 }}
                             >
                                 <ActionButton
@@ -332,7 +360,12 @@ export const Ppal = () => {
                                     icon={
                                         <RemoveCircle
                                             sx={{
-                                                fontSize: theme.spacing(15),
+                                                fontSize: {
+                                                    xs: theme.spacing(8),
+                                                    sm: theme.spacing(10),
+                                                    md: theme.spacing(13),
+                                                    lg: theme.spacing(15),
+                                                },
                                                 mt: 1,
                                             }}
                                         />
@@ -345,8 +378,8 @@ export const Ppal = () => {
                             {/* Reservado: abajo derecha */}
                             <Box
                                 sx={{
-                                    gridColumn: { sm: '2' },
-                                    gridRow: { sm: '2' },
+                                    gridColumn: { xs: '2', sm: '2' },
+                                    gridRow: { xs: '2', sm: '2' },
                                 }}
                             >
                                 <ActionButton
@@ -368,8 +401,8 @@ export const Ppal = () => {
                         // Si no hay reserva, Retirar ocupa la columna derecha completa
                         <Box
                             sx={{
-                                gridColumn: { sm: '2' },
-                                gridRow: { sm: '1 / span 2' },
+                                gridColumn: { xs: '2', sm: '2' },
+                                gridRow: { xs: '1 / span 2', sm: '1 / span 2' },
                             }}
                         >
                             <ActionButton
@@ -377,7 +410,12 @@ export const Ppal = () => {
                                 icon={
                                     <RemoveCircle
                                         sx={{
-                                            fontSize: theme.spacing(15),
+                                            fontSize: {
+                                                xs: theme.spacing(8),
+                                                sm: theme.spacing(10),
+                                                md: theme.spacing(13),
+                                                lg: theme.spacing(15),
+                                            },
                                             mt: 1,
                                         }}
                                     />
@@ -432,27 +470,28 @@ export const Ppal = () => {
                         )}
                     </Box>
 
-                    {config?.login?.QRPath && (
+                    {config?.paramsHtml?.imagesPaths?.QR?.enabled && qrPath && (
                         <Box
                             sx={{
                                 position: 'fixed',
-                                bottom: theme.spacing(2),
-                                right: theme.spacing(2),
-                                height: {
-                                    xs: theme.spacing(16),
-                                    sm: theme.spacing(18),
-                                    md: theme.spacing(20),
-                                    lg: theme.spacing(22),
+                                bottom: -20,
+                                right: 5,
+                                width: {
+                                    xs: `min(25vw, ${(parseInt(config?.paramsHtml?.imagesPaths?.QR?.size || '100') * 8) / 100}rem)`,
+                                    sm: `min(20vw, ${(parseInt(config?.paramsHtml?.imagesPaths?.QR?.size || '100') * 10) / 100}rem)`,
+                                    md: `min(15vw, ${(parseInt(config?.paramsHtml?.imagesPaths?.QR?.size || '100') * 12) / 100}rem)`,
+                                    lg: `min(12vw, ${(parseInt(config?.paramsHtml?.imagesPaths?.QR?.size || '100') * 12) / 100}rem)`,
                                 },
+                                aspectRatio: '1 / 1',
                                 zIndex: 1000,
                                 pointerEvents: 'none',
                             }}
                         >
                             <img
-                                src={config.login.QRPath}
+                                src={qrPath}
                                 alt="QR"
                                 style={{
-                                    width: 'auto',
+                                    width: '100%',
                                     height: '100%',
                                     objectFit: 'contain',
                                 }}

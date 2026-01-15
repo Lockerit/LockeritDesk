@@ -2,7 +2,7 @@
   "name": "lockerit",
   "private": true,
   "type": "module",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "description": "Sistema de Asignación de Casilleros",
   "author": {
     "name": "Lockerit - Camilo Diaz",
@@ -101,11 +101,8 @@
       "package.json"
     ],
     "extraResources": [
-      "configFiles/.env",
-      "configFiles/setup_config.json",
-      "configFiles/lockers_colors_config.json",
-      "configFiles/auth_key.json",
-      "configFiles/logger_config.json"
+      "configFiles/**/*",
+      "images/**/*"
     ],
     "win": {
       "target": "nsis",

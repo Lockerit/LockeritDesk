@@ -52,8 +52,8 @@ import {
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { InsertMoney } from './InsertMoney.jsx';
 import { Loading } from './Loading.jsx';
-import { ShowErrorAPI } from './ShowErrorAPI.jsx';
 import { ShowCloseLocker } from './ShowCloseLocker.jsx';
+import { ShowErrorAPI } from './ShowErrorAPI.jsx';
 import { ShowLocker } from './ShowLocker.jsx';
 
 const fileName = 'KeypadNumeric';
@@ -120,6 +120,7 @@ export const KeypadNumeric = ({
   const theme = useTheme();
 
   const operationRet = operation === 'Retirar' || operation === 'Reservado';
+  const inputsCount = operationRet ? 2 : 3;
   const intervalRef = useRef(null);
   const cancellingRef = useRef(false);
 
@@ -767,7 +768,11 @@ export const KeypadNumeric = ({
       sx: {
         width: '100%',
         height: '100%',
-        fontSize: theme.typography.h4.fontSize,
+        fontSize: {
+          xs: theme.typography.h5.fontSize,
+          sm: theme.typography.h4.fontSize,
+          md: theme.typography.h4.fontSize,
+        },
       },
     };
     const gridSize = value === 'Aceptar' ? 12 : 4;
@@ -793,14 +798,22 @@ export const KeypadNumeric = ({
             {isFinalStep ? (
               <DoneAll
                 sx={{
-                  fontSize: theme.spacing(5),
+                  fontSize: {
+                    xs: theme.spacing(4),
+                    sm: theme.spacing(4.5),
+                    md: theme.spacing(5),
+                  },
                   ml: theme.spacing(1),
                 }}
               />
             ) : (
               <ArrowForwardIos
                 sx={{
-                  fontSize: theme.spacing(5),
+                  fontSize: {
+                    xs: theme.spacing(4),
+                    sm: theme.spacing(4.5),
+                    md: theme.spacing(5),
+                  },
                   ml: theme.spacing(1),
                 }}
               />
@@ -814,7 +827,11 @@ export const KeypadNumeric = ({
       Borrar: (
         <Backspace
           sx={{
-            fontSize: theme.spacing(4),
+            fontSize: {
+              xs: theme.spacing(3.5),
+              sm: theme.spacing(4),
+              md: theme.spacing(4),
+            },
             ml: theme.spacing(1),
           }}
         />
@@ -822,7 +839,11 @@ export const KeypadNumeric = ({
       Cancelar: (
         <Close
           sx={{
-            fontSize: theme.spacing(4),
+            fontSize: {
+              xs: theme.spacing(3.5),
+              sm: theme.spacing(4),
+              md: theme.spacing(4),
+            },
             ml: theme.spacing(1),
           }}
         />
@@ -870,16 +891,34 @@ export const KeypadNumeric = ({
         PaperProps={{
           sx: {
             width: {
-              xs: config?.paramsHtml.isVertical ? '80%' : '50%',
-              sm: config?.paramsHtml.isVertical ? '80%' : '50%',
-              md: config?.paramsHtml.isVertical ? '60%' : '40%',
-              lg: config?.paramsHtml.isVertical ? '60%' : '40%',
+              xs: config?.paramsHtml?.isVertical ? '85%' : '70%',
+              sm: config?.paramsHtml?.isVertical ? '80%' : '65%',
+              md: config?.paramsHtml?.isVertical ? '70%' : '55%',
+              lg: config?.paramsHtml?.isVertical ? '60%' : '50%',
             },
             maxWidth: 'none',
-            height: '90%',
-            minHeight: '90%',
-            borderRadius: theme.spacing(3),
-            p: theme.spacing(3),
+            height: {
+              xs: config?.paramsHtml?.isVertical ? '95%' : '95%', // aumenta el porcentaje aquí
+              sm: config?.paramsHtml?.isVertical ? '95%' : '95%',
+              md: config?.paramsHtml?.isVertical ? '90%' : '90%',
+              lg: config?.paramsHtml?.isVertical ? '90%' : '90%',
+            },
+            minHeight: {
+              xs: config?.paramsHtml?.isVertical ? '95%' : '95%',
+              sm: config?.paramsHtml?.isVertical ? '95%' : '95%',
+              md: config?.paramsHtml?.isVertical ? '90%' : '90%',
+              lg: config?.paramsHtml?.isVertical ? '90%' : '90%',
+            },
+            borderRadius: {
+              xs: theme.spacing(2),
+              sm: theme.spacing(2.5),
+              md: theme.spacing(3),
+            },
+            p: {
+              xs: theme.spacing(2),
+              sm: theme.spacing(2.5),
+              md: config?.paramsHtml?.isVertical ? theme.spacing(3) : theme.spacing(2),
+            },
           },
         }}
         slots={{ transition: Transition }}
@@ -910,7 +949,13 @@ export const KeypadNumeric = ({
               {formatTime(secondsLeft)}
             </Typography>
             <IconButton onClick={cancel}>
-              <Close sx={{ fontSize: theme.spacing(5) }} />
+              <Close sx={{ 
+                fontSize: {
+                  xs: theme.spacing(4),
+                  sm: theme.spacing(4.5),
+                  md: theme.spacing(5),
+                }
+              }} />
             </IconButton>
           </Box>
 
@@ -921,6 +966,11 @@ export const KeypadNumeric = ({
                 fontWeight: 'bold',
                 textAlign: 'center',
                 p: theme.spacing(1),
+                fontSize: {
+                  xs: theme.typography.h5.fontSize,
+                  sm: theme.typography.h4.fontSize,
+                  md: theme.typography.h3.fontSize,
+                },
               }}
             >
               {operation}
@@ -928,7 +978,11 @@ export const KeypadNumeric = ({
           </Box>
         </Box>
 
-        <DialogContent sx={{ pt: theme.spacing(2) }}>
+        <DialogContent sx={{ pt: {
+          xs: theme.spacing(1),
+          sm: theme.spacing(1.5),
+          md: theme.spacing(2),
+        }}}>
           <Box
             sx={{
               display: 'flex',
@@ -937,20 +991,32 @@ export const KeypadNumeric = ({
               alignItems: 'center',
               height: '100%',
               width: '100%',
-              px: { xs: 0, sm: theme.spacing(4) },
-              gap: theme.spacing(4),
+              px: { 
+                xs: config?.paramsHtml?.isVertical ? 0 : theme.spacing(0.5),
+                sm: config?.paramsHtml?.isVertical ? theme.spacing(2) : theme.spacing(2),
+                md: config?.paramsHtml?.isVertical ? theme.spacing(3) : theme.spacing(3),
+              },
+              gap: {
+                xs: config?.paramsHtml?.isVertical ? theme.spacing(2) : theme.spacing(0.75),
+                sm: theme.spacing(1.5),
+                md: theme.spacing(2),
+              },
             }}
           >
             {/* Inputs */}
             <Box
               sx={{
-                flex: '0 0 auto',
+                flex: config?.paramsHtml?.isVertical ? '0 0 auto' : '0 0 30%',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between',
+                justifyContent: inputsCount >= 2 ? 'space-evenly' : 'flex-start',
                 alignItems: 'stretch',
                 width: '100%',
-                gap: theme.spacing(2),
+                gap: {
+                  xs: theme.spacing(0.5),
+                  sm: theme.spacing(0.75),
+                  md: theme.spacing(1),
+                },
               }}
             >
               <Box
@@ -961,8 +1027,12 @@ export const KeypadNumeric = ({
               >
                 <MobileFriendly
                   sx={{
-                    mr: theme.spacing(2),
-                    fontSize: theme.spacing(7),
+                    mr: theme.spacing(1),
+                    fontSize: {
+                      xs: theme.spacing(5),
+                      sm: theme.spacing(6),
+                      md: theme.spacing(7),
+                    },
                   }}
                 />
                 <TextField
@@ -981,6 +1051,7 @@ export const KeypadNumeric = ({
                         ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
                         : 'transparent',
                     borderRadius: theme.spacing(1),
+                    mb: 0,
                     transition: 'background-color 0.3s ease',
                   }}
                 />
@@ -994,8 +1065,12 @@ export const KeypadNumeric = ({
               >
                 <Password
                   sx={{
-                    mr: theme.spacing(2),
-                    fontSize: theme.spacing(7),
+                    mr: theme.spacing(1),
+                    fontSize: {
+                      xs: theme.spacing(5),
+                      sm: theme.spacing(6),
+                      md: theme.spacing(7),
+                    },
                   }}
                 />
                 <TextField
@@ -1016,6 +1091,7 @@ export const KeypadNumeric = ({
                         ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
                         : 'transparent',
                     borderRadius: theme.spacing(1),
+                    mb: 0,
                     transition: 'background-color 0.3s ease',
                   }}
                 />
@@ -1030,8 +1106,12 @@ export const KeypadNumeric = ({
                 >
                   <Refresh
                     sx={{
-                      mr: theme.spacing(2),
-                      fontSize: theme.spacing(7),
+                      mr: theme.spacing(1),
+                      fontSize: {
+                        xs: theme.spacing(5),
+                        sm: theme.spacing(6),
+                        md: theme.spacing(7),
+                      },
                     }}
                   />
                   <TextField
@@ -1056,6 +1136,7 @@ export const KeypadNumeric = ({
                           ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
                           : 'transparent',
                       borderRadius: theme.spacing(1),
+                      mb: 0,
                       transition: 'background-color 0.3s ease',
                     }}
                   />
@@ -1066,7 +1147,7 @@ export const KeypadNumeric = ({
             {/* Teclado */}
             <Box
               sx={{
-                flex: '1 1 auto',
+                flex: config?.paramsHtml?.isVertical ? '1 1 auto' : '1 1 60%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1075,9 +1156,17 @@ export const KeypadNumeric = ({
             >
               <Grid
                 container
-                spacing={1}
+                  spacing={{
+                    xs: config?.paramsHtml?.isVertical ? 0.75 : 0.5,
+                    sm: 0.75,
+                    md: 1,
+                  }}
                 sx={{
-                  mt: theme.spacing(3),
+                    mt: {
+                      xs: config?.paramsHtml?.isVertical ? theme.spacing(2) : theme.spacing(0.5),
+                      sm: theme.spacing(1),
+                      md: theme.spacing(2),
+                    },
                   height: '100%',
                 }}
               >

@@ -20,10 +20,11 @@ import { useTheme } from '@mui/material/styles';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-import logo from '@assets/Logo.png';
+import logo from '@assets/logo.png';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
+import { useAssetPath } from '@shared/hooks/useAssetPath.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 
@@ -49,6 +50,7 @@ export const Login = () => {
 
     const navigate = useNavigate();
     const config = useElectronConfig();
+    const logoPath = useAssetPath(config?.paramsHtml?.imagesPaths?.logoLogin?.name);
     const location = useLocation();
     const theme = useTheme();
 
@@ -381,24 +383,38 @@ export const Login = () => {
                     }}
                 >
                     {/* Logo */}
-                    <Box
-                        sx={{
-                            flex: '0 0 12%',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            width: '100%',
-                        }}
-                    >
-                        <img
-                            src={logo}
-                            alt="Título"
-                            style={{
-                                maxHeight: theme.spacing(18),
-                                objectFit: 'contain',
+                    {config?.paramsHtml?.imagesPaths?.logoLogin?.enabled && (logoPath || logo) && (
+                        <Box
+                            sx={{
+                                flex: '0 0 12%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                width: '100%',
                             }}
-                        />
-                    </Box>
+                        >
+                            <Box
+                                component="img"
+                                src={logoPath || logo}
+                                alt="Título"
+                                sx={{
+                                    maxWidth: {
+                                        xs: `min(90%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                        sm: `min(85%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                        md: `min(80%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                        lg: `min(75%, ${config?.paramsHtml?.imagesPaths?.logo?.size || '100%'})`,
+                                    },
+                                    maxHeight: {
+                                        xs: theme.spacing(12),
+                                        sm: theme.spacing(14),
+                                        md: theme.spacing(18),
+                                        lg: theme.spacing(22),
+                                    },
+                                    objectFit: 'contain',
+                                }}
+                            />
+                        </Box>
+                    )}
 
                     {/* Reserva de espacio para título (si necesitas agregarlo después) */}
                     <Box
@@ -434,7 +450,11 @@ export const Login = () => {
                                 sx={{
                                     color: 'action.active',
                                     mr: 2,
-                                    fontSize: theme.spacing(5),
+                                    fontSize: {
+                                        xs: theme.spacing(3),
+                                        sm: theme.spacing(4),
+                                        md: theme.spacing(5),
+                                    },
                                 }}
                             />
                             <TextFieldVirtKeyPad
@@ -460,7 +480,11 @@ export const Login = () => {
                                 sx={{
                                     color: 'action.active',
                                     mr: 2,
-                                    fontSize: theme.spacing(5),
+                                    fontSize: {
+                                        xs: theme.spacing(3),
+                                        sm: theme.spacing(4),
+                                        md: theme.spacing(5),
+                                    },
                                 }}
                             />
                             <TextFieldVirtKeyPad
@@ -481,7 +505,11 @@ export const Login = () => {
                                                 edge="end"
                                                 sx={{
                                                     '& .MuiSvgIcon-root': {
-                                                        fontSize: theme.spacing(4),
+                                                        fontSize: {
+                                                            xs: theme.spacing(3),
+                                                            sm: theme.spacing(3.5),
+                                                            md: theme.spacing(4),
+                                                        },
                                                     },
                                                 }}
                                             >
@@ -528,7 +556,11 @@ export const Login = () => {
                                             color="primary"
                                             sx={{
                                                 '& .MuiSvgIcon-root': {
-                                                    fontSize: theme.spacing(4),
+                                                    fontSize: {
+                                                        xs: theme.spacing(3),
+                                                        sm: theme.spacing(3.5),
+                                                        md: theme.spacing(4),
+                                                    },
                                                 },
                                             }}
                                         />
@@ -538,11 +570,35 @@ export const Login = () => {
                                 />
                             </Box>
                         )}
-
-                        <Button variant="contained" color="primary" type="submit" fullWidth>
+                        <Button variant="contained" color="primary" type="submit" fullWidth
+                            sx={{
+                                fontSize: {
+                                    xs: theme.typography.h4.fontSize,
+                                    sm: theme.typography.h3.fontSize,
+                                    md: theme.typography.h2.fontSize,
+                                },
+                                p: {
+                                    xs: theme.spacing(1.5),
+                                    sm: theme.spacing(2),
+                                    md: theme.spacing(2.5),
+                                },
+                                borderRadius: {
+                                    xs: theme.spacing(2),
+                                    sm: theme.spacing(2.5),
+                                    md: theme.spacing(3),
+                                },
+                            }}
+                        >
                             {buttonName}
                             <Send
-                                sx={{ fontSize: theme.spacing(5), ml: 2 }}
+                                sx={{
+                                    fontSize: {
+                                        xs: theme.spacing(4),
+                                        sm: theme.spacing(4.5),
+                                        md: theme.spacing(5),
+                                    },
+                                    ml: 2
+                                }}
                             />
                         </Button>
 
@@ -552,10 +608,34 @@ export const Login = () => {
                                 color="secondary"
                                 onClick={backPage}
                                 fullWidth
+                                sx={{
+                                    fontSize: {
+                                        xs: theme.typography.h4.fontSize,
+                                        sm: theme.typography.h3.fontSize,
+                                        md: theme.typography.h2.fontSize,
+                                    },
+                                    p: {
+                                        xs: theme.spacing(1.5),
+                                        sm: theme.spacing(2),
+                                        md: theme.spacing(2.5),
+                                    },
+                                    borderRadius: {
+                                        xs: theme.spacing(2),
+                                        sm: theme.spacing(2.5),
+                                        md: theme.spacing(3),
+                                    },
+                                }}
                             >
                                 Atrás
                                 <Undo
-                                    sx={{ fontSize: theme.spacing(5), ml: 2 }}
+                                    sx={{
+                                        fontSize: {
+                                            xs: theme.spacing(4),
+                                            sm: theme.spacing(4.5),
+                                            md: theme.spacing(5),
+                                        },
+                                        ml: 2
+                                    }}
                                 />
                             </Button>
                         )}

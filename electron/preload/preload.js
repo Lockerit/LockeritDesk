@@ -1,6 +1,9 @@
 // electron/preload/preload.js  (CJS)
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Aumentar límite de listeners para evitar warnings en desarrollo (hot reload)
+ipcRenderer.setMaxListeners(50);
+
 // Helpers seguros para suscripción/desuscripción
 function on(channel, handler) {
   if (typeof handler !== 'function') return () => { };
@@ -64,4 +67,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Ventana
   getState: () => ipcRenderer.invoke('window:get-state'),
   setFullScreen: (enabled) => ipcRenderer.invoke('window:set-fullscreen', enabled),
+
+  // Assets
+  getAssetPath: (folder, fileName) => ipcRenderer.invoke('get-asset-path', folder, fileName),
 });

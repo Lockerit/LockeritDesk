@@ -7,10 +7,7 @@
         "userOpera": "Operador",
         "passOpera": "250701",
         "userAdmin": "Administrador",
-        "passAdmin": "070125",
-        "avatarPath": "./assets/TuLockerIcono.jpg",
-        "logoPath": "./assets/TuLockerHorizontal.png",
-        "QRPath": "./assets/CodigoQR.png"
+        "passAdmin": "070125"
     },
     "paramsHtml": {
         "lenMaxInputPass": 4,
@@ -39,6 +36,33 @@
             "textSecondary": "#009640",
             "backgroundDefault": "#f9f9f9",
             "layoutBackground": "#f1f1f1"
+        },
+        "imagesPaths": {
+            "avatar": {
+                "name": "avatar.jpg",
+                "enabled": true,
+                "size": "70%"
+            },
+            "logo": {
+                "name": "logo.png",
+                "enabled": true,
+                "size": "100%"
+            },
+            "logoLogin": {
+                "name": "logoLogin.png",
+                "enabled": true,
+                "size": "100%"
+            },
+            "iconoLogin": {
+                "name": "icono.jpg",
+                "enabled": true,
+                "size": "100%"
+            },
+            "QR": {
+                "name": "codigoQR.png",
+                "enabled": true,
+                "size": "100%"
+            }
         }
     },
     "report": {
