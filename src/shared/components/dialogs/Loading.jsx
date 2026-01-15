@@ -21,8 +21,19 @@ export const Loading = ({ open = true, message = 'Cargando...' }) => {
             <Box display="flex" flexDirection="column" alignItems="center">
                 <CircularProgress
                     color="inherit"
-                    size={theme.spacing(12)}
                     thickness={4}
+                    sx={{
+                        width: {
+                            xs: theme.spacing(8),
+                            sm: theme.spacing(10),
+                            md: theme.spacing(12),
+                        },
+                        height: {
+                            xs: theme.spacing(8),
+                            sm: theme.spacing(10),
+                            md: theme.spacing(12),
+                        },
+                    }}
                 />
                 <Typography
                     variant="h4"

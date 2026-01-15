@@ -45,12 +45,14 @@ export const ConfirmDialog = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: '60%',
-                        sm: '60%',
-                        md: '40%',
-                        lg: '30%',
+                        xs: '85%',
+                        sm: '75%',
+                        md: '50%',
+                        lg: '40%',
                     },
                     maxWidth: 'none',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
                     height: 'auto',
                     borderRadius: theme.spacing(3),
                     p: theme.spacing(3),

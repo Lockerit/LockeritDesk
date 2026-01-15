@@ -79,7 +79,11 @@ export const StatusLockersPopper = ({
                             maxHeight: { xs: 220, sm: 280 },
                             overflowY: 'auto',
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(5, 1fr)', // 5 casilleros por fila
+                            gridTemplateColumns: {
+                                xs: 'repeat(2, 1fr)',
+                                sm: 'repeat(3, 1fr)',
+                                md: 'repeat(5, 1fr)',
+                            },
                             gap: theme.spacing(1),
                             pr: theme.spacing(0.5),
                         }}
@@ -100,9 +104,9 @@ export const StatusLockersPopper = ({
                                     key={code}
                                     label={code}
                                     sx={{
-                                        height: 40,
+                                        height: { xs: 36, sm: 40 },
                                         borderRadius: 2,
-                                        fontSize: theme.typography.body1.fontSize,
+                                        fontSize: { xs: theme.typography.body2.fontSize, sm: theme.typography.body1.fontSize },
                                         fontWeight: 700,
                                         backgroundColor: chipBg,
                                         color: theme.palette.primary.contrastText,

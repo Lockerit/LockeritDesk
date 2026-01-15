@@ -1,5 +1,5 @@
 // TabAdmin.jsx
-import { Tabs, Tab, Box } from '@mui/material';
+import { Tabs, Tab, Box, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 
@@ -14,6 +14,7 @@ const ADMIN_TAB_KEY = 'adminLastTab';
 
 export const TabAdmin = () => {
     const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [value, setValue] = useState(() => {
         if (typeof window === 'undefined') return '1';
@@ -54,7 +55,7 @@ export const TabAdmin = () => {
             {/* Barra de tabs */}
             <Box
                 sx={{
-                    height: theme.spacing(8),
+                    height: isXs ? theme.spacing(6) : theme.spacing(8),
                     display: 'flex',
                     alignItems: 'center',
                 }}
@@ -63,14 +64,17 @@ export const TabAdmin = () => {
                     value={value}
                     onChange={handleChange}
                     aria-label="tabs Administrativo"
+                    variant={isXs ? 'scrollable' : 'standard'}
+                    scrollButtons={isXs ? 'auto' : 'off'}
+                    allowScrollButtonsMobile
                     sx={{
-                        minHeight: theme.spacing(8),
+                        minHeight: isXs ? theme.spacing(6) : theme.spacing(8),
                         '& .MuiTab-root': {
-                            minHeight: theme.spacing(8),
-                            fontSize: theme.typography.h6.fontSize,
+                            minHeight: isXs ? theme.spacing(6) : theme.spacing(8),
+                            fontSize: isXs ? theme.typography.subtitle2.fontSize : theme.typography.h6.fontSize,
                             textTransform: 'none',
                             fontWeight: 'bold',
-                            px: theme.spacing(3),
+                            px: isXs ? theme.spacing(1.5) : theme.spacing(3),
                         },
                     }}
                 >

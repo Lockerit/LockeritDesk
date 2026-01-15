@@ -19,9 +19,9 @@ export const SnackAlert = ({ open, message, severity, onClose }) => {
                 onClose={onClose}
                 sx={{
                     width: '100%',
-                    fontSize: theme.typography.h6.fontSize,
+                    fontSize: { xs: '0.95rem', sm: theme.typography.h6.fontSize },
                     '& .MuiAlert-icon': {
-                        fontSize: theme.spacing(4.5), // tamaño icono
+                        fontSize: { xs: theme.spacing(3.5), sm: theme.spacing(4.5) },
                         mr: theme.spacing(1.5),
                     },
                     '& .MuiAlert-message': {

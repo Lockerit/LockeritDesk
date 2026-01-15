@@ -13,6 +13,11 @@ import {
     IconButton,
     InputAdornment,
     TableSortLabel,
+    Card,
+    CardContent,
+    Typography,
+    Divider,
+    useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
@@ -47,6 +52,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
 
     const config = useElectronConfig();
     const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     useEffect(() => {
         if (!config) return;
@@ -321,208 +327,246 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                     <TableContainer
                         sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}
                     >
-                        <Table
-                            stickyHeader
-                            size="small"
-                            sx={{ minWidth: 900 }}
-                        >
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'ID' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'ID'}
-                                            direction={
-                                                orderBy === 'ID' ? order : 'asc'
+                        {isXs ? (
+                            <Box sx={{ p: 1 }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
+                                    {currentPageData.map((row) => (
+                                        <Box key={row.ID} sx={{ width: '100%' }}>
+                                            <Card variant="outlined">
+                                                <CardContent>
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
+                                                        <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(1), alignItems: 'center' }}>
+                                                            <Box sx={{ flexBasis: '66.666%', flexGrow: 1 }}>
+                                                                <Typography variant="subtitle1" fontWeight="bold">
+                                                                    {row.LockerCode} {row.LockerID ? `- ${row.LockerID}` : ''}
+                                                                </Typography>
+                                                                <Typography variant="body2">
+                                                                    {formatNumberPhone(row.Phone)} • PIN: {row.PIN}
+                                                                </Typography>
+                                                                <Typography variant="body2">Abierto por: {row.OpenBy || '-'}</Typography>
+                                                            </Box>
+                                                            <Box sx={{ flexBasis: '33.333%', textAlign: 'right' }}>
+                                                                <Typography variant="h6">{formatCurrency(row.AmountPaid)}</Typography>
+                                                                <Typography variant="caption">{row.Active ? 'Activo' : 'Inactivo'}</Typography>
+                                                            </Box>
+                                                        </Box>
+                                                        <Box>
+                                                            <Divider sx={{ my: 1 }} />
+                                                            <Typography variant="caption">Inicio: {row.StartTime ? formatter(row.StartTime).format('YYYY-MM-DD HH:mm:ss') : '-'}</Typography>
+                                                            <br />
+                                                            <Typography variant="caption">Fin: {row.EndTime ? formatter(row.EndTime).format('YYYY-MM-DD HH:mm:ss') : '-'}</Typography>
+                                                        </Box>
+                                                    </Box>
+                                                </CardContent>
+                                            </Card>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            </Box>
+                        ) : (
+                            <Table
+                                stickyHeader
+                                size="small"
+                                sx={{ minWidth: { xs: 'auto', sm: 900 } }}
+                            >
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'ID' ? order : false
                                             }
-                                            onClick={() => handleSort('ID')}
                                         >
-                                            Registro
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'LockerID' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'LockerID'}
-                                            direction={
-                                                orderBy === 'LockerID' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('LockerID')}
-                                        >
-                                            Id Casillero
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'LockerCode' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'LockerCode'}
-                                            direction={
-                                                orderBy === 'LockerCode' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('LockerCode')}
-                                        >
-                                            Casillero
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'Phone' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'Phone'}
-                                            direction={
-                                                orderBy === 'Phone' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('Phone')}
-                                        >
-                                            Teléfono
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'PIN' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'PIN'}
-                                            direction={
-                                                orderBy === 'PIN' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('PIN')}
-                                        >
-                                            PIN
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'Active' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'Active'}
-                                            direction={
-                                                orderBy === 'Active' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('Active')}
-                                        >
-                                            Activo
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'StartTime' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'StartTime'}
-                                            direction={
-                                                orderBy === 'StartTime' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('StartTime')}
-                                        >
-                                            Fecha Asignación
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'EndTime' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'EndTime'}
-                                            direction={
-                                                orderBy === 'EndTime' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('EndTime')}
-                                        >
-                                            Fecha Retiro
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'AmountPaid' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'AmountPaid'}
-                                            direction={
-                                                orderBy === 'AmountPaid' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('AmountPaid')}
-                                        >
-                                            Valor Pagado
-                                        </TableSortLabel>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sortDirection={
-                                            orderBy === 'OpenBy' ? order : false
-                                        }
-                                    >
-                                        <TableSortLabel
-                                            active={orderBy === 'OpenBy'}
-                                            direction={
-                                                orderBy === 'OpenBy' ? order : 'asc'
-                                            }
-                                            onClick={() => handleSort('OpenBy')}
-                                        >
-                                            Abierto por
-                                        </TableSortLabel>
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
-
-                            <TableBody>
-                                {currentPageData.map((row) => (
-                                    <TableRow key={row.ID}>
-                                        <TableCell>{row.ID}</TableCell>
-                                        <TableCell>{row.LockerID}</TableCell>
-                                        <TableCell>{row.LockerCode}</TableCell>
-                                        <TableCell>{formatNumberPhone(row.Phone)}</TableCell>
-                                        <TableCell>{row.PIN}</TableCell>
-                                        <TableCell>
-                                            {row.Active ? 'Sí' : 'No'}
+                                            <TableSortLabel
+                                                active={orderBy === 'ID'}
+                                                direction={
+                                                    orderBy === 'ID' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('ID')}
+                                            >
+                                                Registro
+                                            </TableSortLabel>
                                         </TableCell>
-                                        <TableCell>
-                                            {row.StartTime
-                                                ? formatter(row.StartTime).format(
-                                                    'YYYY-MM-DD HH:mm:ss'
-                                                )
-                                                : ''}
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'LockerID' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'LockerID'}
+                                                direction={
+                                                    orderBy === 'LockerID' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('LockerID')}
+                                            >
+                                                Id Casillero
+                                            </TableSortLabel>
                                         </TableCell>
-                                        <TableCell>
-                                            {row.EndTime
-                                                ? formatter(row.EndTime).format(
-                                                    'YYYY-MM-DD HH:mm:ss'
-                                                )
-                                                : ''}
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'LockerCode' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'LockerCode'}
+                                                direction={
+                                                    orderBy === 'LockerCode' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('LockerCode')}
+                                            >
+                                                Casillero
+                                            </TableSortLabel>
                                         </TableCell>
-                                        <TableCell>
-                                            {formatCurrency(row.AmountPaid)}
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'Phone' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'Phone'}
+                                                direction={
+                                                    orderBy === 'Phone' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('Phone')}
+                                            >
+                                                Teléfono
+                                            </TableSortLabel>
                                         </TableCell>
-                                        <TableCell>{row.OpenBy || '-'}</TableCell>
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'PIN' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'PIN'}
+                                                direction={
+                                                    orderBy === 'PIN' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('PIN')}
+                                            >
+                                                PIN
+                                            </TableSortLabel>
+                                        </TableCell>
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'Active' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'Active'}
+                                                direction={
+                                                    orderBy === 'Active' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('Active')}
+                                            >
+                                                Activo
+                                            </TableSortLabel>
+                                        </TableCell>
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'StartTime' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'StartTime'}
+                                                direction={
+                                                    orderBy === 'StartTime' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('StartTime')}
+                                            >
+                                                Fecha Asignación
+                                            </TableSortLabel>
+                                        </TableCell>
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'EndTime' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'EndTime'}
+                                                direction={
+                                                    orderBy === 'EndTime' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('EndTime')}
+                                            >
+                                                Fecha Retiro
+                                            </TableSortLabel>
+                                        </TableCell>
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'AmountPaid' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'AmountPaid'}
+                                                direction={
+                                                    orderBy === 'AmountPaid' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('AmountPaid')}
+                                            >
+                                                Valor Pagado
+                                            </TableSortLabel>
+                                        </TableCell>
+
+                                        <TableCell
+                                            sortDirection={
+                                                orderBy === 'OpenBy' ? order : false
+                                            }
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === 'OpenBy'}
+                                                direction={
+                                                    orderBy === 'OpenBy' ? order : 'asc'
+                                                }
+                                                onClick={() => handleSort('OpenBy')}
+                                            >
+                                                Abierto por
+                                            </TableSortLabel>
+                                        </TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHead>
+
+                                <TableBody>
+                                    {currentPageData.map((row) => (
+                                        <TableRow key={row.ID}>
+                                            <TableCell>{row.ID}</TableCell>
+                                            <TableCell>{row.LockerID}</TableCell>
+                                            <TableCell>{row.LockerCode}</TableCell>
+                                            <TableCell>{formatNumberPhone(row.Phone)}</TableCell>
+                                            <TableCell>{row.PIN}</TableCell>
+                                            <TableCell>
+                                                {row.Active ? 'Sí' : 'No'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {row.StartTime
+                                                    ? formatter(row.StartTime).format(
+                                                        'YYYY-MM-DD HH:mm:ss'
+                                                    )
+                                                    : ''}
+                                            </TableCell>
+                                            <TableCell>
+                                                {row.EndTime
+                                                    ? formatter(row.EndTime).format(
+                                                        'YYYY-MM-DD HH:mm:ss'
+                                                    )
+                                                    : ''}
+                                            </TableCell>
+                                            <TableCell>
+                                                {formatCurrency(row.AmountPaid)}
+                                            </TableCell>
+                                            <TableCell>{row.OpenBy || '-'}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
                     </TableContainer>
 
                     {/* Totales + paginación */}

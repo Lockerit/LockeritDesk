@@ -8,7 +8,6 @@ import {
   Password,
 } from '@mui/icons-material';
 import {
-  Grid,
   Button,
   TextField,
   Box,
@@ -775,15 +774,21 @@ export const KeypadNumeric = ({
         },
       },
     };
-    const gridSize = value === 'Aceptar' ? 12 : 4;
+    const isFinalStep =
+      (!operationRet && activeInput === 'confirmPassword') ||
+      (operationRet && activeInput === 'password');
 
     if (value === 'Aceptar') {
-      const isFinalStep =
-        (!operationRet && activeInput === 'confirmPassword') ||
-        (operationRet && activeInput === 'password');
-
       return (
-        <Grid size={gridSize} key={value}>
+        <Box
+          key={value}
+          sx={{
+            width: '100%',
+            height: '100%',
+            gridColumn: '1 / -1',
+            display: 'flex',
+          }}
+        >
           <Button
             {...commonProps}
             color="primary"
@@ -819,7 +824,7 @@ export const KeypadNumeric = ({
               />
             )}
           </Button>
-        </Grid>
+        </Box>
       );
     }
 
@@ -863,7 +868,14 @@ export const KeypadNumeric = ({
       }[value] || 'secondary';
 
     return (
-      <Grid size={gridSize} key={value}>
+      <Box
+        key={value}
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+        }}
+      >
         <Button
           {...commonProps}
           color={color}
@@ -876,7 +888,7 @@ export const KeypadNumeric = ({
           {value}
           {icon}
         </Button>
-      </Grid>
+      </Box>
     );
   };
 
@@ -1154,24 +1166,27 @@ export const KeypadNumeric = ({
                 width: '100%',
               }}
             >
-              <Grid
-                container
-                  spacing={{
-                    xs: config?.paramsHtml?.isVertical ? 0.75 : 0.5,
-                    sm: 0.75,
-                    md: 1,
-                  }}
+              <Box
                 sx={{
-                    mt: {
-                      xs: config?.paramsHtml?.isVertical ? theme.spacing(2) : theme.spacing(0.5),
-                      sm: theme.spacing(1),
-                      md: theme.spacing(2),
-                    },
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: {
+                    xs: theme.spacing(config?.paramsHtml?.isVertical ? 0.75 : 0.5),
+                    sm: theme.spacing(0.75),
+                    md: theme.spacing(1),
+                  },
+                  mt: {
+                    xs: config?.paramsHtml?.isVertical ? theme.spacing(2) : theme.spacing(0.5),
+                    sm: theme.spacing(1),
+                    md: theme.spacing(2),
+                  },
                   height: '100%',
+                  width: '100%',
+                  alignItems: 'stretch',
                 }}
               >
                 {keys().map(renderButton)}
-              </Grid>
+              </Box>
             </Box>
           </Box>
         </DialogContent>

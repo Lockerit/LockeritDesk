@@ -13,6 +13,7 @@ export const TextFieldVirtKeyPad = ({ value, setValue, ...props }) => {
             {...props}
             inputRef={inputRef}
             value={value}
+            fullWidth={props.fullWidth ?? true}
             onClick={(e) => openKeyboard(e.currentTarget, setValue, value, inputRef)}
             onChange={(e) => setValue(e.target.value)}
         />

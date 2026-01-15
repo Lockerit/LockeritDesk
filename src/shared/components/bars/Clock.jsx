@@ -1,4 +1,4 @@
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, useTheme } from '@mui/material';
 import { useState, useEffect } from 'react';
 
 export const Clock = () => {
@@ -25,12 +25,27 @@ export const Clock = () => {
         year: 'numeric',
     });
 
+    const theme = useTheme();
+
     return (
         <Box textAlign="center">
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            <Typography
+                variant="h5"
+                sx={{
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.6rem' },
+                    lineHeight: 1.1,
+                }}
+            >
                 {formatoHora}
             </Typography>
-            <Typography variant="h6">
+            <Typography
+                variant="h6"
+                sx={{
+                    fontSize: { xs: '0.8rem', sm: '1rem', md: '1.1rem' },
+                    color: theme.palette.text.contrastText,
+                }}
+            >
                 {formatoFecha}
             </Typography>
         </Box>

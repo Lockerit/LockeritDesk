@@ -15,6 +15,7 @@ import {
     IconButton,
     FormControlLabel,
     Checkbox,
+    useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState, useEffect, useMemo } from 'react';
@@ -53,6 +54,7 @@ export const Login = () => {
     const logoPath = useAssetPath(config?.paramsHtml?.imagesPaths?.logoLogin?.name);
     const location = useLocation();
     const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     const buttonName = useMemo(() => {
         if (
@@ -360,7 +362,7 @@ export const Login = () => {
         <>
             <Box
                 sx={{
-                    height: '100%',
+                    minHeight: '100vh',
                     width: '100%',
                     display: 'flex',
                     justifyContent: 'center',
@@ -373,7 +375,9 @@ export const Login = () => {
                     onSubmit={handleSubmit}
                     sx={{
                         minHeight: '40%',
-                        width: { xs: '90%', sm: '80%', md: '60%', lg: '45%' },
+                        maxHeight: '95vh',
+                        overflow: 'auto',
+                        width: { xs: '96%', sm: '80%', md: '60%', lg: '45%' },
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
@@ -534,8 +538,8 @@ export const Login = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center',
-                            gap: 2,
-                            mt: 5,
+                            gap: isXs ? 1.5 : 2,
+                            mt: isXs ? 2 : 5,
                         }}
                     >
                         {screenLogin && (
@@ -543,9 +547,9 @@ export const Login = () => {
                                 sx={{
                                     width: '100%',
                                     display: 'flex',
-                                    flexDirection: 'row',
+                                    flexDirection: isXs ? 'column' : 'row',
                                     justifyContent: 'space-between',
-                                    alignItems: 'center',
+                                    alignItems: isXs ? 'flex-start' : 'center',
                                 }}
                             >
                                 <FormControlLabel
@@ -572,21 +576,9 @@ export const Login = () => {
                         )}
                         <Button variant="contained" color="primary" type="submit" fullWidth
                             sx={{
-                                fontSize: {
-                                    xs: theme.typography.h4.fontSize,
-                                    sm: theme.typography.h3.fontSize,
-                                    md: theme.typography.h2.fontSize,
-                                },
-                                p: {
-                                    xs: theme.spacing(1.5),
-                                    sm: theme.spacing(2),
-                                    md: theme.spacing(2.5),
-                                },
-                                borderRadius: {
-                                    xs: theme.spacing(2),
-                                    sm: theme.spacing(2.5),
-                                    md: theme.spacing(3),
-                                },
+                                fontSize: isXs ? theme.typography.h6.fontSize : theme.typography.h4.fontSize,
+                                p: isXs ? theme.spacing(1) : { xs: theme.spacing(1.5), sm: theme.spacing(2), md: theme.spacing(2.5) },
+                                borderRadius: isXs ? theme.spacing(1.5) : { xs: theme.spacing(2), sm: theme.spacing(2.5), md: theme.spacing(3) },
                             }}
                         >
                             {buttonName}

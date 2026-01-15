@@ -116,19 +116,19 @@ export const ShowLocker = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: config?.paramsHtml.isVertical ? '50%' : '40%',
-                        sm: config?.paramsHtml.isVertical ? '50%' : '40%',
-                        md: config?.paramsHtml.isVertical ? '40%' : '30%',
-                        lg: config?.paramsHtml.isVertical ? '40%' : '30%',
+                        xs: config?.paramsHtml.isVertical ? '90%' : '85%',
+                        sm: config?.paramsHtml.isVertical ? '80%' : '75%',
+                        md: config?.paramsHtml.isVertical ? '60%' : '50%',
+                        lg: config?.paramsHtml.isVertical ? '50%' : '40%',
                     },
                     maxWidth: 'none',
-                    minHeight: '50%',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
                     height: 'auto',
                     borderRadius: theme.spacing(3),
                     p: theme.spacing(3),
                     display: 'flex',
                     flexDirection: 'column',
-                    overflow: 'hidden',
                 },
             }}
             slots={{ transition: Transition }}
@@ -185,13 +185,13 @@ export const ShowLocker = ({
                     sx={{
                         width: {
                             xs: '70%',
-                            sm: '70%',
-                            md: '70%',
+                            sm: '65%',
+                            md: '60%',
                         },
                         minHeight: {
-                            xs: theme.spacing(28),
-                            sm: theme.spacing(30),
-                            md: theme.spacing(32),
+                            xs: theme.spacing(18),
+                            sm: theme.spacing(24),
+                            md: theme.spacing(28),
                         },
                         display: 'flex',
                         justifyContent: 'center',

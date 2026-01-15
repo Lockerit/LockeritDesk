@@ -110,12 +110,14 @@ export const ShowCloseLocker= ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: config?.paramsHtml.isVertical ? '50%' : '40%',
-                        sm: config?.paramsHtml.isVertical ? '50%' : '40%',
-                        md: config?.paramsHtml.isVertical ? '50%' : '30%',
-                        lg: config?.paramsHtml.isVertical ? '50%' : '30%',
+                        xs: config?.paramsHtml.isVertical ? '90%' : '85%',
+                        sm: config?.paramsHtml.isVertical ? '80%' : '75%',
+                        md: config?.paramsHtml.isVertical ? '65%' : '55%',
+                        lg: config?.paramsHtml.isVertical ? '50%' : '40%',
                     },
                     maxWidth: 'none',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
                     height: 'auto',
                     borderRadius: theme.spacing(3),
                     p: theme.spacing(3),

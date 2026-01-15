@@ -45,14 +45,14 @@ export const Copyright = () => {
         mt: 'auto',
         textAlign: 'center',
         bgcolor: 'transparent',
-        height: theme.spacing(8), // altura consistente según theme
+        height: { xs: theme.spacing(6), sm: theme.spacing(8) },
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
       <Container maxWidth="100%">
-        <Typography variant="body2" color="text.primary">
+        <Typography variant="body2" color="text.primary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
           © {new Date().getFullYear()} Lockerit. Todos los derechos reservados - V{version}
         </Typography>
       </Container>

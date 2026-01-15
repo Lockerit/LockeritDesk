@@ -1,0 +1,13 @@
+/* Utilidades responsivas mínimas usadas por componentes que no usan sólo MUI */
+.responsive-card {
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+@media (max-width: 600px) {
+  .responsive-card {
+    padding: 6px;
+    border-radius: 6px;
+  }
+}

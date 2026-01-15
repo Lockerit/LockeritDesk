@@ -16,7 +16,13 @@ export const InitialLoader = ({ open = true, message = 'Cargando...' }) => {
             open={open}
         >
             <Box display="flex" flexDirection="column" alignItems="center">
-                <CircularProgress color="inherit" size={100} />
+                <CircularProgress
+                    color="inherit"
+                    sx={{
+                        width: { xs: 56, sm: 80, md: 100 },
+                        height: { xs: 56, sm: 80, md: 100 },
+                    }}
+                />
                 <Typography variant="h5" mt={2}>
                     {message}
                 </Typography>

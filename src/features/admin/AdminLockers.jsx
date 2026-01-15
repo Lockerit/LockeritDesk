@@ -6,7 +6,6 @@ import {
     Chip,
     FormControl,
     FormControlLabel,
-    Grid,
     InputLabel,
     MenuItem,
     Select,
@@ -602,12 +601,18 @@ export const AdminLockers = () => {
                             boxSizing: 'border-box',
                         }}
                     >
-                        <Grid
-                            container
-                            columns={{ xs: 5, sm: 5, md: 5, lg: 5 }} // 5 columnas en todos los breakpoints
-                            spacing={{ xs: 1, sm: 1, md: 1 }}
-                            justifyContent="center"
-                            sx={{ minHeight: '100%', width: '100%' }}
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: 'repeat(2, 1fr)',
+                                    sm: 'repeat(5, 1fr)',
+                                },
+                                gap: theme.spacing(1),
+                                justifyContent: 'center',
+                                minHeight: 0,
+                                width: '100%',
+                            }}
                         >
                             {currentModule.lockers.map((locker) => {
                                 const selected = selectedLockers.some(
@@ -620,13 +625,12 @@ export const AdminLockers = () => {
                                 const color = matchedStatus ? matchedStatus.color : 'gray';
 
                                 return (
-                                    <Grid
+                                    <Box
                                         key={locker.lockerCode}
-                                        size={1} // cada casillero ocupa 1 de las 5 columnas
                                         sx={{
-                                            maxHeight: '100%',
                                             display: 'flex',
                                             alignItems: 'stretch',
+                                            width: '100%',
                                         }}
                                     >
                                         <Button
@@ -647,10 +651,10 @@ export const AdminLockers = () => {
                                         >
                                             {locker.lockerCode}
                                         </Button>
-                                    </Grid>
+                                    </Box>
                                 );
                             })}
-                        </Grid>
+                        </Box>
                     </Box>
                 )}
 

@@ -9,11 +9,12 @@ import {
     AppBar,
     Toolbar,
     Typography,
-    Avatar,
     Box,
     Menu,
     MenuItem,
     ListItemIcon,
+    IconButton,
+    useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState, useEffect, useRef } from 'react';
@@ -45,9 +46,9 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     const avatarBoxRef = useRef(null);
     const navigate = useNavigate();
     const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-    // tamaño de avatar basado en theme
-    const sizeAvatar = Math.max(55, Math.min(80, parseInt(theme.spacing(1), 10) || 50));
+    // tamaño de avatar basado en theme (si se necesita más adelante calcular dinámicamente)
 
     useEffect(() => {
         let alive = true;
@@ -66,7 +67,6 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     useEffect(() => {
         log.info('Montando AppbarBar');
     }, []);
-
     useEffect(() => {
         if (!userInit || !config) return;
 
@@ -76,14 +76,10 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
 
         setShowData(isAuth);
 
-        const isAuthOpera = Boolean(
-            userInit?.authenticatedOpera
-        );
-
+        const isAuthOpera = Boolean(userInit?.authenticatedOpera);
         setShowOptFullScreen(isAuthOpera);
 
         if (isAuth) {
-            // Si avatarPath se resolvió, usarlo; si no, usar default
             if (avatarPath && avatarPath.trim() !== '') {
                 setAvatarSelect(avatarPath);
                 log.debug('Usuario autenticado | avatar=custom');
@@ -95,7 +91,7 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
             setAvatarSelect(iconoPath || avatarImg);
             log.debug('Usuario no autenticado');
         }
-    }, [config, userInit, avatarPath]);
+    }, [config, userInit, avatarPath, iconoPath]);
 
     const persistUser = (updatedUser) => {
         setUserInit(updatedUser);
@@ -117,7 +113,7 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         const updatedUser = {
             ...userInit,
             closeSession: true,
-            closeWindow: false
+            closeWindow: false,
         };
         persistUser(updatedUser);
         setAnchorEl(null);
@@ -129,7 +125,7 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         const updatedUser = {
             ...userInit,
             closeSession: false,
-            closeWindow: true
+            closeWindow: true,
         };
         persistUser(updatedUser);
         setAnchorEl(null);
@@ -138,10 +134,10 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     };
 
     const applyFullScreen = async (next) => {
-        setFullScreen(!!next); // optimista
+        setFullScreen(!!next);
         const st = await window?.electronAPI?.setFullScreen(!!next);
-        log.info(`Pantalla completa → ${!!st.fullscreen}`);
-        setFullScreen(!!st.fullscreen); // confirma estado real
+        log.info(`Pantalla completa → ${!!st?.fullscreen}`);
+        setFullScreen(!!st?.fullscreen);
         setAnchorEl(null);
     };
 
@@ -149,65 +145,46 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         <AppBar
             position={position}
             elevation={0}
-            sx={{ height: '100%', justifyContent: 'center' }}
+            sx={{ height: { xs: theme.spacing(7), sm: '100%' }, justifyContent: 'center' }}
         >
             <Toolbar
                 disableGutters
-                sx={{
-                    px: containerPadding,
-                    minHeight: '100%',
-                    gap: theme.spacing(2),
-                }}
+                sx={{ px: { xs: 1, sm: containerPadding }, minHeight: '100%', gap: theme.spacing(2) }}
             >
                 {/* Izquierda: usuario */}
                 <Box sx={{ flex: 1 }}>
                     <Box
                         ref={avatarBoxRef}
                         tabIndex={-1}
-                        sx={{
-                            display: 'flex',
-                            gap: theme.spacing(1),
-                            cursor: 'pointer',
-                            alignItems: 'center',
-                        }}
+                        sx={{ display: 'flex', gap: theme.spacing(1), cursor: 'pointer', alignItems: 'center' }}
                         onClick={handleMenuOpen}
                     >
                         {config?.paramsHtml?.imagesPaths?.avatar?.enabled && (
-                        <Box
-                            sx={{
-                                width: {
-                                    xs: theme.spacing(6),
-                                    sm: theme.spacing(7),
-                                    md: theme.spacing(8),
-                                    lg: theme.spacing(9),
-                                },
-                                height: {
-                                    xs: theme.spacing(6),
-                                    sm: theme.spacing(7),
-                                    md: theme.spacing(8),
-                                    lg: theme.spacing(9),
-                                },
-                                borderRadius: '50%',
-                                overflow: 'hidden',
-                                flexShrink: 0,
-                                backgroundColor: '#ffffff',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundImage: `url(${avatarSelect})`,
-                                backgroundSize: config?.paramsHtml?.imagesPaths?.avatar?.size || '80%',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat',
-                            }}
-                        />
+                            <Box
+                                sx={{
+                                    width: { xs: theme.spacing(6), sm: theme.spacing(7), md: theme.spacing(8), lg: theme.spacing(9) },
+                                    height: { xs: theme.spacing(6), sm: theme.spacing(7), md: theme.spacing(8), lg: theme.spacing(9) },
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    flexShrink: 0,
+                                    backgroundColor: '#ffffff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundImage: `url(${avatarSelect})`,
+                                    backgroundSize: config?.paramsHtml?.imagesPaths?.avatar?.size || '80%',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat',
+                                }}
+                            />
                         )}
-                        {showData && (
+
+                        {!isXs && showData && (
                             <>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                    {(config?.customer || '')}
-                                    {' | '}
+                                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+                                    {config?.customer || ''}{' | '}
                                 </Typography>
-                                <Typography variant="h6">
+                                <Typography variant="h6" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>
                                     {userInit?.authenticatedOpera
                                         ? config?.login?.userOpera || ''
                                         : userInit?.authenticatedAdmin
@@ -219,41 +196,36 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
                     </Box>
                 </Box>
 
-                {/* Centro: reloj */}
-                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                    <Clock />
-                </Box>
+                {/* Centro: reloj (ocultar en xs para ahorrar espacio) */}
+                {!isXs && (
+                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                        <Clock />
+                    </Box>
+                )}
 
-                {/* Derecha: ubicación */}
-                <Box
-                    sx={{
-                        flex: 1,
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        gap: theme.spacing(1),
-                    }}
-                >
-                    {showData && (
+                {/* Derecha: ubicación o menú de acciones */}
+                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1) }}>
+                    {showData && !isXs && (
                         <>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                {(config?.pointName || '')}
-                                {' | '}
-                            </Typography>
-                            <Typography variant="h6">{config?.pointId || ''}</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '0.85rem', sm: '1rem' } }}>{config?.pointName || ''}{' | '}</Typography>
+                            <Typography variant="h6" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>{config?.pointId || ''}</Typography>
                         </>
+                    )}
+
+                    {isXs && (
+                        <IconButton size="small" color="inherit" aria-label="menu" onClick={(e) => setAnchorEl(e.currentTarget)}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="6" width="18" height="2" fill="currentColor" />
+                                <rect x="3" y="11" width="18" height="2" fill="currentColor" />
+                                <rect x="3" y="16" width="18" height="2" fill="currentColor" />
+                            </svg>
+                        </IconButton>
                     )}
                 </Box>
             </Toolbar>
 
             {/* Menú */}
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                disableAutoFocusItem
-            >
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} disableAutoFocusItem>
                 {showData && (
                     <MenuItem onClick={handleLogout}>
                         <ListItemIcon>
@@ -268,12 +240,11 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
                     </ListItemIcon>
                     Cerrar aplicación
                 </MenuItem>
-                {!showOptFullScreen && (<MenuItem onClick={applyFullScreen.bind(null, !fullScreen)}>
-                    <ListItemIcon>
-                        {fullScreen ? <HighlightOff /> : <CheckCircleOutline />}
-                    </ListItemIcon>
-                    {fullScreen ? 'Pantalla completa (No)' : 'Pantalla completa (Sí)'}
-                </MenuItem>
+                {!showOptFullScreen && (
+                    <MenuItem onClick={applyFullScreen.bind(null, !fullScreen)}>
+                        <ListItemIcon>{fullScreen ? <HighlightOff /> : <CheckCircleOutline />}</ListItemIcon>
+                        {fullScreen ? 'Pantalla completa (No)' : 'Pantalla completa (Sí)'}
+                    </MenuItem>
                 )}
             </Menu>
         </AppBar>

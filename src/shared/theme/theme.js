@@ -489,9 +489,6 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
               md: 6 * factor,
             },
             boxShadow: `0 ${px(3)} ${px(8)} rgba(0,0,0,0.12)`,
-            '@media (max-width: 600px)': {
-              boxShadow: `0 ${px(2)} ${px(4)} rgba(0,0,0,0.1)`,
-            },
             minWidth: {
               xs: 160 * factor,
               sm: 180 * factor,
@@ -499,6 +496,7 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             },
             padding: `${px(3)} 0`,
             '@media (max-width: 600px)': {
+              boxShadow: `0 ${px(2)} ${px(4)} rgba(0,0,0,0.1)`,
               padding: `${px(2)} 0`,
             },
           },

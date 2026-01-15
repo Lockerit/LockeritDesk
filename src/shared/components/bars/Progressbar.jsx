@@ -31,8 +31,8 @@ export const Progressbar = ({ msg, amountPay, amountService }) => {
                 <Typography
                     variant="h4"
                     component="span"
-                    color="text.primary"
-                    sx={{ fontWeight: 'bold' }}
+                    color="text.contrastText"
+                    sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.4rem', md: '1.8rem' } }}
                 >
                     {msg}{' '}
                 </Typography>
@@ -40,7 +40,7 @@ export const Progressbar = ({ msg, amountPay, amountService }) => {
                     variant="h2"
                     component="span"
                     color="text.secondary"
-                    sx={{ fontWeight: 'bold' }}
+                    sx={{ fontWeight: 'bold', fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2.8rem' } }}
                 >
                     {amountPay}
                 </Typography>
@@ -50,11 +50,9 @@ export const Progressbar = ({ msg, amountPay, amountService }) => {
                 variant="determinate"
                 value={progress}
                 sx={{
-                    height: theme.spacing(1.25),
+                    height: { xs: '8px', sm: theme.spacing(1.25) },
                     borderRadius: theme.spacing(0.75),
-                    // fondo verde claro
                     backgroundColor: theme.palette.success.light,
-                    // relleno verde oscuro
                     '& .MuiLinearProgress-bar': {
                         backgroundColor: theme.palette.success.dark,
                     },

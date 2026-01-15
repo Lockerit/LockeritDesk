@@ -114,12 +114,14 @@ export const ShowErrorAPI = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: config?.paramsHtml.isVertical ? '50%' : '40%',
-                        sm: config?.paramsHtml.isVertical ? '50%' : '40%',
-                        md: config?.paramsHtml.isVertical ? '50%' : '30%',
-                        lg: config?.paramsHtml.isVertical ? '50%' : '30%',
+                        xs: config?.paramsHtml.isVertical ? '85%' : '85%',
+                        sm: config?.paramsHtml.isVertical ? '75%' : '75%',
+                        md: config?.paramsHtml.isVertical ? '60%' : '50%',
+                        lg: config?.paramsHtml.isVertical ? '50%' : '40%',
                     },
                     maxWidth: 'none',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
                     height: 'auto',
                     borderRadius: theme.spacing(3),
                     p: theme.spacing(3),
