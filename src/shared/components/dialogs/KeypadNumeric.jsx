@@ -931,6 +931,8 @@ export const KeypadNumeric = ({
               sm: theme.spacing(2.5),
               md: config?.paramsHtml?.isVertical ? theme.spacing(3) : theme.spacing(2),
             },
+            boxShadow:
+              '0 10px 50px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.06)'
           },
         }}
         slots={{ transition: Transition }}
@@ -961,7 +963,7 @@ export const KeypadNumeric = ({
               {formatTime(secondsLeft)}
             </Typography>
             <IconButton onClick={cancel}>
-              <Close sx={{ 
+              <Close sx={{
                 fontSize: {
                   xs: theme.spacing(4),
                   sm: theme.spacing(4.5),
@@ -990,11 +992,13 @@ export const KeypadNumeric = ({
           </Box>
         </Box>
 
-        <DialogContent sx={{ pt: {
-          xs: theme.spacing(1),
-          sm: theme.spacing(1.5),
-          md: theme.spacing(2),
-        }}}>
+        <DialogContent sx={{
+          pt: {
+            xs: theme.spacing(1),
+            sm: theme.spacing(1.5),
+            md: theme.spacing(2),
+          }
+        }}>
           <Box
             sx={{
               display: 'flex',
@@ -1003,7 +1007,7 @@ export const KeypadNumeric = ({
               alignItems: 'center',
               height: '100%',
               width: '100%',
-              px: { 
+              px: {
                 xs: config?.paramsHtml?.isVertical ? 0 : theme.spacing(0.5),
                 sm: config?.paramsHtml?.isVertical ? theme.spacing(2) : theme.spacing(2),
                 md: config?.paramsHtml?.isVertical ? theme.spacing(3) : theme.spacing(3),

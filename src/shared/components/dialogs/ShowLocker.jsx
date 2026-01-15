@@ -129,6 +129,8 @@ export const ShowLocker = ({
                     p: theme.spacing(3),
                     display: 'flex',
                     flexDirection: 'column',
+                    boxShadow:
+                        '0 10px 50px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.06)'
                 },
             }}
             slots={{ transition: Transition }}

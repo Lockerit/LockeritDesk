@@ -56,6 +56,8 @@ export const ConfirmDialog = ({
                     height: 'auto',
                     borderRadius: theme.spacing(3),
                     p: theme.spacing(3),
+                    boxShadow:
+                        '0 10px 50px rgba(0,0,0,0.6), 0 0 50px rgba(255,255,255,0.06)'
                 },
             }}
             slots={{ transition: Transition }}

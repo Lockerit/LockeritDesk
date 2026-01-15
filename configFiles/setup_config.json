@@ -41,7 +41,7 @@
             "avatar": {
                 "name": "avatar.jpg",
                 "enabled": true,
-                "size": "70%"
+                "size": "90%"
             },
             "logo": {
                 "name": "logo.png",

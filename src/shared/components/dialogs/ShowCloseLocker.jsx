@@ -43,11 +43,11 @@ function trimForLog(value, max = 240) {
     }
 }
 
-export const ShowCloseLocker= ({
+export const ShowCloseLocker = ({
     open,
     onConfirm,
     msg,
-    timeout = 2,
+    timeout = 5,
     isError = true,
 }) => {
     const [secondsLeft, setSecondsLeft] = useState(timeout);
@@ -104,7 +104,13 @@ export const ShowCloseLocker= ({
             open={open}
             onClose={() => { }}
             keepMounted={false}
-            hideBackdrop
+            hideBackdrop={false}
+            BackdropProps={{
+                sx: {
+                    backgroundColor: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(4px)',
+                },
+            }}
             disableEscapeKeyDown
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
@@ -121,6 +127,9 @@ export const ShowCloseLocker= ({
                     height: 'auto',
                     borderRadius: theme.spacing(3),
                     p: theme.spacing(3),
+                    boxShadow:
+                        '0 10px 50px rgba(0,0,0,0.6), 0 0 50px rgba(255,255,255,0.06)',
+                    border: '2px solid rgba(255,255,255,0.06)'
                 },
             }}
             slots={{ transition: Transition }}
@@ -147,11 +156,11 @@ export const ShowCloseLocker= ({
                     <Typography variant="body2">
                         {formatTime(secondsLeft)}
                     </Typography>
-                    <IconButton onClick={handleConfirm}>
+                    <IconButton onClick={handleConfirm} sx={{ color: '#ffffff' }}>
                         <Close />
                     </IconButton>
                 </Box>
-                <DialogTitle>Información</DialogTitle>
+                <DialogTitle sx={{ color: 'inherit', textAlign: 'left', fontWeight: 'bold' }}>Información</DialogTitle>
             </Box>
 
             <DialogContent
@@ -166,8 +175,8 @@ export const ShowCloseLocker= ({
                 <Typography
                     variant="h1"
                     component="span"
-                    color={isError ? "error" : "success"}
-                    sx={{ fontWeight: 'bold', whiteSpace: 'pre-line' }}
+                    color="inherit"
+                    sx={{ fontWeight: 'bold', whiteSpace: 'pre-line', color: theme.palette.error.main }}
                 >
                     {typeof msg === 'string'
                         ? msg

@@ -92,6 +92,8 @@ export const MoneyLoading = ({
                         strokeDasharray: '1px, 200px',
                         strokeDashoffset: 0,
                         animation: `${dash} ${speedMs}ms ease-in-out infinite`,
+                        boxShadow:
+                            '0 10px 50px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.06)'
                     }}
                 />
             </Box>
