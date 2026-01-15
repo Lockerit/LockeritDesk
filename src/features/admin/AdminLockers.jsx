@@ -448,6 +448,7 @@ export const AdminLockers = () => {
                     width: '100%',
                     alignItems: 'center',
                     boxSizing: 'border-box',
+                    overflow: 'hidden',
                 }}
             >
                 {/* Cabecera Cantidad */}
