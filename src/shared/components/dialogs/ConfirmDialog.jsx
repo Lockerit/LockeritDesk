@@ -1,4 +1,4 @@
-import { MobileFriendly } from '@mui/icons-material';
+import { Cancel, CheckCircle, MobileFriendly } from '@mui/icons-material';
 import {
     Dialog,
     DialogTitle,
@@ -11,6 +11,8 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { forwardRef } from 'react';
+
+import { dialogCtaButtonSx } from '@shared/theme/buttonSx.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -186,6 +188,8 @@ export const ConfirmDialog = ({
                     color="secondary"
                     variant="contained"
                     fullWidth
+                    endIcon={<Cancel />}
+                    sx={dialogCtaButtonSx(theme)}
                 >
                     No
                 </Button>
@@ -195,6 +199,8 @@ export const ConfirmDialog = ({
                     color="primary"
                     variant="contained"
                     fullWidth
+                    endIcon={<CheckCircle />}
+                    sx={dialogCtaButtonSx(theme)}
                 >
                     Sí
                 </Button>

@@ -1,4 +1,4 @@
-import { Close } from '@mui/icons-material';
+import { CheckCircle, Close, Lock } from '@mui/icons-material';
 import {
     Dialog,
     DialogTitle,
@@ -21,6 +21,7 @@ import {
 } from 'react';
 
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { dialogCtaButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatTime } from '@shared/utils/utils.js';
 
@@ -226,23 +227,25 @@ export const ShowLocker = ({
                 {(operation === 'Retirar' ||
                     operation === 'Guardar' ||
                     operation === 'Reservado') && (
-                        <Typography
-                            variant="h1"
-                            color='error.main'
+                        <Box
                             sx={{
-                                fontWeight: 'bold',
-                                py: theme.spacing(2),
+                                mt: 1,
+                                p: 2,
+                                width: '100%',
+                                borderRadius: 2,
+                                color: theme.palette.error.main,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 1,
                             }}
                         >
-                            ¡Por favor dejar el casillero cerrado!
-                        </Typography>
+                            <Lock sx={{fontSize: 40}}/>
+                            <Typography variant="h2" fontWeight="bold">
+                                Por favor dejar el casillero cerrado
+                            </Typography>
+                        </Box>
                     )}
-
-                {operation === 'Retirar' && (
-                    <Typography variant="h5" sx={{ pb: theme.spacing(2) }}>
-                        Disponible para una nueva asignación.
-                    </Typography>
-                )}
             </DialogContent>
 
             {/* Acciones */}
@@ -260,9 +263,10 @@ export const ShowLocker = ({
                     color="primary"
                     variant="contained"
                     fullWidth
+                    endIcon={<CheckCircle />}
                     sx={{
                         mx: theme.spacing(3),
-                        py: theme.spacing(2),
+                        ...dialogCtaButtonSx(theme),
                     }}
                 >
                     Aceptar

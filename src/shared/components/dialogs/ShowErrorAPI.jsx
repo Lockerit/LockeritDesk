@@ -1,4 +1,5 @@
 import {
+    CheckCircle,
     Close,
     ErrorOutline,
     CheckCircleOutline,
@@ -24,6 +25,7 @@ import {
 } from 'react';
 
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { dialogCtaButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatTime } from '@shared/utils/utils.js';
 
@@ -205,9 +207,10 @@ export const ShowErrorAPI = ({
                     color="primary"
                     variant="contained"
                     fullWidth
+                    endIcon={<CheckCircle />}
                     sx={{
                         mx: theme.spacing(3),
-                        py: theme.spacing(2),
+                        ...dialogCtaButtonSx(theme),
                     }}
                 >
                     Aceptar

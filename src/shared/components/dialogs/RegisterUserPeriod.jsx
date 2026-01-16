@@ -4,6 +4,7 @@ import {
   LowPriority,
   Event,
   Close,
+  Cancel,
   DoneAll,
   MobileFriendly,
   Discount,
@@ -34,6 +35,7 @@ import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
+import { dialogCtaButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 import {
   PHONE_REGEX,
@@ -792,10 +794,10 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               variant="contained"
               color="secondary"
               onClick={cancel}
-              sx={{ flex: 1 }}
+              sx={{ flex: 1, ...dialogCtaButtonSx(theme) }}
             >
               Cancelar
-              <Close
+              <Cancel
                 sx={{ fontSize: theme.spacing(5), ml: theme.spacing(2) }}
               />
             </Button>
@@ -804,7 +806,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               variant="contained"
               color="primary"
               type="submit"
-              sx={{ flex: 1 }}
+              sx={{ flex: 1, ...dialogCtaButtonSx(theme) }}
             >
               Registrar
               <DoneAll

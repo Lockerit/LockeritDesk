@@ -1,5 +1,5 @@
 // shared/theme/theme.js
-import { createTheme } from '@mui/material/styles';
+import { createTheme, alpha } from '@mui/material/styles';
 import '@fontsource/nunito';
 
 // Colores por defecto
@@ -438,6 +438,9 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
 
       // BUTTONS
       MuiButton: {
+        defaultProps: {
+          disableElevation: true,
+        },
         styleOverrides: {
           root: {
             fontSize: {
@@ -445,6 +448,7 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
               sm: px(20),
               md: px(24),
             },
+            lineHeight: 1.15,
             borderRadius: {
               xs: px(12),
               sm: px(14),
@@ -459,9 +463,48 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             },
             textTransform: 'none',
             fontWeight: 'bold',
+            transition: 'filter 140ms ease, transform 80ms ease',
             '&:hover': {
               outline: `${Math.max(1, Math.round(2 * factor))}px solid ${COLORS.layoutBackground}`,
               outlineOffset: 0,
+              filter: 'brightness(0.96)',
+            },
+            '&:active': {
+              transform: 'translateY(1px)',
+            },
+            '&.Mui-focusVisible': {
+              outline: `${Math.max(2, Math.round(3 * factor))}px solid ${alpha(
+                COLORS.primaryMain,
+                0.45
+              )}`,
+              outlineOffset: px(2),
+            },
+            '&.Mui-disabled': {
+              opacity: 0.6,
+              boxShadow: 'none',
+            },
+          },
+        },
+      },
+
+      MuiIconButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: {
+              xs: px(12),
+              sm: px(14),
+              md: px(16),
+            },
+            transition: 'background-color 140ms ease, transform 80ms ease',
+            '&:active': {
+              transform: 'translateY(1px)',
+            },
+            '&.Mui-focusVisible': {
+              outline: `${Math.max(2, Math.round(3 * factor))}px solid ${alpha(
+                COLORS.primaryMain,
+                0.45
+              )}`,
+              outlineOffset: px(2),
             },
           },
         },

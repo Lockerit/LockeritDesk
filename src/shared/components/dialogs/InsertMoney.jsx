@@ -1,4 +1,4 @@
-import { Close } from '@mui/icons-material';
+import { Cancel, Close } from '@mui/icons-material';
 import {
     Dialog,
     DialogTitle,
@@ -21,6 +21,7 @@ import {
 
 import { Progressbar } from '@shared/components/bars/Progressbar.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { dialogCtaButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatTime } from '@shared/utils/utils.js';
 
@@ -276,9 +277,10 @@ export const InsertMoney = ({
                     color="secondary"
                     variant="contained"
                     fullWidth
+                    endIcon={<Cancel />}
                     sx={{
                         mx: theme.spacing(3),
-                        py: theme.spacing(2),
+                        ...dialogCtaButtonSx(theme),
                     }}
                 >
                     Cancelar

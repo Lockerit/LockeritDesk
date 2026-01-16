@@ -29,6 +29,7 @@ import { Loading } from '@shared/components/dialogs/Loading.jsx';
 import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { adminActionButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatCurrency, formatNumberPhone } from '@shared/utils/utils.js';
 
@@ -283,19 +284,16 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                         }}
                     >
                         <Button
-                            variant="outlined"
+                            variant="contained"
                             color="secondary"
+                            endIcon={<ForwardToInbox />}
                             sx={{
                                 mt: { xs: theme.spacing(1.5), sm: 0 },
                                 alignSelf: {
                                     xs: 'stretch',
                                     sm: 'flex-end',
                                 },
-                                px: theme.spacing(3),
-                                py: theme.spacing(1.5),
-                                fontSize: theme.typography.h6.fontSize,
-                                fontWeight: 'normal',
-                                whiteSpace: 'nowrap',
+                                ...adminActionButtonSx(theme),
                             }}
                             onClick={() => {
                                 log.info('Click enviar reporte');
@@ -304,12 +302,6 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                             disabled={disabledButton}
                         >
                             Enviar
-                            <ForwardToInbox
-                                sx={{
-                                    fontSize: theme.typography.h5.fontSize,
-                                    ml: theme.spacing(1.5),
-                                }}
-                            />
                         </Button>
                     </Box>
                 </Box>

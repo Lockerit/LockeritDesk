@@ -1,7 +1,7 @@
 import {
   Backspace,
   Close,
-  DoneAll,
+  CheckCircle,
   MobileFriendly,
   Refresh,
   ArrowForwardIos,
@@ -801,7 +801,7 @@ export const KeypadNumeric = ({
           >
             {isFinalStep ? 'Aceptar' : 'Siguiente'}
             {isFinalStep ? (
-              <DoneAll
+              <CheckCircle
                 sx={{
                   fontSize: {
                     xs: theme.spacing(4),
@@ -1229,7 +1229,7 @@ export const KeypadNumeric = ({
       <ShowCloseLocker
         open={showCloseLockerOpen}
         onConfirm={confirmCloseLocker}
-        msg={'¡Por favor dejar el casillero cerrado!'}
+        msg={'¡CIERRA EL CASILLERO!'}
         hideBackdrop
       />
 

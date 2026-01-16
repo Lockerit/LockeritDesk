@@ -1,5 +1,6 @@
 import {
-    Close
+    Close,
+    Lock
 } from '@mui/icons-material';
 import {
     Dialog,
@@ -8,7 +9,7 @@ import {
     Typography,
     Box,
     Slide,
-    IconButton,
+    IconButton
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -27,7 +28,7 @@ const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const fileName = 'ShowErrorAPI';
+const fileName = 'ShowCloseLocker';
 const log = logger.scope(fileName);
 
 // Sanear/recortar para logs
@@ -52,6 +53,12 @@ export const ShowCloseLocker = ({
 }) => {
     const [secondsLeft, setSecondsLeft] = useState(timeout);
     const theme = useTheme();
+
+    const alertColor = theme.palette.error.main;
+    const themeFactor = Number.isFinite(theme.typography?.fontSize)
+        ? theme.typography.fontSize / 14
+        : 1;
+    const alertPulseScale = 1 + 0.3 * themeFactor;
 
     const msgPreview = useMemo(() => trimForLog(msg), [msg]);
     const config = useElectronConfig();
@@ -84,7 +91,7 @@ export const ShowCloseLocker = ({
     // Autocierre por timeout
     useEffect(() => {
         if (!open || secondsLeft !== 0) return;
-        log.warn('Modal ShowErrorAPI autocerrado por timeout', {
+        log.warn('Modal ShowCloseLocker autocerrado por timeout', {
             timeout,
             msg: msgPreview,
         });
@@ -112,7 +119,10 @@ export const ShowCloseLocker = ({
                 },
             }}
             disableEscapeKeyDown
-            sx={{ pointerEvents: 'auto', zIndex: 1500 }}
+            sx={{
+                pointerEvents: 'auto',
+                zIndex: 1500,
+            }}
             PaperProps={{
                 sx: {
                     width: {
@@ -160,7 +170,7 @@ export const ShowCloseLocker = ({
                         <Close />
                     </IconButton>
                 </Box>
-                <DialogTitle sx={{ color: 'inherit', textAlign: 'left', fontWeight: 'bold' }}>Información</DialogTitle>
+                <DialogTitle sx={{ color: 'inherit', textAlign: 'left' }}>Información</DialogTitle>
             </Box>
 
             <DialogContent
@@ -172,16 +182,49 @@ export const ShowCloseLocker = ({
                     gap: theme.spacing(2),
                 }}
             >
-                <Typography
-                    variant="h1"
-                    component="span"
-                    color="inherit"
-                    sx={{ fontWeight: 'bold', whiteSpace: 'pre-line', color: theme.palette.error.main }}
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: theme.spacing(2),
+                        color: alertColor,
+                        animation: 'alertPulse 1.2s infinite',
+                        '@keyframes alertPulse': {
+                            '0%': { transform: 'scale(1)' },
+                            '50%': { transform: `scale(${alertPulseScale})` },
+                            '100%': { transform: 'scale(1)' },
+                        },
+                    }}
                 >
-                    {typeof msg === 'string'
-                        ? msg
-                        : msg?.message || JSON.stringify(msg)}
-                </Typography>
+                    <Lock
+                        sx={{
+                            fontSize: { xs: 44, sm: 60, md: 70 },
+                        }}
+                    />
+
+                    <Typography
+                        variant="h1"
+                        component="span"
+                        color="inherit"
+                        sx={{
+                            fontWeight: 'bold',
+                            fontSize: {
+                                xs: theme.typography.h4.fontSize,
+                                sm: theme.typography.h3.fontSize,
+                                md: theme.typography.h2.fontSize,
+                            },
+                            lineHeight: 1.1,
+                            wordBreak: 'break-word',
+                            overflowWrap: 'anywhere',
+                        }}
+                    >
+                        {typeof msg === 'string'
+                            ? msg
+                            : msg?.message || JSON.stringify(msg)}
+                    </Typography>
+                </Box>
             </DialogContent>
         </Dialog>
     );

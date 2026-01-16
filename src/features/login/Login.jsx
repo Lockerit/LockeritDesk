@@ -362,11 +362,17 @@ export const Login = () => {
         <>
             <Box
                 sx={{
-                    minHeight: '100vh',
+                    position: 'fixed',
+                    inset: 0,
                     width: '100%',
+                    height: '100dvh',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
+                    px: { xs: 2, sm: 3 },
+                    py: { xs: 2, sm: 3 },
+                    boxSizing: 'border-box',
+                    overflow: 'hidden',
                 }}
             >
                 <Paper
@@ -374,23 +380,31 @@ export const Login = () => {
                     component="form"
                     onSubmit={handleSubmit}
                     sx={{
-                        minHeight: '40%',
-                        maxHeight: '95vh',
-                        overflow: 'auto',
                         width: { xs: '96%', sm: '80%', md: '60%', lg: '45%' },
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'space-between',
                         alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: { xs: 2, sm: 3 },
                         p: { xs: 3, sm: 4, md: 5 },
                         boxSizing: 'border-box',
+                        maxHeight: '100%',
+                        overflow: 'hidden',
+
+                        '@media (max-height: 720px)': {
+                            gap: 1.5,
+                            padding: theme.spacing(2.5),
+                        },
+                        '@media (max-height: 640px)': {
+                            gap: 1,
+                            padding: theme.spacing(2),
+                        },
                     }}
                 >
                     {/* Logo */}
                     {config?.paramsHtml?.imagesPaths?.logoLogin?.enabled && (logoPath || logo) && (
                         <Box
                             sx={{
-                                flex: '0 0 12%',
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
@@ -415,39 +429,40 @@ export const Login = () => {
                                         lg: theme.spacing(22),
                                     },
                                     objectFit: 'contain',
+
+                                    '@media (max-height: 720px)': {
+                                        maxHeight: theme.spacing(10),
+                                    },
+                                    '@media (max-height: 640px)': {
+                                        maxHeight: theme.spacing(8),
+                                    },
                                 }}
                             />
                         </Box>
                     )}
 
-                    {/* Reserva de espacio para título (si necesitas agregarlo después) */}
-                    <Box
-                        sx={{
-                            flex: '0 0 10%',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            flexDirection: 'column',
-                            width: '100%',
-                        }}
-                    />
-
                     {/* Inputs */}
                     <Box
                         sx={{
-                            flex: 1,
                             width: '90%',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center',
                             gap: 2,
+
+                            '@media (max-height: 720px)': {
+                                gap: 1.5,
+                            },
+                            '@media (max-height: 640px)': {
+                                gap: 1,
+                            },
                         }}
                     >
                         <Box
                             sx={{
                                 display: 'flex',
                                 alignItems: 'flex-end',
-                                my: 2,
+                                my: 1,
                             }}
                         >
                             <Person
@@ -477,7 +492,7 @@ export const Login = () => {
                             sx={{
                                 display: 'flex',
                                 alignItems: 'flex-end',
-                                my: 2,
+                                my: 1,
                             }}
                         >
                             <LockOpen
@@ -533,13 +548,19 @@ export const Login = () => {
                     {/* Opciones y botones */}
                     <Box
                         sx={{
-                            flex: '0 0 30%',
                             width: '100%',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center',
                             gap: isXs ? 1.5 : 2,
                             mt: isXs ? 2 : 5,
+
+                            '@media (max-height: 720px)': {
+                                mt: isXs ? 1.5 : 2.5,
+                            },
+                            '@media (max-height: 640px)': {
+                                mt: isXs ? 1 : 2,
+                            },
                         }}
                     >
                         {screenLogin && (

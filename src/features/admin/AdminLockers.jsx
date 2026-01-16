@@ -1,4 +1,4 @@
-import { Sync } from '@mui/icons-material';
+import { Key, Lock, LockOpen, Sync } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -27,6 +27,7 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { StatusLockersPopper } from '@shared/components/dialogs/StatusLockersPopper.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
+import { adminActionButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'AdminLockers';
@@ -448,7 +449,7 @@ export const AdminLockers = () => {
                     width: '100%',
                     alignItems: 'center',
                     boxSizing: 'border-box',
-                    overflow: 'hidden',
+                    overflow: 'hidden', 
                 }}
             >
                 {/* Cabecera Cantidad */}
@@ -619,6 +620,7 @@ export const AdminLockers = () => {
                                     (s) => s.status.toLowerCase() === locker.status.toLowerCase()
                                 );
                                 const color = matchedStatus ? matchedStatus.color : 'gray';
+                                const textColor = theme.palette.getContrastText(color);
 
                                 return (
                                     <Grid
@@ -635,8 +637,8 @@ export const AdminLockers = () => {
                                             onClick={() => handleLockerClick(locker)}
                                             sx={{
                                                 backgroundColor: color,
-                                                border: selected ? '4px solid black' : 'none',
-                                                color: '#fff',
+                                                border: selected ? `4px solid ${theme.palette.text.primary}` : 'none',
+                                                color: textColor,
                                                 width: '100%',
                                                 height: '100%',
                                                 fontSize: theme.typography.h5.fontSize,
@@ -706,26 +708,32 @@ export const AdminLockers = () => {
                                     }}
                                 >
                                     <Button
-                                        variant="outlined"
+                                        variant="contained"
                                         color="primary"
                                         fullWidth
                                         onClick={() => handleAction('abrir')}
+                                        endIcon={<LockOpen />}
+                                        sx={adminActionButtonSx(theme)}
                                     >
                                         Abrir
                                     </Button>
                                     <Button
-                                        variant="outlined"
+                                        variant="contained"
                                         color="primary"
                                         fullWidth
                                         onClick={() => handleAction('liberar')}
+                                        endIcon={<Lock />}
+                                        sx={adminActionButtonSx(theme)}
                                     >
                                         Liberar
                                     </Button>
                                     <Button
-                                        variant="outlined"
+                                        variant="contained"
                                         color="primary"
                                         fullWidth
                                         onClick={handleMenuClick}
+                                        endIcon={<Sync />}
+                                        sx={adminActionButtonSx(theme)}
                                     >
                                         Cambiar estado
                                     </Button>
@@ -766,10 +774,12 @@ export const AdminLockers = () => {
                 {config?.reserve?.enabled && (
                     <Box sx={{ mt: 'auto', width: '100%' }}>
                         <Button
-                            variant="outlined"
+                            variant="contained"
                             color="tertiary"
                             fullWidth
                             onClick={() => handleAction('reservar')}
+                            endIcon={<Key />}
+                            sx={adminActionButtonSx(theme)}
                         >
                             Reservar
                         </Button>
