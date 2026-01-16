@@ -44,17 +44,20 @@ export const VirtualKeyboard = ({ inputValue, onChange, onEnter, activeField }) 
                 '--vk-border': theme.palette.divider,
                 '--vk-shadow': theme.shadows[1],
                 '--vk-radius': `${theme.shape.borderRadius * 2}px`,
-                '--vk-pad': { xs: theme.spacing(1), sm: theme.spacing(1.5) },
-                '--vk-pad-xs': theme.spacing(1),
-                '--vk-gap-row': { xs: theme.spacing(0.75), sm: theme.spacing(1) },
-                '--vk-gap-row-xs': theme.spacing(0.75),
-                '--vk-gap-key': { xs: theme.spacing(0.75), sm: theme.spacing(1) },
-                '--vk-gap-key-xs': theme.spacing(0.75),
-                '--vk-font': { xs: theme.typography.pxToRem(16), sm: theme.typography.pxToRem(18) },
-                '--vk-font-xs': theme.typography.pxToRem(16),
-                '--vk-key-h': { xs: theme.spacing(6), sm: `clamp(${theme.spacing(5.5)}, 7vh, ${theme.spacing(7)})` },
-                '--vk-key-h-xs': theme.spacing(6),
-                '--vk-key-w': { xs: theme.spacing(4.75), sm: theme.spacing(5.5) },
+                '--vk-pad': { xs: theme.spacing(0.75), sm: theme.spacing(1) },
+                '--vk-pad-xs': theme.spacing(0.75),
+                '--vk-gap-row': { xs: theme.spacing(0.35), sm: theme.spacing(0.35) },
+                '--vk-gap-row-xs': theme.spacing(0.35),
+                '--vk-gap-key': { xs: theme.spacing(0.4), sm: theme.spacing(0.4) },
+                '--vk-gap-key-xs': theme.spacing(0.4),
+                '--vk-font': { xs: theme.typography.pxToRem(17), sm: theme.typography.pxToRem(19) },
+                '--vk-font-xs': theme.typography.pxToRem(17),
+                '--vk-key-h': {
+                    xs: theme.spacing(6.5),
+                    sm: `clamp(${theme.spacing(6)}, 7.5vh, ${theme.spacing(7.5)})`,
+                },
+                '--vk-key-h-xs': theme.spacing(6.5),
+                '--vk-key-w': { xs: theme.spacing(5.25), sm: theme.spacing(6.25) },
                 '--vk-key-radius': { xs: `${theme.shape.borderRadius * 1.75}px`, sm: `${theme.shape.borderRadius * 2}px` },
                 '--vk-key-radius-xs': `${theme.shape.borderRadius * 1.75}px`,
                 '--vk-key-bg': alpha(theme.palette.action.active, 0.04),
@@ -62,16 +65,16 @@ export const VirtualKeyboard = ({ inputValue, onChange, onEnter, activeField }) 
                 '--vk-key-bg-active': alpha(theme.palette.action.active, 0.10),
                 '--vk-key-border': alpha(theme.palette.text.primary, 0.10),
                 '--vk-key-color': theme.palette.text.primary,
-                '--vk-fn-bg': alpha(theme.palette.secondary.main, 0.10),
-                '--vk-fn-bg-hover': alpha(theme.palette.secondary.main, 0.14),
-                '--vk-fn-bg-active': alpha(theme.palette.secondary.main, 0.18),
-                '--vk-fn-border': alpha(theme.palette.secondary.main, 0.22),
+                '--vk-fn-bg': alpha(theme.palette.secondary.main, 0.14),
+                '--vk-fn-bg-hover': alpha(theme.palette.secondary.main, 0.18),
+                '--vk-fn-bg-active': alpha(theme.palette.secondary.main, 0.22),
+                '--vk-fn-border': alpha(theme.palette.secondary.main, 0.30),
                 '--vk-fn-color': theme.palette.text.primary,
-                '--vk-enter-bg': alpha(theme.palette.primary.main, 0.12),
-                '--vk-enter-bg-hover': alpha(theme.palette.primary.main, 0.16),
-                '--vk-enter-bg-active': alpha(theme.palette.primary.main, 0.20),
-                '--vk-enter-border': alpha(theme.palette.primary.main, 0.28),
-                '--vk-space-min': { xs: theme.spacing(14), sm: theme.spacing(18) },
+                '--vk-enter-bg': alpha(theme.palette.primary.main, 0.16),
+                '--vk-enter-bg-hover': alpha(theme.palette.primary.main, 0.20),
+                '--vk-enter-bg-active': alpha(theme.palette.primary.main, 0.24),
+                '--vk-enter-border': alpha(theme.palette.primary.main, 0.34),
+                '--vk-space-min': { xs: theme.spacing(16), sm: theme.spacing(22) },
             }}
         >
             <Keyboard
@@ -80,8 +83,20 @@ export const VirtualKeyboard = ({ inputValue, onChange, onEnter, activeField }) 
                 theme="hg-theme-default vk-modern"
                 buttonTheme={[
                     {
-                        class: 'vk-fn',
-                        buttons: '{bksp} {tab} {shift} {lock}',
+                        class: 'vk-fn vk-bksp',
+                        buttons: '{bksp}',
+                    },
+                    {
+                        class: 'vk-fn vk-tab',
+                        buttons: '{tab}',
+                    },
+                    {
+                        class: 'vk-fn vk-shift',
+                        buttons: '{shift}',
+                    },
+                    {
+                        class: 'vk-fn vk-caps',
+                        buttons: '{lock}',
                     },
                     {
                         class: 'vk-enter vk-fn',
@@ -92,6 +107,14 @@ export const VirtualKeyboard = ({ inputValue, onChange, onEnter, activeField }) 
                         buttons: '{space}',
                     },
                 ]}
+                display={{
+                    '{bksp}': '⌫',
+                    '{enter}': '⏎',
+                    '{shift}': '⇧',
+                    '{lock}': '⇪',
+                    '{tab}': '⇥',
+                    '{space}': ' ',
+                }}
                 layout={{
                     default: [
                         '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',

@@ -53,8 +53,8 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const [isErrorMsj, setIsErrorMsj] = useState(true);
     const [disabledButton, setDisabledButton] = useState(true);
-    const [orderBy, setOrderBy] = useState('LockerCode');
-    const [order, setOrder] = useState('asc');
+    const [orderBy, setOrderBy] = useState('StartTime');
+    const [order, setOrder] = useState('desc');
 
     const config = useElectronConfig();
     const theme = useTheme();

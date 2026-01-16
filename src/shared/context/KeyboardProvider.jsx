@@ -5,6 +5,7 @@ import {
     useMemo,
     useEffect,
     useCallback,
+    useLayoutEffect,
 } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -44,6 +45,7 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
     // Métricas del teclado
     const kbWidthRef = useRef(0);
     const kbHeightRef = useRef(0);
+    const kbContainerRef = useRef(null);
 
     // Drag state
     const draggingRef = useRef(false);
@@ -60,9 +62,10 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
         const winW = window.innerWidth || 0;
         const winH = window.innerHeight || 0;
 
+        // Nota: esto es un estimado inicial; luego se reemplaza por la medición real del DOM
         const w = Math.min(winW * KB_MAX_WIDTH_RATIO, winW);
         const baseH = Math.max(KB_BASE_HEIGHT, KB_MIN_HEIGHT);
-        const h = Math.min(baseH, winH * 0.8); // que no ocupe más del 80% del alto
+        const h = Math.min(baseH, winH * 0.8); // estimado
 
         kbWidthRef.current = w;
         kbHeightRef.current = h;
@@ -83,6 +86,34 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
         },
         [clamp, computeMaxXY]
     );
+
+    // Medir tamaño real del teclado y re-clamp para evitar recortes en pantallas pequeñas
+    useLayoutEffect(() => {
+        if (!showKeyboard) return;
+
+        const measureAndClamp = () => {
+            const el = kbContainerRef.current;
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0) kbWidthRef.current = rect.width;
+            if (rect.height > 0) kbHeightRef.current = rect.height;
+            setPosClamped(posRef.current.x, posRef.current.y);
+        };
+
+        measureAndClamp();
+
+        let ro;
+        if (typeof ResizeObserver !== 'undefined' && kbContainerRef.current) {
+            ro = new ResizeObserver(() => measureAndClamp());
+            ro.observe(kbContainerRef.current);
+        }
+
+        window.addEventListener('resize', measureAndClamp, { passive: true });
+        return () => {
+            window.removeEventListener('resize', measureAndClamp);
+            if (ro) ro.disconnect();
+        };
+    }, [showKeyboard, setPosClamped]);
 
     const openKeyboard = useCallback(
         (anchorNode, fieldSetter, value, inputRef) => {
@@ -258,6 +289,7 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
             aria-hidden={!showKeyboard}
         >
             <div
+                ref={kbContainerRef}
                 style={{
                     position: 'absolute',
                     left: 0,
@@ -266,6 +298,7 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                     width: '90vw',
                     maxWidth: '90vw',
                     minWidth: `${KB_MIN_WIDTH}px`,
+                    maxHeight: '80dvh',
                     pointerEvents: 'auto',
                     background: theme.palette.background.paper,
                     borderRadius: theme.shape.borderRadius * 2,
@@ -274,6 +307,9 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                     userSelect: 'none',
                     padding: theme.spacing(1),
                     touchAction: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
                 }}
             >
                 <div
@@ -295,6 +331,7 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
+                        flex: '0 0 auto',
                     }}
                 >
                     Arrastra para mover el teclado
@@ -319,13 +356,27 @@ export const KeyboardProvider = ({ children, usePortal = true }) => {
                 </div>
 
                 {activeField && (
-                    <VirtualKeyboard
-                        key={activeField.key}
-                        inputValue={activeField.value}
-                        onChange={(val) => activeField.setValue(val)}
-                        onEnter={closeKeyboard}
-                        activeField={activeField}
-                    />
+                    <div
+                        data-nodrag
+                        style={{
+                            flex: '1 1 auto',
+                            minHeight: 0,
+                            overflowY: 'auto',
+                            // Si el teclado requiere más ancho (teclas con min-width), permitir scroll
+                            overflowX: 'auto',
+                            WebkitOverflowScrolling: 'touch',
+                            overscrollBehavior: 'contain',
+                            maxWidth: '100%',
+                        }}
+                    >
+                        <VirtualKeyboard
+                            key={activeField.key}
+                            inputValue={activeField.value}
+                            onChange={(val) => activeField.setValue(val)}
+                            onEnter={closeKeyboard}
+                            activeField={activeField}
+                        />
+                    </div>
                 )}
             </div>
         </div>

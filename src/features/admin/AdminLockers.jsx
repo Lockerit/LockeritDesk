@@ -598,6 +598,7 @@ export const AdminLockers = () => {
                             flex: 1,
                             width: '100%',
                             overflowY: 'auto',
+                            overflowX: 'hidden',
                             scrollBehavior: 'smooth',
                             pr: { xs: 1, sm: 2 },
                             mt: { xs: 1, sm: 2 },
@@ -607,7 +608,8 @@ export const AdminLockers = () => {
                     >
                         <Grid
                             container
-                            columns={{ xs: 5, sm: 5, md: 5, lg: 5 }} // 5 columnas en todos los breakpoints
+                            // Responsivo: menos columnas en pantallas angostas
+                            columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}
                             spacing={{ xs: 1, sm: 1, md: 1 }}
                             justifyContent="center"
                             sx={{ minHeight: '100%', width: '100%' }}
@@ -651,7 +653,16 @@ export const AdminLockers = () => {
                                                 color: textColor,
                                                 width: '100%',
                                                 height: '100%',
-                                                fontSize: theme.typography.h5.fontSize,
+                                                minHeight: {
+                                                    xs: theme.spacing(6.5),
+                                                    sm: theme.spacing(7),
+                                                    md: theme.spacing(7.5),
+                                                },
+                                                fontSize: {
+                                                    xs: theme.typography.h6.fontSize,
+                                                    sm: theme.typography.h5.fontSize,
+                                                },
+                                                lineHeight: 1,
                                                 transition:
                                                     'box-shadow 140ms ease, background-color 140ms ease',
                                                 '&:hover': {

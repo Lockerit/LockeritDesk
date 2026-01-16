@@ -9,17 +9,29 @@
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  /* Si las teclas tienen min-width y no caben, permitir scroll horizontal */
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Espaciado vertical entre filas (en vez de margin-bottom por fila) */
+.vk-modern .hg-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-gap-row, 10px) !important;
+  /* Permite que el ancho se determine por el contenido (y haga overflow) */
+  width: max-content;
+  min-width: 100%;
 }
 
 .vk-modern .hg-row {
-  margin-bottom: var(--vk-gap-row, 10px);
-  display: flex;
-  gap: var(--vk-gap-key, 8px);
-  align-items: stretch;
-}
-
-.vk-modern .hg-row:last-child {
   margin-bottom: 0;
+  display: flex;
+  gap: var(--vk-gap-key, 8px) !important;
+  align-items: stretch;
+  padding: 0 !important;
 }
 
 .vk-modern .hg-button {
@@ -27,6 +39,7 @@
   min-width: var(--vk-key-w, 44px);
   flex: 1 1 0;
   padding: 0;
+  margin: 0 !important;
   border-radius: var(--vk-key-radius, 14px);
   border: 1px solid var(--vk-key-border, rgba(255, 255, 255, 0.12));
   background: var(--vk-key-bg, rgba(255, 255, 255, 0.04));
@@ -35,7 +48,15 @@
   font-weight: 700;
   box-shadow: none;
   outline: none;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background-color 160ms ease, border-color 160ms ease, transform 80ms ease;
+}
+
+.vk-modern .hg-button:focus-visible {
+  border-color: var(--vk-enter-border, rgba(255, 255, 255, 0.22));
 }
 
 .vk-modern .hg-button:hover {
@@ -52,6 +73,27 @@
   background: var(--vk-fn-bg, rgba(0, 0, 0, 0.06));
   border-color: var(--vk-fn-border, rgba(255, 255, 255, 0.12));
   color: var(--vk-fn-color, #fff);
+  font-weight: 800;
+}
+
+/* Teclas especiales: darles más presencia para que no “aprieten” el layout */
+.vk-modern .hg-button.vk-bksp {
+  flex: 2.4 1 0;
+}
+
+.vk-modern .hg-button.vk-enter {
+  flex: 2.4 1 0;
+  background: var(--vk-enter-bg, rgba(0, 0, 0, 0.06));
+  border-color: var(--vk-enter-border, rgba(255, 255, 255, 0.12));
+}
+
+.vk-modern .hg-button.vk-shift {
+  flex: 2.1 1 0;
+}
+
+.vk-modern .hg-button.vk-tab,
+.vk-modern .hg-button.vk-caps {
+  flex: 1.8 1 0;
 }
 
 .vk-modern .hg-button.vk-fn:hover {
@@ -60,12 +102,6 @@
 
 .vk-modern .hg-button.vk-fn:active {
   background: var(--vk-fn-bg-active, rgba(0, 0, 0, 0.14));
-}
-
-.vk-modern .hg-button.vk-enter {
-  flex: 1.5 1 0;
-  background: var(--vk-enter-bg, rgba(0, 0, 0, 0.06));
-  border-color: var(--vk-enter-border, rgba(255, 255, 255, 0.12));
 }
 
 .vk-modern .hg-button.vk-enter:hover {
@@ -77,7 +113,7 @@
 }
 
 .vk-modern .hg-button.vk-space {
-  flex: 4 1 0;
+  flex: 5 1 0;
   min-width: var(--vk-space-min, 180px);
 }
 
@@ -86,9 +122,12 @@
   .vk-modern {
     padding: var(--vk-pad-xs, 10px);
   }
+  .vk-modern .hg-rows {
+    gap: var(--vk-gap-row-xs, 8px) !important;
+  }
   .vk-modern .hg-row {
-    margin-bottom: var(--vk-gap-row-xs, 8px);
-    gap: var(--vk-gap-key-xs, 6px);
+    margin-bottom: 0;
+    gap: var(--vk-gap-key-xs, 6px) !important;
   }
   .vk-modern .hg-button {
     height: var(--vk-key-h-xs, 48px);
@@ -98,9 +137,12 @@
 }
 
 @media (max-width: 360px) {
+  .vk-modern .hg-rows {
+    gap: var(--vk-gap-row-xxs, 6px) !important;
+  }
   .vk-modern .hg-row {
-    margin-bottom: var(--vk-gap-row-xxs, 6px);
-    gap: var(--vk-gap-key-xxs, 5px);
+    margin-bottom: 0;
+    gap: var(--vk-gap-key-xxs, 5px) !important;
   }
   .vk-modern .hg-button {
     height: var(--vk-key-h-xxs, 44px);

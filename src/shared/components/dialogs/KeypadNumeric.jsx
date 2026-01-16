@@ -6,6 +6,7 @@ import {
   Refresh,
   ArrowCircleRight,
   Password,
+  Cancel
 } from '@mui/icons-material';
 import {
   Button,
@@ -886,7 +887,7 @@ export const KeypadNumeric = ({
         />
       ),
       Cancelar: (
-        <Close
+        <Cancel
           sx={{
             fontSize: {
               xs: theme.spacing(3.5),
