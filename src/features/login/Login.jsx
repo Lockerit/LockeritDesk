@@ -381,6 +381,8 @@ export const Login = () => {
                     py: { xs: 2, sm: 3 },
                     boxSizing: 'border-box',
                     overflow: 'hidden',
+                    // Importante: no bloquear clicks del AppBar (menú pre-login)
+                    pointerEvents: 'none',
                 }}
             >
                 <Paper
@@ -397,6 +399,7 @@ export const Login = () => {
                         boxSizing: 'border-box',
                         maxHeight: '100%',
                         overflow: 'hidden',
+                        pointerEvents: 'auto',
 
                         '@media (max-height: 720px)': {
                             gap: 1.5,

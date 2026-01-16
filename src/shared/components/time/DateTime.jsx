@@ -1,5 +1,5 @@
-import { Box, List, ListItem, ListItemButton, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Box, Button, List, ListItem, ListItemButton, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -27,6 +27,8 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
             sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: theme.spacing(1),
                 py: theme.spacing(1),
                 px: theme.spacing(2),
                 borderTop: `1px solid ${theme.palette.divider}`,
@@ -35,40 +37,34 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
                 alignItems: 'center',
             }}
         >
-            <Typography
+            <Button
                 onClick={onCancel}
                 color="secondary"
-                sx={{
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    '&:hover': { color: 'primary.main' },
-                }}
+                variant="outlined"
+                size="large"
+                sx={{ fontWeight: 700, px: theme.spacing(2) }}
             >
                 Cancelar
-            </Typography>
-            <Typography
+            </Button>
+            <Button
                 onClick={setToday}
                 color="secondary"
-                sx={{
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    '&:hover': { color: 'primary.main' },
-                }}
+                variant="outlined"
+                size="large"
+                sx={{ fontWeight: 700, px: theme.spacing(2) }}
             >
                 Ahora
-            </Typography>
-            <Typography
+            </Button>
+            <Button
                 onClick={onAccept}
-                autoFocus
                 color="secondary"
-                sx={{
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    '&:hover': { color: 'primary.main' },
-                }}
+                variant="outlined"
+                size="large"
+                autoFocus
+                sx={{ fontWeight: 700, px: theme.spacing(2) }}
             >
                 Aceptar
-            </Typography>
+            </Button>
         </Box>
     );
 };
@@ -80,38 +76,86 @@ const NumberColumn = ({ label, values, selected, onSelect }) => {
         <Box
             sx={{
                 flex: 1,
-                maxHeight: 300,
+                maxHeight: { xs: 220, sm: 360, md: 380 },
+                height: 'auto',
+                width: { xs: '100%', sm: 'fit-content' },
+                minWidth: { xs: '100%', sm: 112 },
+                maxWidth: { sm: 140 },
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: theme.shape.borderRadius,
-                overflowY: 'auto',
-                overflowX: 'hidden',
+                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 backgroundColor: theme.palette.background.paper,
+                boxShadow: theme.shadows[1],
             }}
         >
             <Typography
                 variant="subtitle2"
                 sx={{
-                    p: theme.spacing(1),
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: theme.spacing(4.5),
+                    py: 0,
+                    px: theme.spacing(1),
                     fontWeight: 'bold',
                     borderBottom: `1px solid ${theme.palette.divider}`,
                     color: 'primary.main',
                     width: '100%',
                     textAlign: 'center',
+                    fontSize: { sm: theme.typography.pxToRem(12) },
+                    lineHeight: 1,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1,
+                    backgroundColor: theme.palette.background.paper,
                 }}
             >
                 {label}
             </Typography>
 
-            <List dense sx={{ width: '100%' }}>
+            <List
+                dense
+                sx={{
+                    width: '100%',
+                    py: theme.spacing(0.75),
+                    flex: '1 1 auto',
+                    minHeight: 0,
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                }}
+            >
                 {values.map((val) => (
                     <ListItem key={val} disablePadding>
                         <ListItemButton
                             selected={val === selected}
                             onClick={() => onSelect(val)}
-                            sx={{ textAlign: 'center' }}
+                            sx={{
+                                textAlign: 'center',
+                                mx: theme.spacing(0.5),
+                                my: theme.spacing(0.25),
+                                borderRadius: theme.shape.borderRadius,
+                                py: theme.spacing(1),
+                                fontWeight: 600,
+                                minWidth: 0,
+                                '&.Mui-selected': {
+                                    backgroundColor: alpha(
+                                        theme.palette.secondary.main,
+                                        0.12
+                                    ),
+                                },
+                                '&.Mui-selected:hover': {
+                                    backgroundColor: alpha(
+                                        theme.palette.secondary.main,
+                                        0.18
+                                    ),
+                                },
+                            }}
                         >
                             {val.toString().padStart(2, '0')}
                         </ListItemButton>
@@ -213,30 +257,82 @@ export const DateTime = ({
                 format={showTime ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD'}
                 slots={{
                     layout: (props) => (
-                        <Box>
+                        <Box
+                            sx={{
+                                width: { xs: 'min(100%, calc(100vw - 32px))', sm: 'auto' },
+                                display: 'flex',
+                                flexDirection: 'column',
+                                maxHeight: { sm: 'min(80vh, 720px)' },
+                                overflow: { sm: 'hidden' },
+                            }}
+                        >
                             {props.tabs}
 
                             <Box
                                 sx={{
-                                    display: 'flex',
+                                    display: 'grid',
+                                    gridTemplateColumns: {
+                                        xs: '1fr',
+                                        sm: showTime
+                                            ? 'minmax(300px, 1fr) max-content max-content'
+                                            : '1fr',
+                                    },
+                                    gridTemplateRows: {
+                                        xs: 'auto auto auto',
+                                        sm: showTime ? '1fr' : 'auto',
+                                    },
                                     gap: theme.spacing(2),
                                     p: theme.spacing(2),
+                                    alignItems: 'stretch',
+                                    flex: '1 1 auto',
+                                    minHeight: 0,
+                                    height: 'auto',
+                                    maxHeight: { sm: showTime ? 'min(70vh, 620px)' : 'none' },
+                                    overflow: 'auto',
                                 }}
                             >
-                                <DateCalendar
-                                    views={['year', 'month', 'day']}
-                                    openTo="day"
-                                    value={tempValue}
-                                    onChange={onCalendarChange}
-                                    shouldDisableDate={shouldDisableDate}
-                                />
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        height: { xs: 'auto', sm: '100%' },
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gridColumn: { xs: '1', sm: '1' },
+                                        gridRow: { xs: '1', sm: '1' },
+                                        justifySelf: 'stretch',
+                                        alignSelf: 'stretch',
+                                        minHeight: 0,
+                                        border: `1px solid ${theme.palette.divider}`,
+                                        borderRadius: theme.shape.borderRadius,
+                                        backgroundColor: theme.palette.background.paper,
+                                        boxShadow: theme.shadows[1],
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <DateCalendar
+                                        views={['year', 'month', 'day']}
+                                        openTo="day"
+                                        value={tempValue}
+                                        onChange={onCalendarChange}
+                                        shouldDisableDate={shouldDisableDate}
+                                        sx={{
+                                            width: '100%',
+                                            flex: { xs: '0 0 auto', sm: '1 1 auto' },
+                                            px: theme.spacing(1),
+                                            pt: theme.spacing(1),
+                                        }}
+                                    />
+                                </Box>
 
                                 {showTime && (
                                     <Box
                                         sx={{
-                                            display: 'flex',
-                                            gap: theme.spacing(2),
-                                            alignItems: 'center',
+                                            gridColumn: { xs: '1', sm: '2' },
+                                            gridRow: { xs: '2', sm: '1' },
+                                            justifySelf: { xs: 'stretch', sm: 'start' },
+                                            alignSelf: 'stretch',
+                                            height: 'auto',
+                                            minHeight: 0,
                                         }}
                                     >
                                         <NumberColumn
@@ -248,6 +344,20 @@ export const DateTime = ({
                                             selected={tempValue.hour()}
                                             onSelect={onHourChange}
                                         />
+                                    </Box>
+                                )}
+
+                                {showTime && (
+                                    <Box
+                                        sx={{
+                                            gridColumn: { xs: '1', sm: '3' },
+                                            gridRow: { xs: '3', sm: '1' },
+                                            justifySelf: { xs: 'stretch', sm: 'start' },
+                                            alignSelf: 'stretch',
+                                            height: 'auto',
+                                            minHeight: 0,
+                                        }}
+                                    >
                                         <NumberColumn
                                             label="Minutos"
                                             values={Array.from(
