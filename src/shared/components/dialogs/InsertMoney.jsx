@@ -144,19 +144,16 @@ export const InsertMoney = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: config?.paramsHtml.isVertical ? '85%' : '85%',
-                        sm: config?.paramsHtml.isVertical ? '75%' : '75%',
-                        md: config?.paramsHtml.isVertical ? '60%' : '50%',
-                        lg: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        xs: config?.paramsHtml?.isVertical ? '85%' : '85%',
+                        sm: config?.paramsHtml?.isVertical ? '75%' : '75%',
+                        md: config?.paramsHtml?.isVertical ? '60%' : '50%',
+                        lg: config?.paramsHtml?.isVertical ? '50%' : '40%',
                     },
                     maxWidth: 'none',
                     maxHeight: '90vh',
                     overflowY: 'auto',
                     height: 'auto',
-                    borderRadius: theme.spacing(3),
-                    p: theme.spacing(3),
-                    boxShadow:
-                        '0 10px 50px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.06)'
+                    // borderRadius/padding/boxShadow vienen del theme (MuiDialog/MuiPaper)
                 },
             }}
             slots={{ transition: Transition }}
@@ -184,12 +181,22 @@ export const InsertMoney = ({
                     <Typography variant="body2">
                         {formatTime(secondsLeft)}
                     </Typography>
-                    <IconButton onClick={handleCancel}>
-                        <Close />
+                    <IconButton onClick={handleCancel} aria-label="Cerrar">
+                        <Close
+                            sx={{
+                                fontSize: {
+                                    xs: theme.spacing(4),
+                                    sm: theme.spacing(4.5),
+                                    md: theme.spacing(5),
+                                },
+                            }}
+                        />
                     </IconButton>
                 </Box>
 
-                <DialogTitle>Realizando pago</DialogTitle>
+                <DialogTitle sx={{ pr: theme.spacing(10) }}>
+                    Realizando pago
+                </DialogTitle>
             </Box>
 
             <DialogContent

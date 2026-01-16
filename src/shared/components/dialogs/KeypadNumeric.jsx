@@ -4,7 +4,7 @@ import {
   CheckCircle,
   MobileFriendly,
   Refresh,
-  ArrowForwardIos,
+  ArrowCircleRight,
   Password,
 } from '@mui/icons-material';
 import {
@@ -117,6 +117,50 @@ export const KeypadNumeric = ({
   const config = useElectronConfig();
   const lockersColors = useElectronLockersColors();
   const theme = useTheme();
+
+  const inputValueByName = useMemo(
+    () => ({
+      phone,
+      password,
+      confirmPassword,
+    }),
+    [confirmPassword, password, phone]
+  );
+
+  const inputHighlightSx = useCallback(
+    (name) => {
+      const isActive = activeInput === name;
+      return {
+        backgroundColor: isActive
+          ? theme.palette.action?.selected || alpha(theme.palette.secondary.main, 0.12)
+          : 'transparent',
+        borderRadius: theme.spacing(1),
+        px: theme.spacing(1),
+        transition: 'background-color 180ms ease',
+        '& .MuiInputBase-input::placeholder': {
+          fontStyle: 'normal',
+        },
+      };
+    },
+    [activeInput, theme]
+  );
+
+  const inputIconSx = useCallback(
+    (name) => {
+      const isActive = activeInput === name;
+
+      const value = inputValueByName?.[name] ?? '';
+      const hasValue = Boolean(String(value).trim());
+
+      return {
+        // Regla global: vacío => secondary, con texto => primary; en foco => secondary (sin opacidad)
+        color: isActive ? 'secondary.main' : hasValue ? 'primary.main' : 'secondary.main',
+        opacity: 1,
+        transition: 'color 180ms ease',
+      };
+    },
+    [activeInput, inputValueByName]
+  );
 
   const operationRet = operation === 'Retirar' || operation === 'Reservado';
   const inputsCount = operationRet ? 2 : 3;
@@ -812,7 +856,7 @@ export const KeypadNumeric = ({
                 }}
               />
             ) : (
-              <ArrowForwardIos
+              <ArrowCircleRight
                 sx={{
                   fontSize: {
                     xs: theme.spacing(4),
@@ -921,18 +965,7 @@ export const KeypadNumeric = ({
               md: config?.paramsHtml?.isVertical ? '90%' : '90%',
               lg: config?.paramsHtml?.isVertical ? '90%' : '90%',
             },
-            borderRadius: {
-              xs: theme.spacing(2),
-              sm: theme.spacing(2.5),
-              md: theme.spacing(3),
-            },
-            p: {
-              xs: theme.spacing(2),
-              sm: theme.spacing(2.5),
-              md: config?.paramsHtml?.isVertical ? theme.spacing(3) : theme.spacing(2),
-            },
-            boxShadow:
-              '0 10px 50px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.06)'
+            // borderRadius/padding/boxShadow vienen del theme (MuiDialog/MuiPaper)
           },
         }}
         slots={{ transition: Transition }}
@@ -1049,27 +1082,22 @@ export const KeypadNumeric = ({
                       sm: theme.spacing(6),
                       md: theme.spacing(7),
                     },
+                    ...inputIconSx('phone'),
                   }}
                 />
                 <TextField
                   label="Número Celular"
+                  placeholder="Ingresa tu número"
                   value={phone}
                   variant="standard"
                   fullWidth
                   inputRef={phoneRef}
                   onFocus={() => setActiveInput('phone')}
+                  inputProps={{ 'aria-label': 'Número celular' }}
                   InputProps={{ readOnly: true }}
                   error={errorsEmpty.phone}
                   helperText={errorsEmpty.phone ? msgPhone : ''}
-                  sx={{
-                    backgroundColor:
-                      activeInput === 'phone'
-                        ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
-                        : 'transparent',
-                    borderRadius: theme.spacing(1),
-                    mb: 0,
-                    transition: 'background-color 0.3s ease',
-                  }}
+                  sx={{ mb: 0, ...inputHighlightSx('phone') }}
                 />
               </Box>
 
@@ -1087,10 +1115,12 @@ export const KeypadNumeric = ({
                       sm: theme.spacing(6),
                       md: theme.spacing(7),
                     },
+                    ...inputIconSx('password'),
                   }}
                 />
                 <TextField
                   label={`Contraseña (${config?.paramsHtml?.lenMaxInputPass} dígitos)`}
+                  placeholder="Ingresa tu contraseña"
                   value={password}
                   variant="standard"
                   fullWidth
@@ -1098,18 +1128,11 @@ export const KeypadNumeric = ({
                   inputMode="numeric"
                   inputRef={passRef}
                   onFocus={() => setActiveInput('password')}
+                  inputProps={{ 'aria-label': 'Contraseña' }}
                   InputProps={{ readOnly: true }}
                   error={errorsEmpty.password}
                   helperText={errorsEmpty.password ? msgPass : ''}
-                  sx={{
-                    backgroundColor:
-                      activeInput === 'password'
-                        ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
-                        : 'transparent',
-                    borderRadius: theme.spacing(1),
-                    mb: 0,
-                    transition: 'background-color 0.3s ease',
-                  }}
+                  sx={{ mb: 0, ...inputHighlightSx('password') }}
                 />
               </Box>
 
@@ -1128,10 +1151,12 @@ export const KeypadNumeric = ({
                         sm: theme.spacing(6),
                         md: theme.spacing(7),
                       },
+                      ...inputIconSx('confirmPassword'),
                     }}
                   />
                   <TextField
                     label="Confirmar Contraseña"
+                    placeholder="Confirma tu contraseña"
                     value={confirmPassword}
                     variant="standard"
                     fullWidth
@@ -1141,20 +1166,13 @@ export const KeypadNumeric = ({
                     onFocus={() =>
                       setActiveInput('confirmPassword')
                     }
+                    inputProps={{ 'aria-label': 'Confirmar contraseña' }}
                     InputProps={{ readOnly: true }}
                     error={errorsEmpty.confirmPassword}
                     helperText={
                       errorsEmpty.confirmPassword ? msgConfPass : ''
                     }
-                    sx={{
-                      backgroundColor:
-                        activeInput === 'confirmPassword'
-                          ? alpha(theme.palette.secondary.main, 0.15) // 15% de opacidad
-                          : 'transparent',
-                      borderRadius: theme.spacing(1),
-                      mb: 0,
-                      transition: 'background-color 0.3s ease',
-                    }}
+                    sx={{ mb: 0, ...inputHighlightSx('confirmPassword') }}
                   />
                 </Box>
               )}

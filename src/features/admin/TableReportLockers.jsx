@@ -30,6 +30,11 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyPad.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { adminActionButtonSx } from '@shared/theme/buttonSx.js';
+import {
+    focusIconRowSx,
+    TRAILING_ICON_CLASS,
+    trailingIconSx,
+} from '@shared/theme/inputSx.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatCurrency, formatNumberPhone } from '@shared/utils/utils.js';
 
@@ -48,7 +53,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
     const [timeoutShowMessage, setTimeoutShowMessage] = useState();
     const [isErrorMsj, setIsErrorMsj] = useState(true);
     const [disabledButton, setDisabledButton] = useState(true);
-    const [orderBy, setOrderBy] = useState('ID');
+    const [orderBy, setOrderBy] = useState('LockerCode');
     const [order, setOrder] = useState('asc');
 
     const config = useElectronConfig();
@@ -246,13 +251,20 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                     sx={{
                         flex: '0 0 auto',
                         display: 'flex',
-                        flexDirection: { xs: 'column', sm: 'row' },
+                        flexDirection: 'column',
                         gap: { xs: theme.spacing(2), sm: theme.spacing(3) },
-                        alignItems: { xs: 'stretch', sm: 'flex-end' },
+                        alignItems: 'stretch',
                         pb: { xs: theme.spacing(2), sm: theme.spacing(3) },
                     }}
                 >
-                    <Box sx={{ flex: 1 }}>
+                    <Box
+                        sx={{
+                            flex: 1,
+                            ...focusIconRowSx(theme, {
+                                hasValue: Boolean(search),
+                            }),
+                        }}
+                    >
                         <TextFieldVirtKeyPad
                             label="Buscar"
                             variant="standard"
@@ -263,7 +275,9 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
+                                            className={TRAILING_ICON_CLASS}
                                             sx={{
+                                                ...trailingIconSx(theme),
                                                 '& .MuiSvgIcon-root': {
                                                     fontSize: theme.typography.h4.fontSize,
                                                 },
@@ -280,19 +294,16 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                     <Box
                         sx={{
                             display: 'flex',
-                            justifyContent: { xs: 'stretch', sm: 'flex-start' },
+                            justifyContent: 'stretch',
+                            width: '100%',
                         }}
                     >
                         <Button
                             variant="contained"
                             color="secondary"
+                            fullWidth
                             endIcon={<ForwardToInbox />}
                             sx={{
-                                mt: { xs: theme.spacing(1.5), sm: 0 },
-                                alignSelf: {
-                                    xs: 'stretch',
-                                    sm: 'flex-end',
-                                },
                                 ...adminActionButtonSx(theme),
                             }}
                             onClick={() => {
@@ -301,7 +312,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                             }}
                             disabled={disabledButton}
                         >
-                            Enviar
+                            Enviar correo
                         </Button>
                     </Box>
                 </Box>
@@ -332,10 +343,12 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                                                 <Typography variant="subtitle1" fontWeight="bold">
                                                                     {row.LockerCode} {row.LockerID ? `- ${row.LockerID}` : ''}
                                                                 </Typography>
-                                                                <Typography variant="body2">
+                                                                <Typography variant="body2" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                     {formatNumberPhone(row.Phone)} • PIN: {row.PIN}
                                                                 </Typography>
-                                                                <Typography variant="body2">Abierto por: {row.OpenBy || '-'}</Typography>
+                                                                <Typography variant="body2" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                    Abierto por: {row.OpenBy || '-'}
+                                                                </Typography>
                                                             </Box>
                                                             <Box sx={{ flexBasis: '33.333%', textAlign: 'right' }}>
                                                                 <Typography variant="h6">{formatCurrency(row.AmountPaid)}</Typography>
@@ -358,27 +371,11 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                         ) : (
                             <Table
                                 stickyHeader
-                                size="small"
-                                sx={{ minWidth: { xs: 'auto', sm: 900 } }}
+                                size="medium"
+                                sx={{ width: '100%', minWidth: 0, tableLayout: 'auto' }}
                             >
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell
-                                            sortDirection={
-                                                orderBy === 'ID' ? order : false
-                                            }
-                                        >
-                                            <TableSortLabel
-                                                active={orderBy === 'ID'}
-                                                direction={
-                                                    orderBy === 'ID' ? order : 'asc'
-                                                }
-                                                onClick={() => handleSort('ID')}
-                                            >
-                                                Registro
-                                            </TableSortLabel>
-                                        </TableCell>
-
                                         <TableCell
                                             sortDirection={
                                                 orderBy === 'LockerID' ? order : false
@@ -528,7 +525,6 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                 <TableBody>
                                     {currentPageData.map((row) => (
                                         <TableRow key={row.ID}>
-                                            <TableCell>{row.ID}</TableCell>
                                             <TableCell>{row.LockerID}</TableCell>
                                             <TableCell>{row.LockerCode}</TableCell>
                                             <TableCell>{formatNumberPhone(row.Phone)}</TableCell>
@@ -563,28 +559,38 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
 
                     {/* Totales + paginación */}
                     <Box
-                        display="flex"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        px={theme.spacing(4)}
-                        py={theme.spacing(1)}
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            justifyContent: { xs: 'flex-start', md: 'space-between' },
+                            alignItems: { xs: 'stretch', md: 'center' },
+                            gap: { xs: theme.spacing(1.5), md: theme.spacing(2) },
+                            px: { xs: theme.spacing(2), md: theme.spacing(4) },
+                            py: { xs: theme.spacing(1.5), md: theme.spacing(1) },
+                        }}
                     >
                         <Box
                             fontWeight="bold"
-                            sx={{ fontSize: theme.typography.h6.fontSize }}
+                            sx={{
+                                fontSize: theme.typography.h6.fontSize,
+                                textAlign: { xs: 'center', md: 'left' },
+                            }}
                         >
                             Total Reporte: {formatCurrency(totalAmount)}
                         </Box>
                         <Box
                             fontWeight="bold"
-                            sx={{ fontSize: theme.typography.h6.fontSize }}
+                            sx={{
+                                fontSize: theme.typography.h6.fontSize,
+                                textAlign: { xs: 'center', md: 'left' },
+                            }}
                         >
                             Total Página:{' '}
                             {formatCurrency(totalAmountCurrentPage)}
                         </Box>
 
                         <TablePagination
-                            rowsPerPageOptions={[5, 10, 20, 50, 100, 200, 500]}
+                            rowsPerPageOptions={[10, 20, 50, 100, 200, 500]}
                             component="div"
                             count={filteredData.length}
                             rowsPerPage={rowsPerPage}
@@ -595,6 +601,14 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                             labelDisplayedRows={({ from, to, count }) =>
                                 `${from} a ${to} de ${count}`
                             }
+                            sx={{
+                                alignSelf: { xs: 'stretch', md: 'center' },
+                                '& .MuiTablePagination-toolbar': {
+                                    flexWrap: 'wrap',
+                                    justifyContent: { xs: 'center', md: 'flex-end' },
+                                    gap: theme.spacing(1),
+                                },
+                            }}
                         />
                     </Box>
                 </Paper>

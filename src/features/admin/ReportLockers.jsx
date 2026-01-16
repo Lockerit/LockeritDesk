@@ -144,52 +144,62 @@ export const ReportLockers = () => {
                 sx={{
                     flex: '0 0 auto',
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
                     gap: {
                         xs: theme.spacing(2),
                         md: theme.spacing(3),
                     },
-                    alignItems: { xs: 'stretch', md: 'flex-end' },
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
                     p: {
                         xs: theme.spacing(1.5),
                         md: theme.spacing(2),
                     },
                 }}
             >
-                <Box sx={{ flex: 1 }}>
-                    <DateTime
-                        label="Fecha y hora inicial"
-                        value={startDate}
-                        onChange={setStartDate}
-                        showTime
-                    />
-                </Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        gap: {
+                            xs: theme.spacing(2),
+                            md: theme.spacing(3),
+                        },
+                        alignItems: { xs: 'stretch', md: 'flex-end' },
+                    }}
+                >
+                    <Box sx={{ flex: 1 }}>
+                        <DateTime
+                            label="Fecha y hora inicial"
+                            value={startDate}
+                            onChange={setStartDate}
+                            showTime
+                        />
+                    </Box>
 
-                <Box sx={{ flex: 1 }}>
-                    <DateTime
-                        label="Fecha y hora final"
-                        value={endDate}
-                        onChange={setEndDate}
-                        showTime
-                    />
+                    <Box sx={{ flex: 1 }}>
+                        <DateTime
+                            label="Fecha y hora final"
+                            value={endDate}
+                            onChange={setEndDate}
+                            showTime
+                        />
+                    </Box>
                 </Box>
 
                 <Box
                     sx={{
                         display: 'flex',
-                        justifyContent: { xs: 'stretch', md: 'flex-start' },
+                        justifyContent: 'stretch',
+                        width: '100%',
                     }}
                 >
                     <Button
                         variant="contained"
                         color="primary"
+                        fullWidth
                         endIcon={<Summarize />}
                         sx={{
-                            mt: { xs: theme.spacing(1.5), md: 0 },
-                            alignSelf: {
-                                xs: 'stretch',
-                                md: 'flex-end',
-                            },
+                            alignSelf: 'stretch',
                             ...adminActionButtonSx(theme),
                         }}
                         onClick={() => {
@@ -197,7 +207,7 @@ export const ReportLockers = () => {
                             fetchDataReportLocker(true);
                         }}
                     >
-                        Generar
+                        Consultar
                     </Button>
                 </Box>
             </Box>

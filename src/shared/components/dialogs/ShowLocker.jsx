@@ -117,48 +117,61 @@ export const ShowLocker = ({
             PaperProps={{
                 sx: {
                     width: {
-                        xs: config?.paramsHtml.isVertical ? '90%' : '85%',
-                        sm: config?.paramsHtml.isVertical ? '80%' : '75%',
-                        md: config?.paramsHtml.isVertical ? '60%' : '50%',
-                        lg: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        xs: config?.paramsHtml?.isVertical ? '90%' : '85%',
+                        sm: config?.paramsHtml?.isVertical ? '80%' : '75%',
+                        md: config?.paramsHtml?.isVertical ? '60%' : '50%',
+                        lg: config?.paramsHtml?.isVertical ? '50%' : '40%',
                     },
                     maxWidth: 'none',
                     maxHeight: '90vh',
                     overflowY: 'auto',
                     height: 'auto',
-                    borderRadius: theme.spacing(3),
-                    p: theme.spacing(3),
                     display: 'flex',
                     flexDirection: 'column',
-                    boxShadow:
-                        '0 10px 50px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.06)'
+                    // borderRadius/padding/boxShadow vienen del theme (MuiDialog/MuiPaper)
                 },
             }}
             slots={{ transition: Transition }}
         >
-            {/* Encabezado con timer y botón cerrar */}
             <Box
                 sx={{
                     display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    gap: theme.spacing(1),
-                    position: 'absolute',
-                    right: theme.spacing(2),
-                    top: theme.spacing(2),
+                    flexDirection: 'column',
+                    gap: theme.spacing(2),
+                    position: 'relative',
                 }}
             >
-                <Typography variant="body2">
-                    {formatTime(secondsLeft)}
-                </Typography>
-                <IconButton onClick={handleConfirm}>
-                    <Close />
-                </IconButton>
-            </Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                        gap: theme.spacing(1),
+                        position: 'absolute',
+                        right: theme.spacing(1),
+                        top: theme.spacing(1),
+                    }}
+                >
+                    <Typography variant="body2">
+                        {formatTime(secondsLeft)}
+                    </Typography>
+                    <IconButton onClick={handleConfirm} aria-label="Cerrar">
+                        <Close
+                            sx={{
+                                fontSize: {
+                                    xs: theme.spacing(4),
+                                    sm: theme.spacing(4.5),
+                                    md: theme.spacing(5),
+                                },
+                            }}
+                        />
+                    </IconButton>
+                </Box>
 
-            <DialogTitle sx={{ textAlign: 'center' }}>
-                Apertura de casillero
-            </DialogTitle>
+                <DialogTitle sx={{ textAlign: 'center', pr: theme.spacing(10) }}>
+                    Apertura de casillero
+                </DialogTitle>
+            </Box>
 
             {/* Contenido */}
             <DialogContent
@@ -184,8 +197,7 @@ export const ShowLocker = ({
                 </Typography>
 
                 <Paper
-                    elevation={24}
-                    sx={{
+                    sx={(theme) => ({
                         width: {
                             xs: '70%',
                             sm: '65%',
@@ -200,10 +212,12 @@ export const ShowLocker = ({
                         justifyContent: 'center',
                         alignItems: 'center',
                         backgroundColor: backColor || 'primary.main',
-                        color: 'error.contrastText',
+                        color: theme.palette.getContrastText(
+                            backColor || theme.palette.primary.main
+                        ),
                         mt: theme.spacing(3),
                         mb: theme.spacing(3),
-                    }}
+                    })}
                 >
                     <Typography
                         variant="h1"

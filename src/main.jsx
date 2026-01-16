@@ -4,7 +4,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { useMemo, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import './fonts.css';
+import './styles/fonts.css';
 
 import { App } from '@app/App.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';

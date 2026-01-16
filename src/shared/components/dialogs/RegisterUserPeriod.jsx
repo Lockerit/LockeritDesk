@@ -36,6 +36,11 @@ import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyP
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
 import { dialogCtaButtonSx } from '@shared/theme/buttonSx.js';
+import {
+  focusIconRowSx,
+  leadingIconSx,
+  LEADING_ICON_CLASS,
+} from '@shared/theme/inputSx.js';
 import { logger } from '@shared/utils/logger.js';
 import {
   PHONE_REGEX,
@@ -543,10 +548,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(nameUser) }),
             }}
           >
             <Person
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -570,10 +578,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(idNumber) }),
             }}
           >
             <Article
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -597,10 +608,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(email) }),
             }}
           >
             <Email
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -626,10 +640,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(phone) }),
             }}
           >
             <MobileFriendly
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -653,10 +670,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(period) }),
             }}
           >
             <LowPriority
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -694,10 +714,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(startDate) }),
             }}
           >
             <Today
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -717,10 +740,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(endDate) }),
             }}
           >
             <Event
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -740,10 +766,15 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, {
+                hasValue: amount !== null && amount !== undefined,
+              }),
             }}
           >
             <AttachMoney
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}
@@ -763,10 +794,13 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
               alignItems: 'center',
               width: '100%',
               mb: theme.spacing(1),
+              ...focusIconRowSx(theme, { hasValue: Boolean(porcentage) }),
             }}
           >
             <Discount
+              className={LEADING_ICON_CLASS}
               sx={{
+                ...leadingIconSx(theme),
                 mr: theme.spacing(2),
                 fontSize: theme.spacing(7),
               }}

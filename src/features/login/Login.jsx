@@ -27,6 +27,14 @@ import { TextFieldVirtKeyPad } from '@shared/components/inputs/TextFieldVirtKeyP
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useAssetPath } from '@shared/hooks/useAssetPath.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { dialogCtaButtonSx } from '@shared/theme/buttonSx.js';
+import {
+    focusIconRowSx,
+    leadingIconSx,
+    LEADING_ICON_CLASS,
+    trailingIconSx,
+    TRAILING_ICON_CLASS,
+} from '@shared/theme/inputSx.js';
 import { logger } from '@shared/utils/logger.js';
 
 const USER_STORAGE_KEY = 'userInit';
@@ -376,7 +384,6 @@ export const Login = () => {
                 }}
             >
                 <Paper
-                    elevation={24}
                     component="form"
                     onSubmit={handleSubmit}
                     sx={{
@@ -463,11 +470,15 @@ export const Login = () => {
                                 display: 'flex',
                                 alignItems: 'flex-end',
                                 my: 1,
+                                ...focusIconRowSx(theme, {
+                                    hasValue: Boolean(userName),
+                                }),
                             }}
                         >
                             <Person
+                                className={LEADING_ICON_CLASS}
                                 sx={{
-                                    color: 'action.active',
+                                    ...leadingIconSx(theme),
                                     mr: 2,
                                     fontSize: {
                                         xs: theme.spacing(3),
@@ -493,11 +504,15 @@ export const Login = () => {
                                 display: 'flex',
                                 alignItems: 'flex-end',
                                 my: 1,
+                                ...focusIconRowSx(theme, {
+                                    hasValue: Boolean(pass),
+                                }),
                             }}
                         >
                             <LockOpen
+                                className={LEADING_ICON_CLASS}
                                 sx={{
-                                    color: 'action.active',
+                                    ...leadingIconSx(theme),
                                     mr: 2,
                                     fontSize: {
                                         xs: theme.spacing(3),
@@ -520,9 +535,12 @@ export const Login = () => {
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton
+                                                className={TRAILING_ICON_CLASS}
+                                                type="button"
                                                 onClick={handleTogglePassword}
                                                 edge="end"
                                                 sx={{
+                                                    ...trailingIconSx(theme),
                                                     '& .MuiSvgIcon-root': {
                                                         fontSize: {
                                                             xs: theme.spacing(3),
@@ -595,24 +613,25 @@ export const Login = () => {
                                 />
                             </Box>
                         )}
-                        <Button variant="contained" color="primary" type="submit" fullWidth
-                            sx={{
-                                fontSize: isXs ? theme.typography.h6.fontSize : theme.typography.h4.fontSize,
-                                p: isXs ? theme.spacing(1) : { xs: theme.spacing(1.5), sm: theme.spacing(2), md: theme.spacing(2.5) },
-                                borderRadius: isXs ? theme.spacing(1.5) : { xs: theme.spacing(2), sm: theme.spacing(2.5), md: theme.spacing(3) },
-                            }}
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            type="submit"
+                            fullWidth
+                            endIcon={
+                                <Send
+                                    sx={{
+                                        fontSize: {
+                                            xs: theme.spacing(4),
+                                            sm: theme.spacing(4.5),
+                                            md: theme.spacing(5),
+                                        },
+                                    }}
+                                />
+                            }
+                            sx={dialogCtaButtonSx(theme)}
                         >
                             {buttonName}
-                            <Send
-                                sx={{
-                                    fontSize: {
-                                        xs: theme.spacing(4),
-                                        sm: theme.spacing(4.5),
-                                        md: theme.spacing(5),
-                                    },
-                                    ml: 2
-                                }}
-                            />
                         </Button>
 
                         {(userInit?.closeSession || userInit?.closeWindow) && (
@@ -621,35 +640,20 @@ export const Login = () => {
                                 color="secondary"
                                 onClick={backPage}
                                 fullWidth
-                                sx={{
-                                    fontSize: {
-                                        xs: theme.typography.h4.fontSize,
-                                        sm: theme.typography.h3.fontSize,
-                                        md: theme.typography.h2.fontSize,
-                                    },
-                                    p: {
-                                        xs: theme.spacing(1.5),
-                                        sm: theme.spacing(2),
-                                        md: theme.spacing(2.5),
-                                    },
-                                    borderRadius: {
-                                        xs: theme.spacing(2),
-                                        sm: theme.spacing(2.5),
-                                        md: theme.spacing(3),
-                                    },
-                                }}
+                                sx={dialogCtaButtonSx(theme)}
+                                endIcon={
+                                    <Undo
+                                        sx={{
+                                            fontSize: {
+                                                xs: theme.spacing(4),
+                                                sm: theme.spacing(4.5),
+                                                md: theme.spacing(5),
+                                            },
+                                        }}
+                                    />
+                                }
                             >
                                 Atrás
-                                <Undo
-                                    sx={{
-                                        fontSize: {
-                                            xs: theme.spacing(4),
-                                            sm: theme.spacing(4.5),
-                                            md: theme.spacing(5),
-                                        },
-                                        ml: 2
-                                    }}
-                                />
                             </Button>
                         )}
                     </Box>

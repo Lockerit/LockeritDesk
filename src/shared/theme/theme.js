@@ -96,12 +96,23 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
   // 3) Modo (light/dark) desde config (default: light)
   const mode = CONFIG_COLORS.mode === 'dark' ? 'dark' : 'light';
 
+  // Derivados de superficies (kiosco: un solo tema, sin depender de dark/light)
+  // Mantiene body en layoutBackground (CssBaseline) y Paper en backgroundDefault.
+  const SURFACE = {
+    layout: COLORS.layoutBackground,
+    paper: COLORS.backgroundDefault,
+    // overlay suave para estados (selección/foco) sin hardcode de colores nuevos
+    selected: alpha(COLORS.secondaryMain, 0.08),
+    hover: alpha(COLORS.secondaryMain, 0.06),
+  };
+
   return createTheme({
     palette: {
       mode,
       background: {
-        default: COLORS.backgroundDefault,
-        paper: COLORS.backgroundDefault,
+        // default se usa en múltiples componentes; lo alineamos con el fondo layout del kiosco
+        default: SURFACE.layout,
+        paper: SURFACE.paper,
       },
       primary: {
         main: COLORS.primaryMain,
@@ -119,6 +130,11 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
       text: {
         primary: COLORS.textPrimary,
         secondary: COLORS.textSecondary,
+      },
+      divider: alpha(COLORS.textPrimary, 0.12),
+      action: {
+        hover: SURFACE.hover,
+        selected: SURFACE.selected,
       },
     },
 
@@ -213,6 +229,21 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
     },
     
     components: {
+      // BACKDROP / SCRIM (unificado para todos los Modals/Dialogs que lo usen)
+      MuiBackdrop: {
+        styleOverrides: {
+          root: ({ theme, ownerState }) =>
+            ownerState?.invisible
+              ? {
+                  backgroundColor: 'transparent',
+                  backdropFilter: 'none',
+                }
+              : {
+                  backgroundColor: alpha(theme.palette.common.black, 0.6),
+                  backdropFilter: 'blur(4px)',
+                },
+        },
+      },
       // TEXTFIELDS
       MuiTextField: {
         defaultProps: {
@@ -235,6 +266,13 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
               fontWeight: 'bold',
               '@media (max-width: 600px)': { fontSize: px(24) },
               '@media (max-width: 480px)': { fontSize: px(18) },
+            },
+            // Touch-friendly height for kiosk: increase padding without switching variants.
+            '& .MuiInputBase-input:not(textarea)': {
+              paddingTop: px(12),
+              paddingBottom: px(12),
+              '@media (max-width: 600px)': { paddingTop: px(10), paddingBottom: px(10) },
+              '@media (max-width: 480px)': { paddingTop: px(8), paddingBottom: px(8) },
             },
           },
         },
@@ -294,7 +332,7 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
               '&::placeholder': {
                 color: COLORS.textPrimary,
                 opacity: 0.4,
-                fontStyle: 'italic',
+                fontStyle: 'normal',
               },
             },
           },
@@ -344,7 +382,7 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             '&::placeholder': {
               color: COLORS.textPrimary,
               opacity: 0.4,
-              fontStyle: 'italic',
+              fontStyle: 'normal',
             },
           },
           inputSizeSmall: {
@@ -428,9 +466,10 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
               sm: 12 * factor,
               md: 16 * factor,
             },
-            boxShadow: `0 ${px(6)} ${px(12)} rgba(0,0,0,0.2)`,
+            // Sombras más modernas: suaves y menos “dramáticas”
+            boxShadow: `0 ${px(4)} ${px(16)} rgba(0,0,0,0.16)`,
             '@media (max-width: 600px)': {
-              boxShadow: `0 ${px(4)} ${px(8)} rgba(0,0,0,0.15)`,
+              boxShadow: `0 ${px(3)} ${px(12)} rgba(0,0,0,0.14)`,
             },
           },
         },
@@ -449,24 +488,32 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
               md: px(24),
             },
             lineHeight: 1.15,
+            // Kiosco: objetivo táctil grande y consistente
+            minHeight: {
+              xs: px(52),
+              sm: px(58),
+              md: px(64),
+            },
             borderRadius: {
               xs: px(12),
               sm: px(14),
               md: px(16),
             },
-            backdropFilter: 'blur(4px)',
-            boxShadow: `0 ${px(4)} ${px(12)} rgba(0,0,0,0.2)`,
+            // Evita “glass blur” artificial (kiosco: fondos planos). Mantén sombra sutil.
+            boxShadow: `0 ${px(3)} ${px(10)} rgba(0,0,0,0.16)`,
             padding: {
-              xs: `${px(6)} ${px(12)}`,
-              sm: `${px(7)} ${px(14)}`,
-              md: `${px(8)} ${px(16)}`,
+              xs: `${px(10)} ${px(16)}`,
+              sm: `${px(12)} ${px(18)}`,
+              md: `${px(14)} ${px(20)}`,
             },
             textTransform: 'none',
             fontWeight: 'bold',
-            transition: 'filter 140ms ease, transform 80ms ease',
+            transition: 'background-color 140ms ease, filter 140ms ease, transform 80ms ease',
             '&:hover': {
-              outline: `${Math.max(1, Math.round(2 * factor))}px solid ${COLORS.layoutBackground}`,
-              outlineOffset: 0,
+              outline: `${Math.max(1, Math.round(2 * factor))}px solid ${alpha(
+                COLORS.textPrimary,
+                0.18
+              )}`,
               filter: 'brightness(0.96)',
             },
             '&:active': {
@@ -487,13 +534,70 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
         },
       },
 
+      // DIALOGS (centraliza estética: kiosco = superficies limpias)
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            backgroundImage: 'none',
+            borderRadius: 16 * factor,
+            // sombra más suave que los hardcodes previos
+            boxShadow: `0 ${px(6)} ${px(24)} rgba(0,0,0,0.22)`,
+          },
+        },
+      },
+      MuiDialogTitle: {
+        styleOverrides: {
+          root: {
+            textAlign: 'center',
+            fontWeight: 700,
+            paddingTop: 3 * 8 * factor,
+            paddingBottom: 2 * 8 * factor,
+          },
+        },
+      },
+      MuiDialogContent: {
+        styleOverrides: {
+          root: {
+            paddingTop: 2 * 8 * factor,
+            paddingBottom: 2 * 8 * factor,
+          },
+        },
+      },
+      MuiDialogActions: {
+        styleOverrides: {
+          root: {
+            paddingTop: 2 * 8 * factor,
+            paddingBottom: 3 * 8 * factor,
+            paddingLeft: 3 * 8 * factor,
+            paddingRight: 3 * 8 * factor,
+            gap: 2 * 8 * factor,
+          },
+        },
+      },
+
       MuiIconButton: {
+        defaultProps: {
+          // Kiosco: evita iconos demasiado pequeños por defecto
+          size: 'medium',
+        },
         styleOverrides: {
           root: {
             borderRadius: {
               xs: px(12),
               sm: px(14),
               md: px(16),
+            },
+            padding: {
+              xs: px(10),
+              sm: px(12),
+              md: px(14),
+            },
+            '&.MuiIconButton-sizeSmall': {
+              padding: {
+                xs: px(8),
+                sm: px(9),
+                md: px(10),
+              },
             },
             transition: 'background-color 140ms ease, transform 80ms ease',
             '&:active': {
@@ -641,46 +745,46 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             backgroundColor: COLORS.backgroundDefault, 
             color: COLORS.textPrimary,
             fontSize: {
-              xs: px(12),
-              sm: px(13),
-              md: px(14),
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
             },
           },
           toolbar: { 
             minHeight: {
-              xs: px(32),
-              sm: px(36),
-              md: px(40),
+              xs: px(52),
+              sm: px(56),
+              md: px(60),
             },
             padding: {
-              xs: px(4),
-              sm: px(6),
-              md: px(8),
+              xs: px(10),
+              sm: px(12),
+              md: px(14),
             },
           },
           selectIcon: { color: COLORS.textPrimary },
           actions: { color: COLORS.textPrimary },
           displayedRows: { 
             fontSize: {
-              xs: px(12),
-              sm: px(13),
-              md: px(14),
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
             },
             color: COLORS.textPrimary 
           },
           selectLabel: { 
             fontSize: {
-              xs: px(12),
-              sm: px(13),
-              md: px(14),
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
             },
             color: COLORS.textPrimary 
           },
           select: { 
             fontSize: {
-              xs: px(12),
-              sm: px(13),
-              md: px(14),
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
             },
             color: COLORS.textPrimary 
           },
@@ -692,27 +796,35 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
             backgroundColor: COLORS.secondaryMain,
             color: COLORS.primaryContrastText,
             fontSize: {
-              xs: px(12),
-              sm: px(13),
-              md: px(14),
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
             },
             padding: {
-              xs: px(8),
-              sm: px(10),
-              md: px(12),
+              xs: px(12),
+              sm: px(14),
+              md: px(16),
             },
           },
           body: {
             fontSize: {
-              xs: px(12),
-              sm: px(13),
-              md: px(14),
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
             },
             color: '#444',
             padding: {
-              xs: px(8),
-              sm: px(10),
-              md: px(12),
+              xs: px(12),
+              sm: px(14),
+              md: px(16),
+            },
+          },
+          // Asegura buena altura incluso si la tabla usa size="small"
+          sizeSmall: {
+            padding: {
+              xs: px(10),
+              sm: px(12),
+              md: px(14),
             },
           },
         },
@@ -730,18 +842,18 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
           root: {
             color: COLORS.primaryContrastText,
             fontSize: {
-              xs: px(12),
-              sm: px(13),
-              md: px(14),
+              xs: px(14),
+              sm: px(16),
+              md: px(18),
             },
             '&:hover': { color: COLORS.primaryContrastText },
             '&.Mui-active': { color: COLORS.primaryContrastText },
             '& .MuiTableSortLabel-icon': {
               color: `${COLORS.primaryContrastText} !important`,
               fontSize: {
-                xs: px(16),
-                sm: px(18),
-                md: px(20),
+                xs: px(18),
+                sm: px(20),
+                md: px(22),
               },
             },
           },
@@ -814,7 +926,7 @@ export function createScaledTheme(rawFactor = 1, setupConfigFile) {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
-            backgroundColor: COLORS.layoutBackground,
+            backgroundColor: SURFACE.layout,
             margin: 0,
             padding: 0,
             boxSizing: 'border-box',

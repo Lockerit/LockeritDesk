@@ -56,10 +56,6 @@ export const ConfirmDialog = ({
                     maxHeight: '90vh',
                     overflowY: 'auto',
                     height: 'auto',
-                    borderRadius: theme.spacing(3),
-                    p: theme.spacing(3),
-                    boxShadow:
-                        '0 10px 50px rgba(0,0,0,0.6), 0 0 50px rgba(255,255,255,0.06)'
                 },
             }}
             slots={{ transition: Transition }}
@@ -83,7 +79,7 @@ export const ConfirmDialog = ({
                             sx={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
-                                borderBottom: '1px solid #eee',
+                                borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
                                 pb: 1,
                             }}
                         >

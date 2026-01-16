@@ -191,6 +191,7 @@ export const Ppal = () => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: theme.spacing(1),
                 textTransform: 'none',
                 fontSize: {
                     xs: theme.typography.h3.fontSize,
@@ -204,12 +205,6 @@ export const Ppal = () => {
                 },
                 width: '100%',
                 height: '100%',
-                borderRadius: {
-                    xs: theme.spacing(2),
-                    sm: theme.spacing(2.5),
-                    md: theme.spacing(3),
-                },
-                boxShadow: theme.shadows[8],
             }}
             fullWidth
         >

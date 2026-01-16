@@ -13,7 +13,6 @@ import {
     Menu,
     MenuItem,
     ListItemIcon,
-    IconButton,
     useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -145,18 +144,38 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
         <AppBar
             position={position}
             elevation={0}
-            sx={{ height: { xs: theme.spacing(7), sm: '100%' }, justifyContent: 'center' }}
+            sx={{
+                justifyContent: 'center',
+                minHeight: {
+                    xs: theme.spacing(7),
+                    sm: theme.spacing(8),
+                    md: theme.spacing(9),
+                },
+            }}
         >
             <Toolbar
                 disableGutters
-                sx={{ px: { xs: 1, sm: containerPadding }, minHeight: '100%', gap: theme.spacing(2) }}
+                sx={{
+                    px: { xs: 1.5, sm: containerPadding },
+                    minHeight: 'unset',
+                    gap: theme.spacing(2),
+                }}
             >
                 {/* Izquierda: usuario */}
                 <Box sx={{ flex: 1 }}>
                     <Box
                         ref={avatarBoxRef}
                         tabIndex={-1}
-                        sx={{ display: 'flex', gap: theme.spacing(1), cursor: 'pointer', alignItems: 'center' }}
+                        role="button"
+                        aria-haspopup="menu"
+                        aria-expanded={anchorEl ? 'true' : undefined}
+                        sx={{
+                            display: 'flex',
+                            gap: theme.spacing(1.5),
+                            cursor: 'pointer',
+                            alignItems: 'center',
+                            minWidth: 0,
+                        }}
                         onClick={handleMenuOpen}
                     >
                         {config?.paramsHtml?.imagesPaths?.avatar?.enabled && (
@@ -167,7 +186,7 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
                                     borderRadius: '50%',
                                     overflow: 'hidden',
                                     flexShrink: 0,
-                                    backgroundColor: '#ffffff',
+                                    backgroundColor: theme.palette.background.paper,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -179,19 +198,58 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
                             />
                         )}
 
-                        {!isXs && showData && (
-                            <>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '0.85rem', sm: '1rem' } }}>
-                                    {config?.customer || ''}{' | '}
+                        {showData && (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: { xs: 'column', sm: 'row' },
+                                    alignItems: { xs: 'flex-start', sm: 'baseline' },
+                                    gap: { xs: 0, sm: theme.spacing(1) },
+                                    minWidth: 0,
+                                }}
+                            >
+                                <Typography
+                                    variant="h6"
+                                    noWrap
+                                    sx={{
+                                        fontWeight: 800,
+                                        fontSize: {
+                                            xs: 'clamp(0.95rem, 2.6vw, 1.05rem)',
+                                            sm: 'clamp(1.0rem, 1.7vw, 1.15rem)',
+                                        },
+                                        lineHeight: 1.1,
+                                        maxWidth: { xs: '40vw', sm: 'unset' },
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {config?.customer || ''}
+                                    {!isXs ? ' |' : ''}
                                 </Typography>
-                                <Typography variant="h6" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+                                <Typography
+                                    variant="h6"
+                                    noWrap
+                                    sx={{
+                                        fontWeight: 600,
+                                        fontSize: {
+                                            xs: 'clamp(0.9rem, 2.4vw, 1.0rem)',
+                                            sm: 'clamp(0.95rem, 1.6vw, 1.1rem)',
+                                        },
+                                        lineHeight: 1.1,
+                                        maxWidth: { xs: '40vw', sm: 'unset' },
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
                                     {userInit?.authenticatedOpera
                                         ? config?.login?.userOpera || ''
                                         : userInit?.authenticatedAdmin
                                             ? config?.login?.userAdmin || ''
                                             : ''}
                                 </Typography>
-                            </>
+                            </Box>
                         )}
                     </Box>
                 </Box>
@@ -205,22 +263,67 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
 
                 {/* Derecha: ubicación o menú de acciones */}
                 <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1) }}>
-                    {showData && !isXs && (
-                        <>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '0.85rem', sm: '1rem' } }}>{config?.pointName || ''}{' | '}</Typography>
-                            <Typography variant="h6" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>{config?.pointId || ''}</Typography>
-                        </>
+                    {showData && (
+                        <Box
+                            sx={{
+                                display: { xs: 'none', sm: 'flex' },
+                                alignItems: 'baseline',
+                                gap: theme.spacing(1),
+                                minWidth: 0,
+                            }}
+                        >
+                            <Typography
+                                variant="h6"
+                                noWrap
+                                sx={{
+                                    fontWeight: 800,
+                                    fontSize: 'clamp(1.0rem, 1.7vw, 1.15rem)',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    maxWidth: '22vw',
+                                }}
+                            >
+                                {config?.pointName || ''} |
+                            </Typography>
+                            <Typography
+                                variant="h6"
+                                noWrap
+                                sx={{
+                                    fontWeight: 600,
+                                    fontSize: 'clamp(0.95rem, 1.6vw, 1.1rem)',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    maxWidth: '14vw',
+                                }}
+                            >
+                                {config?.pointId || ''}
+                            </Typography>
+                        </Box>
                     )}
 
-                    {isXs && (
-                        <IconButton size="small" color="inherit" aria-label="menu" onClick={(e) => setAnchorEl(e.currentTarget)}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="3" y="6" width="18" height="2" fill="currentColor" />
-                                <rect x="3" y="11" width="18" height="2" fill="currentColor" />
-                                <rect x="3" y="16" width="18" height="2" fill="currentColor" />
-                            </svg>
-                        </IconButton>
+                    {showData && (
+                        <Typography
+                            variant="h6"
+                            noWrap
+                            sx={{
+                                display: { xs: 'block', sm: 'none' },
+                                fontWeight: 700,
+                                fontSize: 'clamp(0.9rem, 2.6vw, 1.0rem)',
+                                lineHeight: 1.1,
+                                maxWidth: '34vw',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                textAlign: 'right',
+                            }}
+                        >
+                            {(config?.pointName || '').trim()}
+                            {config?.pointId ? ` | ${config.pointId}` : ''}
+                        </Typography>
                     )}
+
                 </Box>
             </Toolbar>
 

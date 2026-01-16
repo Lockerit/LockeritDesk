@@ -71,10 +71,13 @@ export const TabAdmin = () => {
                         minHeight: isXs ? theme.spacing(6) : theme.spacing(8),
                         '& .MuiTab-root': {
                             minHeight: isXs ? theme.spacing(6) : theme.spacing(8),
-                            fontSize: isXs ? theme.typography.subtitle2.fontSize : theme.typography.h6.fontSize,
+                            fontSize: {
+                                xs: 'clamp(0.95rem, 2.4vw, 1.05rem)',
+                                sm: 'clamp(1.0rem, 1.6vw, 1.15rem)',
+                            },
                             textTransform: 'none',
                             fontWeight: 'bold',
-                            px: isXs ? theme.spacing(1.5) : theme.spacing(3),
+                            px: isXs ? theme.spacing(1.5) : theme.spacing(2.5),
                         },
                     }}
                 >

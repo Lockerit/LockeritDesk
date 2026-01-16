@@ -1,5 +1,4 @@
 import {
-    Close,
     Lock
 } from '@mui/icons-material';
 import {
@@ -8,8 +7,7 @@ import {
     DialogContent,
     Typography,
     Box,
-    Slide,
-    IconButton
+    Slide
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -17,7 +15,6 @@ import {
     forwardRef,
     useEffect,
     useMemo,
-    useCallback,
 } from 'react';
 
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
@@ -63,10 +60,6 @@ export const ShowCloseLocker = ({
     const msgPreview = useMemo(() => trimForLog(msg), [msg]);
     const config = useElectronConfig();
 
-    useEffect(() => {
-        if (!config) return;
-    }, [config]);
-
     // Apertura/cambio de timeout
     useEffect(() => {
         if (!open) return;
@@ -99,46 +92,36 @@ export const ShowCloseLocker = ({
         onConfirm?.();
     }, [open, secondsLeft, onConfirm, timeout, msgPreview]);
 
-    const handleConfirm = useCallback(() => {
-        log.info('Modal ShowCloseLocker cerrado por usuario', {
-            msg: msgPreview,
-        });
-        onConfirm?.();
-    }, [onConfirm, msgPreview]);
-
     return (
         <Dialog
             open={open}
             onClose={() => { }}
             keepMounted={false}
             hideBackdrop={false}
-            BackdropProps={{
-                sx: {
-                    backgroundColor: 'rgba(0,0,0,0.6)',
-                    backdropFilter: 'blur(4px)',
-                },
-            }}
             disableEscapeKeyDown
             sx={{
                 pointerEvents: 'auto',
                 zIndex: 1500,
+                animation: 'alertPulse 1.2s infinite',
+                '@keyframes alertPulse': {
+                    '0%': { transform: 'scale(1)' },
+                    '50%': { transform: `scale(${alertPulseScale})` },
+                    '100%': { transform: 'scale(1)' },
+                },
             }}
             PaperProps={{
                 sx: {
                     width: {
-                        xs: config?.paramsHtml.isVertical ? '90%' : '85%',
-                        sm: config?.paramsHtml.isVertical ? '80%' : '75%',
-                        md: config?.paramsHtml.isVertical ? '65%' : '55%',
-                        lg: config?.paramsHtml.isVertical ? '50%' : '40%',
+                        xs: config?.paramsHtml?.isVertical ? '90%' : '85%',
+                        sm: config?.paramsHtml?.isVertical ? '80%' : '75%',
+                        md: config?.paramsHtml?.isVertical ? '65%' : '55%',
+                        lg: config?.paramsHtml?.isVertical ? '50%' : '40%',
                     },
                     maxWidth: 'none',
                     maxHeight: '90vh',
                     overflowY: 'auto',
                     height: 'auto',
-                    borderRadius: theme.spacing(3),
-                    p: theme.spacing(3),
-                    boxShadow:
-                        '0 10px 50px rgba(0,0,0,0.6), 0 0 50px rgba(255,255,255,0.06)',
+                    // borderRadius/padding/boxShadow vienen del theme (MuiDialog/MuiPaper)
                     border: '2px solid rgba(255,255,255,0.06)'
                 },
             }}
@@ -161,16 +144,21 @@ export const ShowCloseLocker = ({
                         position: 'absolute',
                         right: theme.spacing(1),
                         top: theme.spacing(1),
+                        marginRight: theme.spacing(4),
                     }}
                 >
                     <Typography variant="body2">
                         {formatTime(secondsLeft)}
                     </Typography>
-                    <IconButton onClick={handleConfirm} sx={{ color: '#ffffff' }}>
-                        <Close />
-                    </IconButton>
                 </Box>
-                <DialogTitle sx={{ color: 'inherit', textAlign: 'left' }}>Información</DialogTitle>
+                <DialogTitle
+                    sx={{
+                        color: 'inherit',
+                        pr: theme.spacing(10),
+                    }}
+                >
+                    Información
+                </DialogTitle>
             </Box>
 
             <DialogContent
@@ -190,12 +178,6 @@ export const ShowCloseLocker = ({
                         alignItems: 'center',
                         gap: theme.spacing(2),
                         color: alertColor,
-                        animation: 'alertPulse 1.2s infinite',
-                        '@keyframes alertPulse': {
-                            '0%': { transform: 'scale(1)' },
-                            '50%': { transform: `scale(${alertPulseScale})` },
-                            '100%': { transform: 'scale(1)' },
-                        },
                     }}
                 >
                     <Lock

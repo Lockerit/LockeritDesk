@@ -14,7 +14,7 @@ import {
     Typography,
     Menu
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useEffect, useState, useMemo } from 'react';
 
 import { GetAllStatusLockers } from '@services/apis/getAllStatusLockers.js';
@@ -534,9 +534,9 @@ export const AdminLockers = () => {
 
                 {/* Selector de módulo + seleccionar todos */}
                 <Stack
-                    direction="row"
+                    direction={{ xs: 'column', sm: 'row' }}
                     justifyContent="space-between"
-                    alignItems="center"
+                    alignItems={{ xs: 'stretch', sm: 'center' }}
                     sx={{
                         width: '100%',
                         flex: '0 0 10%',
@@ -545,7 +545,7 @@ export const AdminLockers = () => {
                 >
                     <FormControl
                         variant="standard"
-                        sx={{ width: { xs: '65%', sm: '75%' } }}
+                        sx={{ width: { xs: '100%', sm: '75%' } }}
                     >
                         <InputLabel id="select-module-label">
                             Selecciona un módulo
@@ -582,6 +582,7 @@ export const AdminLockers = () => {
                             }
                             label="Seleccionar todos"
                             sx={{
+                                alignSelf: { xs: 'flex-start', sm: 'center' },
                                 '& .MuiFormControlLabel-label': {
                                     fontSize: theme.typography.h6.fontSize,
                                 },
@@ -620,7 +621,11 @@ export const AdminLockers = () => {
                                     (s) => s.status.toLowerCase() === locker.status.toLowerCase()
                                 );
                                 const color = matchedStatus ? matchedStatus.color : 'gray';
-                                const textColor = theme.palette.getContrastText(color);
+                                const selectedBg = alpha(color, 0.5);
+                                const hoverSelectedBg = alpha(color, 0.8);
+                                const textColor = theme.palette.getContrastText(
+                                    selected ? selectedBg : color
+                                );
 
                                 return (
                                     <Grid
@@ -636,15 +641,28 @@ export const AdminLockers = () => {
                                             variant="contained"
                                             onClick={() => handleLockerClick(locker)}
                                             sx={{
-                                                backgroundColor: color,
-                                                border: selected ? `4px solid ${theme.palette.text.primary}` : 'none',
+                                                backgroundColor: selected ? selectedBg : color,
+                                                boxShadow: selected
+                                                    ? `0 0 0 ${theme.spacing(0.5)} ${alpha(
+                                                        theme.palette.secondary.main,
+                                                        0.9
+                                                    )}`
+                                                    : 'none',
                                                 color: textColor,
                                                 width: '100%',
                                                 height: '100%',
                                                 fontSize: theme.typography.h5.fontSize,
+                                                transition:
+                                                    'box-shadow 140ms ease, background-color 140ms ease',
                                                 '&:hover': {
-                                                    backgroundColor: color,
-                                                    opacity: 0.85,
+                                                    backgroundColor: selected ? hoverSelectedBg : color,
+                                                    opacity: selected ? 1 : 0.8,
+                                                    boxShadow: selected
+                                                        ? `0 0 0 ${theme.spacing(0.5)} ${alpha(
+                                                            theme.palette.secondary.main,
+                                                            0.9
+                                                        )}`
+                                                        : 'none',
                                                 },
                                             }}
                                         >
@@ -679,6 +697,8 @@ export const AdminLockers = () => {
                                         px: { xs: 1, sm: 2 },
                                         py: { xs: 0.5, sm: 1 },
                                         borderRadius: 2,
+                                        border: `1px solid ${theme.palette.divider}`,
+                                        backgroundColor: theme.palette.background.paper,
                                         display: 'flex',
                                         flexWrap: 'wrap',
                                         gap: 1,
@@ -699,7 +719,7 @@ export const AdminLockers = () => {
                                 </Box>
 
                                 <Stack
-                                    direction="row"
+                                    direction={{ xs: 'column', sm: 'row' }}
                                     spacing={{ xs: 1, sm: 1.5 }}
                                     sx={{
                                         width: '100%',
@@ -757,7 +777,6 @@ export const AdminLockers = () => {
                                                     sx={{
                                                         color: item.color,
                                                         fontWeight: 'bold',
-                                                        fontSize: theme.typography.h6.fontSize,
                                                     }}
                                                 >
                                                     {item.status}
