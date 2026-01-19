@@ -129,36 +129,35 @@ export const ShowCloseLocker = ({
         >
             <Box
                 sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: theme.spacing(2),
-                    position: 'relative',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1fr',
+                    alignItems: 'center',
+                    px: theme.spacing(1),
+                    pt: theme.spacing(1),
                 }}
             >
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        gap: theme.spacing(1),
-                        position: 'absolute',
-                        right: theme.spacing(1),
-                        top: theme.spacing(1),
-                        marginRight: theme.spacing(4),
-                    }}
-                >
-                    <Typography variant="body2">
-                        {formatTime(secondsLeft)}
-                    </Typography>
-                </Box>
+                <Box />
+
                 <DialogTitle
                     sx={{
+                        p: 0,
+                        textAlign: 'center',
                         color: 'inherit',
-                        pr: theme.spacing(10),
                     }}
                 >
                     Información
                 </DialogTitle>
+
+                <Box
+                    sx={{
+                        justifySelf: 'end',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: theme.spacing(1),
+                    }}
+                >
+                    <Typography variant="body2">{formatTime(secondsLeft)}</Typography>
+                </Box>
             </Box>
 
             <DialogContent

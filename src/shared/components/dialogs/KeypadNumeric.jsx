@@ -49,6 +49,8 @@ import {
   formatCurrency,
 } from '@shared/utils/utils.js';
 
+import { keypadButtonSx } from '@shared/theme/buttonSx.js';
+
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { InsertMoney } from './InsertMoney.jsx';
 import { Loading } from './Loading.jsx';
@@ -97,6 +99,7 @@ export const KeypadNumeric = ({
   const [timeoutInsert, setTimeoutInsert] = useState();
   const [timeoutInsertHttp, setTimeoutInsertHttp] = useState();
   const [timeoutShowMessage, setTimeoutShowMessage] = useState();
+  const [timeoutShowCloseLocker, setTimeoutShowCloseLocker] = useState();
   const [phoneConfirm, setPhoneConfirm] = useState(true);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -115,6 +118,7 @@ export const KeypadNumeric = ({
   const passRef = useRef(null);
   const confirmRef = useRef(null);
   const cleanupRef = useRef(null);
+  const pendingOpenRef = useRef(null);
   const config = useElectronConfig();
   const lockersColors = useElectronLockersColors();
   const theme = useTheme();
@@ -331,12 +335,14 @@ export const KeypadNumeric = ({
     const tmo = config?.paramsHtml?.modalTimeouts;
     const ti = Number(tmo?.timeoutInsertMoney);
     const ts = Number(tmo?.timeoutShowMessage);
+    const tc = Number(tmo?.timeoutShowCloseLocker);
     setTimeoutInsert(Number.isFinite(ti) && ti > 0 ? ti : 600);
     setTimeoutInsertHttp((Number.isFinite(ti) && ti > 0 ? ti : 600) * 1000 * 3);
     setTimeoutShowMessage(Number.isFinite(ts) && ts > 0 ? ts : 10);
+    setTimeoutShowCloseLocker(Number.isFinite(tc) && tc > 0 ? tc : 5);
 
     log.info(
-      `Config cargada | amountService=${rawAmount} | timeoutInsert=${tmo?.timeoutInsertMoney} | timeoutShowMessage=${tmo?.timeoutShowMessage}`
+      `Config cargada | amountService=${rawAmount} | timeoutInsert=${tmo?.timeoutInsertMoney} | timeoutShowMessage=${tmo?.timeoutShowMessage} | timeoutShowCloseLocker=${tmo?.timeoutShowCloseLocker}`
     );
   }, [config]);
 
@@ -563,7 +569,10 @@ export const KeypadNumeric = ({
     setLoading(false);
 
     if (operation === 'Reservado') {
-      confirmRetirarReservadoLocker(false);
+      // Mostrar mensaje antes de consumir el servicio
+      pendingOpenRef.current = { isRetirar: false };
+      setShowLockerOpen(false);
+      setShowCloseLockerOpen(true);
     }
     else {
       if (operation === 'Guardar') {
@@ -627,8 +636,20 @@ export const KeypadNumeric = ({
   };
 
   const confirmSendData = async () => {
-    setShowCloseLockerOpen(true);
     setConfirmDialogOpen(false);
+
+    if (operation === 'Guardar') {
+      await confirmGuardarLocker();
+      return;
+    }
+
+    if (operation === 'Retirar') {
+      // Mostrar mensaje antes de consumir el servicio
+      pendingOpenRef.current = { isRetirar: true };
+      setShowLockerOpen(false);
+      setShowCloseLockerOpen(true);
+      return;
+    }
   };
 
   const confirmGuardarLocker = async () => {
@@ -736,6 +757,7 @@ export const KeypadNumeric = ({
           }
           setLocker(lockerCode);
           setColorLocker(getLockerColor(lockerCode, lockersColors?.lockersColors) || '#000000');
+          // Ya pasó el modal de cierre; ahora sí mostramos el locker
           setShowLockerOpen(true);
           log.info(
             `Apertura exitosa | locker=${lockerCode}`
@@ -787,10 +809,17 @@ export const KeypadNumeric = ({
   const confirmCloseLocker = async () => {
     setShowCloseLockerOpen(false);
 
-    if (operation === 'Guardar') {
-      await confirmGuardarLocker();
-    } else if (operation === 'Retirar') {
+    // Al cumplir el tiempo del modal, recién consumimos el servicio y luego mostramos ShowLocker.
+    const pending = pendingOpenRef.current;
+    pendingOpenRef.current = null;
+
+    if (pending?.isRetirar === true) {
       await confirmRetirarReservadoLocker(true);
+      return;
+    }
+
+    if (pending?.isRetirar === false) {
+      await confirmRetirarReservadoLocker(false);
     }
   };
 
@@ -810,13 +839,7 @@ export const KeypadNumeric = ({
       disableRipple: true,
       tabIndex: -1,
       sx: {
-        width: '100%',
-        height: '100%',
-        fontSize: {
-          xs: theme.typography.h5.fontSize,
-          sm: theme.typography.h4.fontSize,
-          md: theme.typography.h4.fontSize,
-        },
+        ...keypadButtonSx(theme),
       },
     };
     const isFinalStep =
@@ -972,57 +995,55 @@ export const KeypadNumeric = ({
         slots={{ transition: Transition }}
         sx={{ zIndex: 1300, height: '100%' }}
       >
-        {/* Header: timer + título */}
+        {/* Header con título centrado real */}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing(2),
-            position: 'relative',
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
             alignItems: 'center',
+            px: theme.spacing(1),
+            pt: theme.spacing(1),
+            pb: theme.spacing(1),
           }}
         >
-          <Box
+          <Box />
+
+          <Typography
+            variant="h4"
             sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              gap: theme.spacing(1),
-              position: 'absolute',
-              right: theme.spacing(1),
-              top: theme.spacing(1),
+              fontWeight: 'bold',
+              textAlign: 'center',
+              p: theme.spacing(1),
+              fontSize: {
+                xs: theme.typography.h5.fontSize,
+                sm: theme.typography.h4.fontSize,
+                md: theme.typography.h3.fontSize,
+              },
             }}
           >
-            <Typography variant="h5">
-              {formatTime(secondsLeft)}
-            </Typography>
-            <IconButton onClick={cancel}>
-              <Close sx={{
-                fontSize: {
-                  xs: theme.spacing(4),
-                  sm: theme.spacing(4.5),
-                  md: theme.spacing(5),
-                }
-              }} />
-            </IconButton>
-          </Box>
+            {operation}
+          </Typography>
 
-          <Box sx={{ mt: theme.spacing(4) }}>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 'bold',
-                textAlign: 'center',
-                p: theme.spacing(1),
-                fontSize: {
-                  xs: theme.typography.h5.fontSize,
-                  sm: theme.typography.h4.fontSize,
-                  md: theme.typography.h3.fontSize,
-                },
-              }}
-            >
-              {operation}
-            </Typography>
+          <Box
+            sx={{
+              justifySelf: 'end',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(1),
+            }}
+          >
+            <Typography variant="h5">{formatTime(secondsLeft)}</Typography>
+            <IconButton onClick={cancel} aria-label="Cerrar">
+              <Close
+                sx={{
+                  fontSize: {
+                    xs: theme.spacing(4),
+                    sm: theme.spacing(4.5),
+                    md: theme.spacing(5),
+                  },
+                }}
+              />
+            </IconButton>
           </Box>
         </Box>
 
@@ -1249,6 +1270,7 @@ export const KeypadNumeric = ({
         open={showCloseLockerOpen}
         onConfirm={confirmCloseLocker}
         msg={'¡CIERRA EL CASILLERO!'}
+        timeout={timeoutShowCloseLocker}
         hideBackdrop
       />
 

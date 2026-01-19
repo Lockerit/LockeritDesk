@@ -60,7 +60,7 @@ export const ConfirmDialog = ({
             }}
             slots={{ transition: Transition }}
         >
-            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogTitle sx={{ textAlign: 'center' }}>{dialogTitle}</DialogTitle>
 
             <DialogContent
                 sx={{

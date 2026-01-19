@@ -487,44 +487,32 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         slots={{ transition: Transition }}
         sx={{ zIndex: 1300, height: '100%' }}
       >
-        {/* Header */}
+        {/* Header con título centrado real */}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing(2),
-            position: 'relative',
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
             alignItems: 'center',
-            justifyContent: 'center',
             mb: theme.spacing(2),
           }}
         >
-          <Box
+          <Box />
+
+          <Typography
+            variant="h4"
             sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              gap: theme.spacing(1),
-              position: 'absolute',
-              right: theme.spacing(1),
-              top: theme.spacing(1),
+              fontWeight: 'bold',
+              textAlign: 'center',
+              p: theme.spacing(1),
             }}
           >
-            <IconButton onClick={cancel}>
+            Registrar usuario
+          </Typography>
+
+          <Box sx={{ justifySelf: 'end' }}>
+            <IconButton onClick={cancel} aria-label="Cerrar">
               <Close sx={{ fontSize: theme.spacing(5) }} />
             </IconButton>
-          </Box>
-          <Box sx={{ mt: theme.spacing(2) }}>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 'bold',
-                textAlign: 'center',
-                p: theme.spacing(1),
-              }}
-            >
-              Registrar usuario
-            </Typography>
           </Box>
         </Box>
 

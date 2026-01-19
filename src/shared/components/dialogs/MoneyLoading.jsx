@@ -1,22 +1,19 @@
 // src/shared/components/icons/MoneyLoading.jsx
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
+import { CurrencyExchange } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
 
-const rotateDollar = keyframes`
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const dash = keyframes`
-  0%   { stroke-dasharray: 1px, 200px;  stroke-dashoffset: 0; }
-  50%  { stroke-dasharray: 120px, 200px; stroke-dashoffset: -60px; }
-  100% { stroke-dasharray: 120px, 200px; stroke-dashoffset: -180px; }
+const exchangeSlideFade = keyframes`
+    0%   { transform: translateX(60%) scale(0.95) rotate(0deg); opacity: 0; }
+    25%  { opacity: 1; }
+    60%  { transform: translateX(-60%) scale(1) rotate(180deg); opacity: 0.9; }
+    100% { transform: translateX(-60%) scale(1) rotate(360deg); opacity: 0; }
 `;
 
 export const MoneyLoading = ({
     color,
-    speedMs = 1400,   // velocidad de animación
+    speedMs = 1800,   // velocidad de animación
     sizeBase = 150,    // tamaño base (px)
 }) => {
     const theme = useTheme();
@@ -28,15 +25,10 @@ export const MoneyLoading = ({
         sm: sizeBase,
         md: sizeBase * 1.1,
     };
-    const dollarFont = {
-        xs: Math.round(sizeBase * 0.43),
-        sm: Math.round(sizeBase * 0.45),
-        md: Math.round(sizeBase * 0.5),
-    };
-    const strokeWidth = {
-        xs: Math.max(4, Math.round(sizeBase * 0.035)),
-        sm: Math.max(5, Math.round(sizeBase * 0.04)),
-        md: Math.max(6, Math.round(sizeBase * 0.045)),
+    const iconPx = {
+        xs: Math.round(sizeBase * 0.7),
+        sm: Math.round(sizeBase * 0.8),
+        md: Math.round(sizeBase * 0.9),
     };
 
     return (
@@ -50,53 +42,19 @@ export const MoneyLoading = ({
                 justifyContent: 'center',
             }}
         >
-            {/* Símbolo $ girando */}
-            <Typography
-                component="span"
+            {/* Icono CurrencyExchange animado */}
+            <CurrencyExchange
                 sx={{
                     fontSize: {
-                        xs: dollarFont.xs,
-                        sm: dollarFont.sm,
-                        md: dollarFont.md,
+                        xs: iconPx.xs,
+                        sm: iconPx.sm,
+                        md: iconPx.md,
                     },
-                    fontWeight: 800,
                     color: ringColor,
-                    animation: `${rotateDollar} ${speedMs}ms linear infinite`,
-                    transformOrigin: '50% 50%',
+                    filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.25))',
+                    animation: `${exchangeSlideFade} ${Math.max(1200, speedMs)}ms ease-in-out infinite`,
                 }}
-            >
-                $
-            </Typography>
-
-            {/* Anillo tipo progress infinito */}
-            <Box
-                component="svg"
-                viewBox="0 0 100 100"
-                sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-            >
-                <Box
-                    component="circle"
-                    cx={50}
-                    cy={50}
-                    r={35}
-                    sx={{
-                        fill: 'none',
-                        stroke: ringColor,
-                        opacity: 0.95,
-                        strokeWidth: {
-                            xs: strokeWidth.xs,
-                            sm: strokeWidth.sm,
-                            md: strokeWidth.md,
-                        },
-                        strokeLinecap: 'round',
-                        strokeDasharray: '1px, 200px',
-                        strokeDashoffset: 0,
-                        animation: `${dash} ${speedMs}ms ease-in-out infinite`,
-                        boxShadow:
-                            '0 10px 50px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.06)'
-                    }}
-                />
-            </Box>
+            />
         </Box>
     );
 };

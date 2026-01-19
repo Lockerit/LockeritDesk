@@ -1,6 +1,7 @@
 import { Key, Lock, LockOpen, Sync } from '@mui/icons-material';
 import {
     Box,
+    ButtonBase,
     Button,
     Checkbox,
     Chip,
@@ -27,7 +28,7 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { StatusLockersPopper } from '@shared/components/dialogs/StatusLockersPopper.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
-import { adminActionButtonSx } from '@shared/theme/buttonSx.js';
+import { adminActionButtonSx, lockerGridButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 
 const fileName = 'AdminLockers';
@@ -463,29 +464,47 @@ export const AdminLockers = () => {
                         justifyContent: 'center',
                     }}
                 >
-                    <Typography
-                        variant="h4"
-                        component="span"
+                    <ButtonBase
                         onClick={handleCantidadClick}
                         sx={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            pb: { xs: 1, sm: 2 },
+                            justifyContent: 'center',
+                            gap: 1,
+                            minHeight: theme.spacing(6),
+                                py: { xs: 0.5, sm: 1 },
+                            px: 1,
+                            borderRadius: 1.5,
+                            transition: 'color 140ms ease, background-color 140ms ease',
                             '&:hover': {
                                 color: 'primary.main',
+                                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                            },
+                            '&:focus-visible': {
+                                outline: `2px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+                                outlineOffset: 2,
                             },
                         }}
                     >
-                        {'Cantidad: '} {totalLockers}
+                        <Typography
+                            variant="h4"
+                            component="span"
+                            sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                textAlign: 'center',
+                                fontWeight: 'bold',
+                                    lineHeight: 1,
+                            }}
+                        >
+                            {'Cantidad: '} {totalLockers}
+                        </Typography>
                         <Sync
                             sx={{
                                 fontSize: { xs: 24, sm: 28, md: 32 },
-                                ml: 1,
                             }}
                         />
-                    </Typography>
+                    </ButtonBase>
                 </Box>
 
                 {/* Indicadores generales */}
@@ -510,24 +529,35 @@ export const AdminLockers = () => {
                         const color = matchedStatus ? matchedStatus.color : 'text.primary';
 
                         return (
-                            <Box
+                            <ButtonBase
                                 key={labelStatus}
                                 onClick={(e) => handleStatusSummaryClick(e, labelStatus)}
                                 sx={{
-                                    pb: { xs: 1, sm: 2 },
-                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                        textAlign: 'center',
+                                    minHeight: theme.spacing(5),
+                                        py: { xs: 0.5, sm: 1 },
+                                    px: 1,
+                                    borderRadius: 1.5,
                                     userSelect: 'none',
-                                    '&:hover': { opacity: 0.85 },
+                                    transition: 'opacity 140ms ease, background-color 140ms ease',
+                                    '&:hover': { opacity: 0.9, backgroundColor: alpha(color, 0.1) },
+                                    '&:focus-visible': {
+                                        outline: `2px solid ${alpha(color, 0.6)}`,
+                                        outlineOffset: 2,
+                                    },
                                 }}
                             >
-                                <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color }}>
+                                <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color, textAlign: 'center' }}>
                                     {labelStatus}
                                     {': '}
                                 </Typography>
-                                <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color }}>
+                                <Typography variant="h6" component="span" sx={{ fontWeight: 'bold', color, textAlign: 'center' }}>
                                     {item.total}
                                 </Typography>
-                            </Box>
+                            </ButtonBase>
                         );
                     })}
                 </Box>
@@ -643,35 +673,30 @@ export const AdminLockers = () => {
                                             variant="contained"
                                             onClick={() => handleLockerClick(locker)}
                                             sx={{
+                                                ...lockerGridButtonSx(theme),
                                                 backgroundColor: selected ? selectedBg : color,
-                                                boxShadow: selected
-                                                    ? `0 0 0 ${theme.spacing(0.5)} ${alpha(
+                                                border: selected
+                                                    ? `2px solid ${alpha(
                                                         theme.palette.secondary.main,
                                                         0.9
                                                     )}`
+                                                    : '2px solid transparent',
+                                                boxShadow: selected
+                                                    ? `0 0 0 ${theme.spacing(0.25)} ${alpha(
+                                                        theme.palette.secondary.main,
+                                                        0.6
+                                                    )}`
                                                     : 'none',
                                                 color: textColor,
-                                                width: '100%',
-                                                height: '100%',
-                                                minHeight: {
-                                                    xs: theme.spacing(6.5),
-                                                    sm: theme.spacing(7),
-                                                    md: theme.spacing(7.5),
-                                                },
-                                                fontSize: {
-                                                    xs: theme.typography.h6.fontSize,
-                                                    sm: theme.typography.h5.fontSize,
-                                                },
-                                                lineHeight: 1,
                                                 transition:
                                                     'box-shadow 140ms ease, background-color 140ms ease',
                                                 '&:hover': {
                                                     backgroundColor: selected ? hoverSelectedBg : color,
                                                     opacity: selected ? 1 : 0.8,
                                                     boxShadow: selected
-                                                        ? `0 0 0 ${theme.spacing(0.5)} ${alpha(
+                                                        ? `0 0 0 ${theme.spacing(0.25)} ${alpha(
                                                             theme.palette.secondary.main,
-                                                            0.9
+                                                            0.6
                                                         )}`
                                                         : 'none',
                                                 },

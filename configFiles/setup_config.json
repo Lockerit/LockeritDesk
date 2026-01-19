@@ -22,7 +22,8 @@
         "modalTimeouts": {
             "timeoutKeypad": 300,
             "timeoutInsertMoney": 120,
-            "timeoutShowMessage": 15
+            "timeoutShowMessage": 15,
+            "timeoutShowCloseLocker": 5
         },
         "colorsTheme": {
             "theme": "light",

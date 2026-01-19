@@ -13,6 +13,7 @@ import { useAssetPath } from '@shared/hooks/useAssetPath.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 import { speak, stopSpeaking } from '@shared/utils/speak.js';
+import { operationActionButtonSx } from '@shared/theme/buttonSx.js';
 
 const fileName = 'Ppal';
 const log = logger.scope(fileName);
@@ -187,24 +188,9 @@ export const Ppal = () => {
             onClick={onClick}
             disabled={disabled}
             sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: theme.spacing(1),
-                textTransform: 'none',
-                fontSize: {
-                    xs: theme.typography.h3.fontSize,
-                    sm: theme.typography.h2.fontSize,
-                    md: theme.typography.h1.fontSize,
-                },
-                p: {
-                    xs: theme.spacing(1),
-                    sm: theme.spacing(1.5),
-                    md: theme.spacing(2),
-                },
                 width: '100%',
                 height: '100%',
+                ...operationActionButtonSx(theme, color),
             }}
             fullWidth
         >

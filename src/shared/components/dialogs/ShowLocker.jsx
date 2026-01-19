@@ -135,26 +135,28 @@ export const ShowLocker = ({
         >
             <Box
                 sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: theme.spacing(2),
-                    position: 'relative',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1fr',
+                    alignItems: 'center',
+                    px: theme.spacing(1),
+                    pt: theme.spacing(1),
                 }}
             >
+                <Box />
+
+                <DialogTitle sx={{ p: 0, textAlign: 'center' }}>
+                    Apertura de casillero
+                </DialogTitle>
+
                 <Box
                     sx={{
+                        justifySelf: 'end',
                         display: 'flex',
-                        justifyContent: 'flex-end',
                         alignItems: 'center',
                         gap: theme.spacing(1),
-                        position: 'absolute',
-                        right: theme.spacing(1),
-                        top: theme.spacing(1),
                     }}
                 >
-                    <Typography variant="body2">
-                        {formatTime(secondsLeft)}
-                    </Typography>
+                    <Typography variant="body2">{formatTime(secondsLeft)}</Typography>
                     <IconButton onClick={handleConfirm} aria-label="Cerrar">
                         <Close
                             sx={{
@@ -167,10 +169,6 @@ export const ShowLocker = ({
                         />
                     </IconButton>
                 </Box>
-
-                <DialogTitle sx={{ textAlign: 'center', pr: theme.spacing(10) }}>
-                    Apertura de casillero
-                </DialogTitle>
             </Box>
 
             {/* Contenido */}
