@@ -1269,7 +1269,7 @@ export const KeypadNumeric = ({
       <ShowCloseLocker
         open={showCloseLockerOpen}
         onConfirm={confirmCloseLocker}
-        msg={'¡CIERRA EL CASILLERO!'}
+        msg={'¡DEJA EL CASILLERO CERRADO!'}
         timeout={timeoutShowCloseLocker}
         hideBackdrop
       />
