@@ -133,7 +133,7 @@ export const AdminLockers = () => {
                 setMessageErrorAPI(m);
                 setShowErrorAPIOpen(true);
 
-                log.error(`GET /getAllStatusLockers → fail: ${msg}`);
+                log.error(`GET /getAllStatusLockers → fail: ${m}`);
             }
         } catch (_err) {
             setMessageErrorAPI('Error inesperado al obtener estado decasilleros.');

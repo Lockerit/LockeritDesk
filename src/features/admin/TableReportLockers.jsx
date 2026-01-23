@@ -220,7 +220,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
 
                 setMessageErrorAPI(m);
                 setShowErrorAPIOpen(true);
-                log.error(`POST /report → fail: ${msg}`);
+                log.error(`POST /report → fail: ${m}`);
             }
         } catch (err) {
             setMessageErrorAPI(

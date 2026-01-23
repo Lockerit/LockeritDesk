@@ -445,7 +445,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         setMessageErrorAPI(m);
         setShowErrorAPIOpen(true);
         log.error(
-          `Reserva fallida, { status: ${result?.status}, msg: ${msg} }`
+          `Reserva fallida, { status: ${result?.status}, msg: ${m} }`
         );
       }
     } catch (error) {

@@ -107,7 +107,7 @@ export const ReportLockers = () => {
 
                 setMessageErrorAPI(m);
                     setShowErrorAPIOpen(true);
-                    log.error(`GET /report → fail: ${msg}`);
+                    log.error(`GET /report → fail: ${m}`);
                 }
             } catch (err) {
                 setMessageErrorAPI(
