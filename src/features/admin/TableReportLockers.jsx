@@ -212,13 +212,13 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                     setShowErrorAPIOpen(false);
                 }
             } else {
-                const msg =
-                    typeof result?.data === 'string'
-                        ? result.data
-                        : result?.data?.message ||
-                        'Error al obtener reporte';
+                const status = result?.http?.status ?? result?.status;
+                const m =
+                    status === 500 || status == null
+                        ? 'Error del sistema, no se pudo obtener reporte.'
+                        : 'Error desconocido, no se pudo obtener reporte.';
 
-                setMessageErrorAPI(msg);
+                setMessageErrorAPI(m);
                 setShowErrorAPIOpen(true);
                 log.error(`POST /report → fail: ${msg}`);
             }

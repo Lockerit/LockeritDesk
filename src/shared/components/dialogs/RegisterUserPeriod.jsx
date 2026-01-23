@@ -434,12 +434,15 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
           );
         }
       } else {
-        const msg =
-          result?.status === 500
-            ? 'No se pudo registrar usuario, ¡Inténtalo nuevamente!'
-            : result?.data?.message ||
-            'No se pudo registrar usuario, ¡Inténtalo nuevamente!';
-        setMessageErrorAPI(msg);
+        const status = result?.http?.status ?? result?.status;
+        const m =
+          status === 409
+            ? 'Es posible que este número ya tenga un casillero activo, intenta de nuevo.'
+            : status === 500 || status == null
+              ? 'Error del sistema, intenta de nuevo o contacta a soporte.'
+              : 'Error desconocido, intenta más tarde o contacta a soporte.';
+
+        setMessageErrorAPI(m);
         setShowErrorAPIOpen(true);
         log.error(
           `Reserva fallida, { status: ${result?.status}, msg: ${msg} }`

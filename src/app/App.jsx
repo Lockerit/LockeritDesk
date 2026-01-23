@@ -7,6 +7,7 @@ import { HashRouter } from 'react-router-dom';
 
 import { AppRoutes } from '@features/router/AppRouter.jsx';
 import { GetReportLockers } from '@services/apis/report.js';
+import { closeWebSocket, connectWebSocket, isWebSocketConnected, waitWebSocketReady } from '@services/realtime/websocket.js';
 import { AppbarBar } from '@shared/components/bars/AppbarBar.jsx';
 import { Copyright } from '@shared/components/bars/Copyright.jsx';
 import { Loading } from '@shared/components/dialogs/Loading.jsx';
@@ -163,7 +164,50 @@ export const App = () => {
 
     useResetLocalStorageOnConfigChange(config);
 
-    // 4) Log de flags en un efecto (evita log en cada render)
+    // 4) WebSocket lifecycle (operador): conectar al iniciar sesión y cerrar en logout/exit
+    useEffect(() => {
+        let alive = true;
+
+        const shouldConnect = !!userInit?.authenticatedOpera && !userInit?.closeSession && !userInit?.closeWindow;
+
+        const ensureConnected = async () => {
+            if (!shouldConnect) return;
+            try {
+                if (!isWebSocketConnected()) {
+                    await connectWebSocket();
+                }
+                await waitWebSocketReady(5000);
+                log.info('ws.lifecycle.connected');
+            } catch (e) {
+                if (!alive) return;
+                log.warn('ws.lifecycle.connect.error', { msg: e?.message || String(e) });
+            }
+        };
+
+        if (shouldConnect) {
+            ensureConnected();
+        } else {
+            if (isWebSocketConnected()) {
+                closeWebSocket();
+                log.info('ws.lifecycle.closed');
+            }
+        }
+
+        return () => {
+            alive = false;
+        };
+    }, [userInit?.authenticatedOpera, userInit?.closeSession, userInit?.closeWindow]);
+
+    // 5) Cierre de WS al salir de la app
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            closeWebSocket();
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, []);
+
+    // 6) Log de flags en un efecto (evita log en cada render)
     useEffect(() => {
         log.info(`Scheduler flags: { daily: ${isEnabledDaily}, weekly: ${isEnabledWeekly}, monthly: ${isEnabledMonthly}, configUser: ${cfgUser}, currentUser: ${curUser} }`);
     }, [isEnabledDaily, isEnabledWeekly, isEnabledMonthly, cfgUser, curUser]);

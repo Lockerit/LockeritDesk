@@ -124,20 +124,19 @@ export const AdminLockers = () => {
                     `GET /getAllStatusLockers → ok, total=${total}, modules=${modules.length}`
                 );
             } else {
-                const msg =
-                    typeof result?.data === 'string'
-                        ? result.data
-                        : result?.data?.message || 'Error al obtener casilleros';
+                const status = result?.http?.status ?? result?.status;
+                const m =
+                    status === 500 || status == null
+                        ? 'Error del sistema, no se pudo obtener estado de casilleros.'
+                        : 'Error desconocido, no se pudo obtener estado de casilleros.';
 
-                setMessageErrorAPI(msg);
+                setMessageErrorAPI(m);
                 setShowErrorAPIOpen(true);
 
                 log.error(`GET /getAllStatusLockers → fail: ${msg}`);
             }
         } catch (_err) {
-            setMessageErrorAPI(
-                _err?.message || 'Error inesperado al obtener casilleros'
-            );
+            setMessageErrorAPI('Error inesperado al obtener estado decasilleros.');
             setShowErrorAPIOpen(true);
             log.error(
                 `GET /getAllStatusLockers → exception: ${_err?.message || _err}`
@@ -450,7 +449,7 @@ export const AdminLockers = () => {
                     width: '100%',
                     alignItems: 'center',
                     boxSizing: 'border-box',
-                    overflow: 'hidden', 
+                    overflow: 'hidden',
                 }}
             >
                 {/* Cabecera Cantidad */}
@@ -472,7 +471,7 @@ export const AdminLockers = () => {
                             justifyContent: 'center',
                             gap: 1,
                             minHeight: theme.spacing(6),
-                                py: { xs: 0.5, sm: 1 },
+                            py: { xs: 0.5, sm: 1 },
                             px: 1,
                             borderRadius: 1.5,
                             transition: 'color 140ms ease, background-color 140ms ease',
@@ -494,7 +493,7 @@ export const AdminLockers = () => {
                                 alignItems: 'center',
                                 textAlign: 'center',
                                 fontWeight: 'bold',
-                                    lineHeight: 1,
+                                lineHeight: 1,
                             }}
                         >
                             {'Cantidad: '} {totalLockers}
@@ -536,9 +535,9 @@ export const AdminLockers = () => {
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                        textAlign: 'center',
+                                    textAlign: 'center',
                                     minHeight: theme.spacing(5),
-                                        py: { xs: 0.5, sm: 1 },
+                                    py: { xs: 0.5, sm: 1 },
                                     px: 1,
                                     borderRadius: 1.5,
                                     userSelect: 'none',

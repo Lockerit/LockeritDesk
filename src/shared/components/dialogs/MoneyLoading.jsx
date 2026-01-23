@@ -1,6 +1,6 @@
 // src/shared/components/icons/MoneyLoading.jsx
-import { Box } from '@mui/material';
 import { CurrencyExchange } from '@mui/icons-material';
+import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
 
