@@ -11,6 +11,15 @@ let defaultOptions = {
 let voicesReady = null;
 const isWindows = navigator.userAgent.includes("Windows");
 
+const sanitizeTextForTTS = (text) => {
+    if (text === null || text === undefined) return '';
+    const clean = String(text)
+        .replace(/[¡!¿?.,;:(){}\[\]"'“”‘’—–\-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    return clean;
+};
+
 /**
  * Cargar voces disponibles
  */
@@ -60,6 +69,8 @@ export const preloadVoice = () => {
  * Hablar un texto
  */
 export const speak = async (text, options = {}) => {
+    const safeText = sanitizeTextForTTS(text);
+    if (!safeText) return;
     const finalOptions = { ...defaultOptions, ...options };
     const {
         voiceName,
@@ -76,7 +87,7 @@ export const speak = async (text, options = {}) => {
 
     // 1) Voces de escritorio (Windows/SAPI) si así lo pide la config
     if (canUseDesktop) {
-        window.electronAPI.speak(text, {
+        window.electronAPI.speak(safeText, {
             voiceName,
             rate,
             pitch,
@@ -89,7 +100,7 @@ export const speak = async (text, options = {}) => {
     if (window.speechSynthesis) {
         await waitForVoices();
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(safeText);
 
         if (voiceName) {
             const voice = voices.find(v => v.name === voiceName);
@@ -108,7 +119,7 @@ export const speak = async (text, options = {}) => {
 
     // 3) Fallback: si no hay speechSynthesis, usar backend si está disponible
     if (window.electronAPI?.speak) {
-        window.electronAPI.speak(text, { voiceName, rate, pitch, volume });
+        window.electronAPI.speak(safeText, { voiceName, rate, pitch, volume });
     }
 };
 

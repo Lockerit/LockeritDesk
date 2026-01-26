@@ -15,11 +15,13 @@ import {
     forwardRef,
     useEffect,
     useMemo,
+    use,
 } from 'react';
 
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { logger } from '@shared/utils/logger.js';
 import { formatTime } from '@shared/utils/utils.js';
+import { speak } from '@shared/utils/speak.js';
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -91,6 +93,15 @@ export const ShowCloseLocker = ({
         setSecondsLeft(timeout);
         onConfirm?.();
     }, [open, secondsLeft, onConfirm, timeout, msgPreview]);
+
+    useEffect(() => {
+        if (!open) return;
+        const message = typeof msg === 'string'
+            ? msg
+            : msg?.message || JSON.stringify(msg);
+        speak(message || '');
+        console.log(message);
+    }, [open, msg]);
 
     return (
         <Dialog

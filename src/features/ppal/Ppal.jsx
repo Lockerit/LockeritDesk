@@ -11,9 +11,9 @@ import { ShowErrorAPI } from '@shared/components/dialogs/ShowErrorAPI.jsx';
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useAssetPath } from '@shared/hooks/useAssetPath.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
+import { operationActionButtonSx } from '@shared/theme/buttonSx.js';
 import { logger } from '@shared/utils/logger.js';
 import { speak, stopSpeaking } from '@shared/utils/speak.js';
-import { operationActionButtonSx } from '@shared/theme/buttonSx.js';
 
 const fileName = 'Ppal';
 const log = logger.scope(fileName);
@@ -165,15 +165,17 @@ export const Ppal = () => {
                 }
                 setShowErrorAPIOpenPpal(false);
             } else {
-                const msg =
-                    typeof result?.data === 'string'
-                        ? result.data
-                        : 'No se puedo obtener estado de casilleros';
-                setMessageErrorAPI(msg);
+                const status = result?.http?.status ?? result?.status;
+                const m =
+                    status === 500 || status == null
+                        ? 'Error del sistema, no se pudo obtener estado de casilleros.'
+                        : 'Error desconocido, no se pudo obtener estado de casilleros.';
+
+                setMessageErrorAPI(m);
                 setShowErrorAPIOpenPpal(true);
             }
         } catch (e) {
-            setMessageErrorAPI('No se puedo obtener estado de casilleros');
+            setMessageErrorAPI('Error inesperado al obtener estado de casilleros.');
             setShowErrorAPIOpenPpal(true);
             log.error(`Error estados: ${e?.message || e}`);
         } finally {

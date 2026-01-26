@@ -20,6 +20,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import avatarImg from '@assets/icono.jpg';
+import { closeWebSocket } from '@services/realtime/websocket.js';
 import { useUser } from '@shared/context/UserContext.jsx';
 import { useAssetPath } from '@shared/hooks/useAssetPath.js';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
@@ -121,6 +122,7 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
     };
 
     const openConfirmClose = () => {
+        closeWebSocket();
         const updatedUser = {
             ...userInit,
             closeSession: false,

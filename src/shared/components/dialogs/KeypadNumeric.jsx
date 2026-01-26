@@ -31,10 +31,10 @@ import {
 import { paymentService } from '@services/apis/assignLocker.js';
 import { OpenReserveLocker } from '@services/apis/openReserveLocker.js';
 import { OpenSessionLocker } from '@services/apis/openSessionLocker.js';
-import { closeWebSocket } from '@services/realtime/websocket.js';
 import { SnackAlert } from '@shared/components/bars/SnackAlert.jsx';
 import { useElectronConfig } from '@shared/hooks/useConfig.js';
 import { useElectronLockersColors } from '@shared/hooks/useLockersColors.js';
+import { keypadButtonSx } from '@shared/theme/buttonSx.js';
 import { cancelObservable } from '@shared/utils/cancelObservable.js';
 import { logger } from '@shared/utils/logger.js';
 import {
@@ -48,8 +48,6 @@ import {
   formatNumberPhone,
   formatCurrency,
 } from '@shared/utils/utils.js';
-
-import { keypadButtonSx } from '@shared/theme/buttonSx.js';
 
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { InsertMoney } from './InsertMoney.jsx';
@@ -218,7 +216,6 @@ export const KeypadNumeric = ({
     try {
       log.info('InsertMoney cancelado');
       setInsertMoneyOpen(false);
-      closeWebSocket();
     } finally {
       // pequeña espera para “des-enchocar” efectos que vengan en cola
       setTimeout(() => { cancellingRef.current = false; }, 50);
@@ -252,7 +249,6 @@ export const KeypadNumeric = ({
   useEffect(() => {
     log.info(`Montaje | operation=${operation} | timeout=${timeout}`);
     return () => {
-      closeWebSocket();
       log.debug('Desmontaje');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -698,10 +694,11 @@ export const KeypadNumeric = ({
         const m =
           status === 499
             ? 'Operación cancelada'
-            : status === 500 || status == null
-              ? 'No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!'
-              : result?.http?.data?.message ||
-              'No se pudo realizar la asignación del casillero, ¡Inténtalo nuevamente!';
+            : status === 409
+              ? 'Es posible que este número ya tenga un casillero activo, intenta de nuevo.'
+              : status === 500 || status == null
+                ? 'Error del sistema, intenta de nuevo o contacta a soporte.'
+                : 'Error desconocido, intenta más tarde o contacta a soporte.';
 
         setMessageErrorAPI(m);
         setShowErrorAPIOpen(true);
@@ -710,7 +707,7 @@ export const KeypadNumeric = ({
         );
       }
     } catch (error) {
-      setMessageErrorAPI(String(error));
+      setMessageErrorAPI('Error inesperado en la asignación.');
       setShowErrorAPIOpen(true);
       log.error(`Excepción en asignación: ${String(error)}`);
     } finally {
@@ -770,21 +767,22 @@ export const KeypadNumeric = ({
           log.warn('Apertura sin lockerCode');
         }
       } else {
+        const status = result?.http?.status ?? result?.status;
         const m =
-          result?.data?.message ||
-          'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!';
-        setMessageErrorAPI(
-          result?.status === 500
-            ? 'No se pudo realizar la apertura del casillero, ¡Inténtalo nuevamente!'
-            : m
-        );
+          status === 404 || status === 401
+            ? 'Datos incorrectos, intenta nuevamente.'
+            : status === 500 || status == null
+              ? 'Error del sistema, intenta de nuevo o contacta a soporte.'
+              : 'Error desconocido, intenta más tarde o contacta a soporte.';
+
+        setMessageErrorAPI(m);
         setShowErrorAPIOpen(true);
         log.warn(
           `Apertura fallida | status=${result?.status} | msg=${m}`
         );
       }
     } catch (error) {
-      setMessageErrorAPI(String(error));
+      setMessageErrorAPI('Error inesperado en la apertura.');
       setShowErrorAPIOpen(true);
       log.error(`Excepción en apertura: ${String(error)}`);
     } finally {
@@ -801,7 +799,6 @@ export const KeypadNumeric = ({
   const confirmAssignLocker = () => {
     setShowLockerOpen(false);
     clearInputs();
-    closeWebSocket();
     cancel();
     log.info('ShowLocker confirmado y flujo finalizado');
   };
@@ -828,7 +825,6 @@ export const KeypadNumeric = ({
     // cancelInsertMoney();
     setAmountPay(0);
     setMessageErrorAPI('');
-    closeWebSocket();
     log.info('ShowErrorAPI confirmado');
   };
 

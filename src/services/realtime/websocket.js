@@ -20,13 +20,17 @@ let wasEverOpen = false;
 const messageListeners = new Set();
 
 let reconnectAttempts = 0;
-const MAX_RECONNECT_ATTEMPTS = 5;
+const MAX_RECONNECT_ATTEMPTS = Infinity;
 const BASE_RECONNECT_MS = 1000;
 const MAX_RECONNECT_MS = 8000;
 
+// Watchdog de reconexión
+const RECONNECT_WATCHDOG_MS = 3000;
+let reconnectWatchdog = null;
+
 // Heartbeat activado
-const HEARTBEAT_INTERVAL_MS = 30000;
-// const HEARTBEAT_TIMEOUT_MS = 0;
+const HEARTBEAT_INTERVAL_MS = 25000;
+const HEARTBEAT_TIMEOUT_MS = 10000;
 let heartbeatTimer = null;
 let heartbeatTimeout = null;
 
@@ -51,17 +55,51 @@ function clearHeartbeat() {
     if (heartbeatTimeout) { clearTimeout(heartbeatTimeout); heartbeatTimeout = null; }
 }
 
+function startReconnectWatchdog() {
+    if (reconnectWatchdog) return;
+    reconnectWatchdog = setInterval(() => {
+        if (!shouldReconnect) return;
+        if (isConnected) return;
+        if (connectingPromise) return;
+        log.warn('reconnect.watchdog');
+        scheduleReconnect();
+    }, RECONNECT_WATCHDOG_MS);
+}
+
+function stopReconnectWatchdog() {
+    if (reconnectWatchdog) { clearInterval(reconnectWatchdog); reconnectWatchdog = null; }
+}
+
 function startHeartbeat() {
     clearHeartbeat();
     heartbeatTimer = setInterval(() => {
         try {
-            if (!socket || socket.readyState !== WebSocket.OPEN) return;
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                if (shouldReconnect) scheduleReconnect();
+                return;
+            }
             log.debug('heartbeat.ping');
-            socket.send(JSON.stringify({ type: 'ping', ts: Date.now() }));
-            // Sin timeout que cierre el socket: dejamos la conexión viva.
-            // Si quieres un aviso, solo log.warn cuando falte respuesta varias veces.
+            socket.send(JSON.stringify({ type: 'PING' }));
+            if (heartbeatTimeout) { clearTimeout(heartbeatTimeout); }
+            heartbeatTimeout = setTimeout(() => {
+                log.warn('heartbeat.timeout');
+                try {
+                    if (socket && socket.readyState === WebSocket.OPEN) {
+                        socket.close(4003, 'heartbeat timeout');
+                    }
+                } catch (e) {
+                    log.warn('heartbeat.close.error', { msg: e?.message });
+                } finally {
+                    isConnected = false;
+                    socket = null;
+                    if (shouldReconnect) scheduleReconnect();
+                }
+            }, HEARTBEAT_TIMEOUT_MS);
         } catch (e) {
             log.warn('heartbeat.send.error', { msg: e?.message });
+            isConnected = false;
+            socket = null;
+            if (shouldReconnect) scheduleReconnect();
         }
     }, HEARTBEAT_INTERVAL_MS);
 }
@@ -82,6 +120,7 @@ export const connectWebSocket = () => {
 
     shouldReconnect = true;
     reconnectAttempts = 0;
+    startReconnectWatchdog();
 
     log.info('connect.start', { url });
     connectingPromise = new Promise((resolve, reject) => {
@@ -105,12 +144,28 @@ export const connectWebSocket = () => {
                 reconnectAttempts = 0;
                 log.info('connect.open');
                 startHeartbeat();
+                startReconnectWatchdog();
+                try {
+                    socket?.send(JSON.stringify({ type: 'CONNECT' }));
+                    log.debug('connect.handshake.sent');
+                } catch (e) {
+                    log.warn('connect.handshake.error', { msg: e?.message });
+                }
                 cleanupConnHandlers();
                 resolve();
             };
 
             const handleError = (err) => {
                 log.error('connect.error', { msg: err?.message });
+                // Si falla antes de abrir, liberar y reintentar
+                if (socket && socket.readyState !== WebSocket.OPEN) {
+                    socket = null;
+                    cleanupConnHandlers();
+                    if (!wasEverOpen) {
+                        reject(new Error('[WebSocket] error de conexión'));
+                    }
+                    if (shouldReconnect) scheduleReconnect();
+                }
             };
 
             const handleClose = (evt) => {
@@ -118,6 +173,9 @@ export const connectWebSocket = () => {
                 clearHeartbeat();
                 log.warn('connect.close', { code: evt?.code, reason: evt?.reason });
                 cleanupConnHandlers();
+                socket = null;
+
+                startReconnectWatchdog();
 
                 if (connectingPromise) {
                     const p = connectingPromise;
@@ -180,6 +238,7 @@ function scheduleReconnect() {
 export const closeWebSocket = () => {
     shouldReconnect = false;
     clearHeartbeat();
+    stopReconnectWatchdog();
     reconnectAttempts = 0;
 
     if (socket) {
