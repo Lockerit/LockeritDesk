@@ -36,7 +36,7 @@ export const assignLocker = async (payload, timeoutMs) => {
 
     const cancelListener = (e) => {
         if (e.detail) {
-            sendMessage({ type: 'PAYMENT_CANCEL' });
+            sendMessage({ type: 'PAYMENT_CANCEL', phone: payload.phone || null });
             log.info('Operación cancelada por el usuario');
         }
     };
