@@ -400,7 +400,7 @@ export const Login = () => {
                         maxHeight: '100%',
                         overflow: 'hidden',
                         pointerEvents: 'auto',
-
+                        borderRadius: theme.spacing(3),
                         '@media (max-height: 720px)': {
                             gap: 1.5,
                             padding: theme.spacing(2.5),

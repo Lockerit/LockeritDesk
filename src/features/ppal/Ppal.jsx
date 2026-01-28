@@ -283,10 +283,16 @@ export const Ppal = () => {
                     sx={{
                         flexGrow: 1,
                         width: {
-                            xs: '95%',
-                            sm: config?.paramsHtml?.isVertical ? '80%' : '80%',
-                            md: config?.paramsHtml?.isVertical ? '70%' : '60%',
-                            lg: config?.paramsHtml?.isVertical ? '60%' : '50%',
+                            xs: '98%',
+                            sm: config?.paramsHtml?.isVertical ? '88%' : '88%',
+                            md: config?.paramsHtml?.isVertical ? '80%' : '72%',
+                            lg: config?.paramsHtml?.isVertical ? '72%' : '64%',
+                        },
+                        height: {
+                            xs: 'auto',
+                            sm: 'clamp(240px, 38vh, 420px)',
+                            md: 'clamp(280px, 42vh, 520px)',
+                            lg: 'clamp(320px, 46vh, 600px)',
                         },
                         display: 'grid',
                         gridTemplateColumns: {

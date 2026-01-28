@@ -14,7 +14,7 @@ const isWindows = navigator.userAgent.includes("Windows");
 const sanitizeTextForTTS = (text) => {
     if (text === null || text === undefined) return '';
     const clean = String(text)
-        .replace(/[¡!¿?:(){}\[\]"'“”‘’—–\-]/g, ' ')
+        .replace(/[¡!¿?:(){}[\]"'“”‘’—–-]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
     return clean;
