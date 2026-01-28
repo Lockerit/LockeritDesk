@@ -12,6 +12,8 @@ import {
     Button,
     IconButton,
     InputAdornment,
+    ToggleButton,
+    ToggleButtonGroup,
     TableSortLabel,
     Card,
     CardContent,
@@ -55,6 +57,9 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
     const [disabledButton, setDisabledButton] = useState(true);
     const [orderBy, setOrderBy] = useState('StartTime');
     const [order, setOrder] = useState('desc');
+    const [revealedPins, setRevealedPins] = useState(() => new Set());
+    const [openByFilter, setOpenByFilter] = useState('ALL');
+    const [occupiedFilter, setOccupiedFilter] = useState('ALL');
 
     const config = useElectronConfig();
     const theme = useTheme();
@@ -89,25 +94,51 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         log.info(`Timezone mode: ${timezoneMode}`);
     }, [timezoneMode]);
 
+    const openByOptions = useMemo(() => {
+        const set = new Set();
+        data.forEach((row) => {
+            const value = String(row.OpenBy ?? '').trim();
+            if (value) set.add(value);
+        });
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [data]);
+
     const filteredData = useMemo(() => {
         const query = search.toLowerCase();
         const res = data.filter((row) => {
+            const openByValue = String(row.OpenBy ?? '').trim();
+            if (openByFilter !== 'ALL' && openByValue !== openByFilter) {
+                return false;
+            }
+            if (occupiedFilter !== 'ALL') {
+                const isActive = Boolean(row.Active);
+                const mustBeActive = occupiedFilter === 'YES';
+                if (isActive !== mustBeActive) return false;
+            }
             return (
                 String(row.LockerCode).toLowerCase().includes(query) ||
-                String(row.Phone).toLowerCase().includes(query) ||
-                String(row.PIN).toLowerCase().includes(query) ||
-                (row.OpenBy || '').toLowerCase().includes(query)
+                String(row.Phone).toLowerCase().includes(query)
             );
         });
         return res;
-    }, [data, search]);
+    }, [data, search, openByFilter, occupiedFilter]);
+
+    useEffect(() => {
+        if (openByFilter !== 'ALL' && !openByOptions.includes(openByFilter)) {
+            setOpenByFilter('ALL');
+        }
+    }, [openByFilter, openByOptions]);
+
+    useEffect(() => {
+        setPage(0);
+    }, [search, openByFilter, occupiedFilter]);
 
     useEffect(() => {
         setDisabledButton(filteredData.length === 0);
         log.info(
-            `Filtro aplicado → query="${search}" resultados=${filteredData.length}`
+            `Filtro aplicado → query="${search}" abiertoPor="${openByFilter}" ocupados="${occupiedFilter}" resultados=${filteredData.length}`
         );
-    }, [filteredData.length, search]);
+    }, [filteredData.length, search, openByFilter, occupiedFilter]);
 
     const handleChangePage = (_event, newPage) => {
         setPage(newPage);
@@ -127,6 +158,21 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
         setOrder(nextOrder);
         setOrderBy(field);
         log.info(`Orden → field=${field} order=${nextOrder}`);
+    };
+
+    const toggleRevealPin = (rowId) => {
+        setRevealedPins((prev) => {
+            const next = new Set(prev);
+            if (next.has(rowId)) next.delete(rowId);
+            else next.add(rowId);
+            return next;
+        });
+    };
+
+    const getMaskedPin = (pin) => {
+        if (pin == null) return '-';
+        const str = String(pin);
+        return str.length ? '*'.repeat(str.length) : '-';
     };
 
     const sortedData = useMemo(() => {
@@ -266,11 +312,16 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                         }}
                     >
                         <TextFieldVirtKeyPad
-                            label="Buscar"
+                            label="Buscar por Casillero o Número Celular"
                             variant="standard"
+                            placeholder="Ingresa Casillero o Número Celular"
                             fullWidth
                             value={search}
                             setValue={setSearch}
+                            sx={{
+                                mt: 0,
+                                '& .MuiInputBase-root': { mt: 0 },
+                            }}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -289,6 +340,81 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                 ),
                             }}
                         />
+                    </Box>
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: theme.spacing(2),
+                            alignItems: 'flex-start',
+                            width: '100%',
+                        }}
+                    >
+                        <Box sx={{ flex: 1, minWidth: 240 }}>
+                            <Typography
+                                variant="caption"
+                                sx={{ display: 'block', color: 'text.secondary', mb: 0.5 }}
+                            >
+                                Abierto por
+                            </Typography>
+                            <ToggleButtonGroup
+                                value={openByFilter}
+                                exclusive
+                                onChange={(_event, value) => {
+                                    if (value !== null) setOpenByFilter(value);
+                                }}
+                                sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns:
+                                        'repeat(auto-fit, minmax(110px, 1fr))',
+                                    gap: theme.spacing(1),
+                                    width: '100%',
+                                    '& .MuiToggleButton-root': {
+                                        textTransform: 'none',
+                                        width: '100%',
+                                    },
+                                }}
+                            >
+                                <ToggleButton value="ALL">Todos</ToggleButton>
+                                {openByOptions.map((option) => (
+                                    <ToggleButton key={option} value={option}>
+                                        {option}
+                                    </ToggleButton>
+                                ))}
+                            </ToggleButtonGroup>
+                        </Box>
+
+                        <Box sx={{ flex: 1, minWidth: 240 }}>
+                            <Typography
+                                variant="caption"
+                                sx={{ display: 'block', color: 'text.secondary', mb: 0.5 }}
+                            >
+                                Ocupado
+                            </Typography>
+                            <ToggleButtonGroup
+                                value={occupiedFilter}
+                                exclusive
+                                onChange={(_event, value) => {
+                                    if (value !== null) setOccupiedFilter(value);
+                                }}
+                                sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns:
+                                        'repeat(auto-fit, minmax(110px, 1fr))',
+                                    gap: theme.spacing(1),
+                                    width: '100%',
+                                    '& .MuiToggleButton-root': {
+                                        textTransform: 'none',
+                                        width: '100%',
+                                    },
+                                }}
+                            >
+                                <ToggleButton value="ALL">Todos</ToggleButton>
+                                <ToggleButton value="YES">Sí</ToggleButton>
+                                <ToggleButton value="NO">No</ToggleButton>
+                            </ToggleButtonGroup>
+                        </Box>
                     </Box>
 
                     <Box
@@ -343,8 +469,20 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                                                 <Typography variant="subtitle1" fontWeight="bold">
                                                                     {row.LockerCode} {row.LockerID ? `- ${row.LockerID}` : ''}
                                                                 </Typography>
-                                                                <Typography variant="body2" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                    {formatNumberPhone(row.Phone)} • PIN: {row.PIN}
+                                                                <Typography
+                                                                    variant="body2"
+                                                                    noWrap
+                                                                    sx={{
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
+                                                                        cursor: 'pointer',
+                                                                    }}
+                                                                    onClick={() => toggleRevealPin(row.ID)}
+                                                                >
+                                                                    {formatNumberPhone(row.Phone)} • PIN:{' '}
+                                                                    {revealedPins.has(row.ID)
+                                                                        ? row.PIN
+                                                                        : getMaskedPin(row.PIN)}
                                                                 </Typography>
                                                                 <Typography variant="body2" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                     Abierto por: {row.OpenBy || '-'}
@@ -420,7 +558,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                                 }
                                                 onClick={() => handleSort('Phone')}
                                             >
-                                                Teléfono
+                                                Número Celular
                                             </TableSortLabel>
                                         </TableCell>
 
@@ -436,7 +574,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                                 }
                                                 onClick={() => handleSort('PIN')}
                                             >
-                                                PIN
+                                                Contraseña
                                             </TableSortLabel>
                                         </TableCell>
 
@@ -452,7 +590,7 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                                 }
                                                 onClick={() => handleSort('Active')}
                                             >
-                                                Activo
+                                                Ocupado
                                             </TableSortLabel>
                                         </TableCell>
 
@@ -528,7 +666,14 @@ export const TableReportLockers = ({ data, startDate, endDate }) => {
                                             <TableCell>{row.LockerID}</TableCell>
                                             <TableCell>{row.LockerCode}</TableCell>
                                             <TableCell>{formatNumberPhone(row.Phone)}</TableCell>
-                                            <TableCell>{row.PIN}</TableCell>
+                                            <TableCell
+                                                onClick={() => toggleRevealPin(row.ID)}
+                                                sx={{ cursor: 'pointer', userSelect: 'none' }}
+                                            >
+                                                {revealedPins.has(row.ID)
+                                                    ? row.PIN
+                                                    : getMaskedPin(row.PIN)}
+                                            </TableCell>
                                             <TableCell>
                                                 {row.Active ? 'Sí' : 'No'}
                                             </TableCell>

@@ -25,6 +25,7 @@ export const ReportLockers = () => {
     const [startDate, setStartDate] = useState(
         dayjs().hour(0).minute(0).second(0)
     );
+    const [openPicker, setOpenPicker] = useState(null);
 
     const [showErrorAPIOpen, setShowErrorAPIOpen] = useState(false);
     const [isErrorMsj, setIsErrorMsj] = useState(true);
@@ -35,6 +36,16 @@ export const ReportLockers = () => {
 
     const config = useElectronConfig();
     const theme = useTheme();
+
+    const handleOpenChange = useCallback(
+        (id) => (isOpen) => {
+            setOpenPicker((prev) => {
+                if (isOpen) return id;
+                return prev === id ? null : prev;
+            });
+        },
+        []
+    );
 
     useEffect(() => {
         if (!config) return;
@@ -174,6 +185,8 @@ export const ReportLockers = () => {
                             value={startDate}
                             onChange={setStartDate}
                             showTime
+                            open={openPicker === 'start'}
+                            onOpenChange={handleOpenChange('start')}
                         />
                     </Box>
 
@@ -183,6 +196,8 @@ export const ReportLockers = () => {
                             value={endDate}
                             onChange={setEndDate}
                             showTime
+                            open={openPicker === 'end'}
+                            onOpenChange={handleOpenChange('end')}
                         />
                     </Box>
                 </Box>
@@ -219,9 +234,17 @@ export const ReportLockers = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     flex: '1 1 auto',
-                    p: {
+                    px: {
                         xs: theme.spacing(1.5),
                         md: theme.spacing(2),
+                    },
+                    pb: {
+                        xs: theme.spacing(1.5),
+                        md: theme.spacing(2),
+                    },
+                    pt: {
+                        xs: theme.spacing(0.5),
+                        md: theme.spacing(1),
                     },
                     minHeight: 0,
                 }}

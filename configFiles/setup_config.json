@@ -88,7 +88,7 @@
         "timeInterval": 60
     },
     "voice": {
-        "enabled": true,
+        "enabled": false,
         "isVoiceDesktop": true,
         "name": "Raul",
         "timeInterval": 30,

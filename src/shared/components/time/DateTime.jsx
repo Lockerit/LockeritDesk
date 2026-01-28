@@ -173,38 +173,51 @@ export const DateTime = ({
     showTime = true,
     disabled = false,
     disablePastDates = false,
+    open: openProp,
+    onOpenChange,
 }) => {
     const [open, setOpen] = useState(false);
     const [tempValue, setTempValue] = useState(value);
     const theme = useTheme();
+
+    const isControlled = typeof openProp === 'boolean';
+    const openState = isControlled ? openProp : open;
 
     // Para evitar spam, memo de previews
     const prevValue = useMemo(() => fmt(value), [value]);
     const _prevTemp = useMemo(() => fmt(tempValue), [tempValue]); // reservado para logs futuros
 
     useEffect(() => {
-        if (open) {
+        if (openState) {
             setTempValue(value);
             log.info('abrir selector', { showTime, value: prevValue });
         }
-    }, [open, value, showTime, prevValue]);
+    }, [openState, value, showTime, prevValue]);
+
+    const handleOpen = useCallback(() => {
+        if (!isControlled) setOpen(true);
+        onOpenChange?.(true);
+    }, [isControlled, onOpenChange]);
 
     const handleClose = useCallback(() => {
-        setOpen(false);
+        if (!isControlled) setOpen(false);
+        onOpenChange?.(false);
         log.info('cerrar selector');
-    }, []);
+    }, [isControlled, onOpenChange]);
 
     const handleAccept = useCallback(() => {
         onChange(tempValue);
         log.info('aceptar fecha/hora', { final: fmt(tempValue) });
-        setOpen(false);
-    }, [onChange, tempValue]);
+        if (!isControlled) setOpen(false);
+        onOpenChange?.(false);
+    }, [onChange, tempValue, isControlled, onOpenChange]);
 
     const handleCancel = useCallback(() => {
         setTempValue(value);
         log.info('cancelar cambios', { restore: prevValue });
-        setOpen(false);
-    }, [value, prevValue]);
+        if (!isControlled) setOpen(false);
+        onOpenChange?.(false);
+    }, [value, prevValue, isControlled, onOpenChange]);
 
     const handleSetToday = useCallback(() => {
         const now = dayjs();
@@ -251,10 +264,15 @@ export const DateTime = ({
                 disabled={disabled}
                 label={label}
                 value={value}
-                open={open}
-                onOpen={() => setOpen(true)}
+                open={openState}
+                onOpen={handleOpen}
                 onClose={handleClose}
                 format={showTime ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD'}
+                slotProps={{
+                    textField: {
+                        onClick: handleOpen,
+                    },
+                }}
                 slots={{
                     layout: (props) => (
                         <Box
