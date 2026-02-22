@@ -467,7 +467,7 @@ export const RegisterUserPeriod = ({ open, onClose }) => {
         keepMounted={false}
         component="form"
         onSubmit={handleSubmit}
-        hideBackdrop
+        hideBackdrop={false}
         disableEscapeKeyDown
         PaperProps={{
           sx: {

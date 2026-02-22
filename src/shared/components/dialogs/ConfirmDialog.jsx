@@ -38,7 +38,7 @@ export const ConfirmDialog = ({
             open={open}
             onClose={() => { }}
             keepMounted={false}
-            hideBackdrop
+            hideBackdrop={false}
             disableEscapeKeyDown
             sx={{
                 pointerEvents: 'auto',

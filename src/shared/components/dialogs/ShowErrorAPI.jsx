@@ -110,7 +110,7 @@ export const ShowErrorAPI = ({
             open={open}
             onClose={() => { }}
             keepMounted={false}
-            hideBackdrop
+            hideBackdrop={false}
             disableEscapeKeyDown
             sx={{ pointerEvents: 'auto', zIndex: 1500 }}
             PaperProps={{
