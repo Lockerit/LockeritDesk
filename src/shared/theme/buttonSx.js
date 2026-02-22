@@ -105,6 +105,8 @@ export const keypadButtonSx = (theme) => ({
     sm: theme.typography.h4.fontSize,
     md: theme.typography.h4.fontSize,
   },
+  border: `2px solid ${theme.palette.tertiary?.main || theme.palette.divider}`,
+  boxSizing: 'border-box',
   borderRadius: {
     xs: theme.spacing(1),
     sm: theme.spacing(1.25),

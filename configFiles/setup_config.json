@@ -31,9 +31,9 @@
             "primaryContrastText": "#ffffff",
             "secondaryMain": "#0c315e",
             "secondaryContrastText": "#ffffff",
-            "tertiaryMain": "#212121",
-            "tertiaryContrastText": "#ffffff",
-            "textPrimary": "#0c315e",
+            "tertiaryMain": "#cfcfcf",
+            "tertiaryContrastText": "#111111",
+            "textPrimary": "#000000",
             "textSecondary": "#009640",
             "backgroundDefault": "#f9f9f9",
             "layoutBackground": "#f1f1f1"

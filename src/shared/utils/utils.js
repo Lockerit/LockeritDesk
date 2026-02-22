@@ -33,7 +33,7 @@ export const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]*$/;
 export const ID_REGEX = /^[0-9]*$/;
 
 export const keys = () => {
-    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Borrar', 0, 'Cancelar', 'Aceptar'];
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Borrar', 0, 'Cerrar', 'Anterior', 'Aceptar'];
 }
 
 export const formatCurrency = (value, { onlyThousands = false } = {}) => {

@@ -51,13 +51,21 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
                 color="secondary"
                 variant="outlined"
                 size="large"
-                sx={{ fontWeight: 700, px: theme.spacing(2) }}
+                sx={{
+                    fontWeight: 700,
+                    px: theme.spacing(2),
+                    color: theme.palette.tertiary?.contrastText || theme.palette.text.primary,
+                    borderColor: theme.palette.tertiary?.main || theme.palette.divider,
+                    '&:hover': {
+                        borderColor: theme.palette.tertiary?.main || theme.palette.divider,
+                    },
+                }}
             >
                 Ahora
             </Button>
             <Button
                 onClick={onAccept}
-                color="secondary"
+                color="primary"
                 variant="outlined"
                 size="large"
                 autoFocus

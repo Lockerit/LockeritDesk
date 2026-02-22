@@ -5,6 +5,7 @@ import {
   MobileFriendly,
   Refresh,
   ArrowCircleRight,
+  ArrowCircleLeft,
   Password,
   Cancel
 } from '@mui/icons-material';
@@ -561,6 +562,21 @@ export const KeypadNumeric = ({
     }
   };
 
+  const handlePrevious = () => {
+    if (activeInput === 'confirmPassword') {
+      setActiveInput('password');
+      passRef.current?.focus();
+      log.debug('Paso <- confirmPassword → password');
+      return;
+    }
+
+    if (activeInput === 'password') {
+      setActiveInput('phone');
+      phoneRef.current?.focus();
+      log.debug('Paso <- password → phone');
+    }
+  };
+
   const accept = async () => {
     setLoading(false);
 
@@ -830,12 +846,46 @@ export const KeypadNumeric = ({
 
   // Render del botón del keypad
   const renderButton = (value) => {
+    const isNeutralDigit = !['Aceptar', 'Borrar', 'Cerrar', 'Anterior'].includes(value);
+    const isBorrar = value === 'Borrar';
+    const neutralMain = theme.palette.tertiary?.main || theme.palette.text.primary;
+    const neutralContrast =
+      theme.palette.tertiary?.contrastText || theme.palette.getContrastText(neutralMain);
     const commonProps = {
       variant: 'contained',
       disableRipple: true,
       tabIndex: -1,
       sx: {
         ...keypadButtonSx(theme),
+        ...(isNeutralDigit
+          ? {
+            '&.MuiButton-contained': {
+              backgroundColor: `${neutralMain} !important`,
+              color: neutralContrast,
+              border: `2px solid ${alpha(theme.palette.text.primary, 0.45)}`,
+              boxShadow: 'none',
+            },
+            '&.MuiButton-contained:hover': {
+              backgroundColor: `${alpha(neutralMain, 0.9)} !important`,
+              boxShadow: 'none',
+            },
+            '&.MuiButton-contained:active': {
+              backgroundColor: `${alpha(neutralMain, 0.82)} !important`,
+            },
+          }
+          : {}),
+        ...(isBorrar
+          ? {
+            '&.MuiButton-contained': {
+              backgroundColor: `${theme.palette.warning.light} !important`,
+              color: theme.palette.warning.contrastText,
+              border: `2px solid ${alpha(theme.palette.warning.main, 0.5)}`,
+            },
+            '&.MuiButton-contained:hover': {
+              backgroundColor: `${theme.palette.warning.main} !important`,
+            },
+          }
+          : {}),
       },
     };
     const isFinalStep =
@@ -849,7 +899,6 @@ export const KeypadNumeric = ({
           sx={{
             width: '100%',
             height: '100%',
-            gridColumn: '1 / -1',
             display: 'flex',
           }}
         >
@@ -905,7 +954,7 @@ export const KeypadNumeric = ({
           }}
         />
       ),
-      Cancelar: (
+      Cerrar: (
         <Cancel
           sx={{
             fontSize: {
@@ -917,19 +966,35 @@ export const KeypadNumeric = ({
           }}
         />
       ),
+      Anterior: (
+        <ArrowCircleLeft
+          sx={{
+            fontSize: {
+              xs: theme.spacing(4),
+              sm: theme.spacing(4.5),
+              md: theme.spacing(5),
+            },
+            ml: theme.spacing(1),
+          }}
+        />
+      ),
     }[value];
 
     const handler =
       {
         Borrar: removeDigit,
-        Cancelar: cancel,
+        Cerrar: cancel,
+        Anterior: handlePrevious,
       }[value] || (() => addDigit(value));
 
     const color =
       {
         Borrar: 'warning',
-        Cancelar: 'error',
-      }[value] || 'secondary';
+        Cerrar: 'error',
+        Anterior: 'secondary',
+      }[value] || (isNeutralDigit ? 'inherit' : 'secondary');
+
+    const isPreviousDisabled = value === 'Anterior' && activeInput === 'phone';
 
     return (
       <Box
@@ -943,6 +1008,7 @@ export const KeypadNumeric = ({
         <Button
           {...commonProps}
           color={color}
+          disabled={isPreviousDisabled}
           onClick={(e) => {
             handler();
             const btn = e.currentTarget;
@@ -955,6 +1021,12 @@ export const KeypadNumeric = ({
       </Box>
     );
   };
+
+  const keypadKeys = useMemo(() => keys(), []);
+  const mainKeys = useMemo(
+    () => keypadKeys.filter((value) => !['Anterior', 'Aceptar'].includes(value)),
+    [keypadKeys]
+  );
 
   return (
     <>
@@ -1225,7 +1297,21 @@ export const KeypadNumeric = ({
                   alignItems: 'stretch',
                 }}
               >
-                {keys().map(renderButton)}
+                {mainKeys.map(renderButton)}
+                <Box
+                  sx={{
+                    gridColumn: '1 / -1',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: {
+                      xs: theme.spacing(config?.paramsHtml?.isVertical ? 0.75 : 0.5),
+                      sm: theme.spacing(0.75),
+                      md: theme.spacing(1),
+                    },
+                  }}
+                >
+                  {['Anterior', 'Aceptar'].map(renderButton)}
+                </Box>
               </Box>
             </Box>
           </Box>

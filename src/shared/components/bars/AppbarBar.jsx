@@ -147,6 +147,9 @@ export const AppbarBar = ({ position = 'static', containerPadding = '2.5%' }) =>
             position={position}
             elevation={0}
             sx={{
+                backgroundColor: theme.palette.secondary.main,
+                color: theme.palette.secondary.contrastText,
+                '& .MuiSvgIcon-root': { color: theme.palette.secondary.contrastText },
                 justifyContent: 'center',
                 minHeight: {
                     xs: theme.spacing(7),
