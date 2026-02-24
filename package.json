@@ -2,7 +2,7 @@
   "name": "lockerit",
   "private": true,
   "type": "module",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "Sistema de Asignación de Casilleros",
   "author": {
     "name": "Lockerit - Camilo Diaz",

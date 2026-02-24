@@ -12,7 +12,7 @@
     "paramsHtml": {
         "lenMaxInputPass": 4,
         "lenMinInputPass": 4,
-        "isVertical": false,
+        "isVertical": true,
         "currency": {
             "coinBoxRequiredAmount": 1500,
             "currency": "COP",
@@ -31,8 +31,8 @@
             "primaryContrastText": "#ffffff",
             "secondaryMain": "#0c315e",
             "secondaryContrastText": "#ffffff",
-            "tertiaryMain": "#cfcfcf",
-            "tertiaryContrastText": "#111111",
+            "tertiaryMain": "#404040",
+            "tertiaryContrastText": "#ffffff",
             "textPrimary": "#000000",
             "textSecondary": "#009640",
             "backgroundDefault": "#f9f9f9",
