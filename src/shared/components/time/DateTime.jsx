@@ -54,7 +54,7 @@ const CustomActionBar = ({ onAccept, onCancel, setToday }) => {
                 sx={{
                     fontWeight: 700,
                     px: theme.spacing(2),
-                    color: theme.palette.tertiary?.contrastText || theme.palette.text.primary,
+                    color: theme.palette.text.tertiary || theme.palette.text.primary,
                     borderColor: theme.palette.tertiary?.main || theme.palette.divider,
                     '&:hover': {
                         borderColor: theme.palette.tertiary?.main || theme.palette.divider,
