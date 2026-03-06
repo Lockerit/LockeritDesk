@@ -512,14 +512,15 @@ export const AdminLockers = () => {
                     sx={{
                         flex: '0 0 5%',
                         display: 'flex',
-                        justifyContent: 'space-between',
+                        justifyContent: 'center',
                         alignItems: 'center',
                         width: '100%',
                         flexWrap: 'wrap',
+                        gap: { xs: 1, sm: 2, md: 3 },
                         rowGap: { xs: 1, sm: 1.5 },
                     }}
                 >
-                    {data?.general?.map((item) => {
+                    {data?.general?.filter((item) => (item.total || 0) > 0).map((item) => {
                         const matchedStatus = dataStatus.general.find(
                             (s) => s.status.toLowerCase() === item.status.toLowerCase()
                         );
@@ -538,7 +539,9 @@ export const AdminLockers = () => {
                                     textAlign: 'center',
                                     minHeight: theme.spacing(5),
                                     py: { xs: 0.5, sm: 1 },
-                                    px: 1,
+                                    px: { xs: 0.5, sm: 1 },
+                                    minWidth: { xs: 80, sm: 120 },
+                                    mx: { xs: 0.5, sm: 1 },
                                     borderRadius: 1.5,
                                     userSelect: 'none',
                                     transition: 'opacity 140ms ease, background-color 140ms ease',
